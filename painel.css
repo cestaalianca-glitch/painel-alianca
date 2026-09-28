@@ -382,3 +382,7 @@ details.bloco > summary:focus-visible { outline: 2px solid var(--dado); outline-
 
 .aba { white-space: nowrap; }
 @media (max-width: 720px) { .aba { padding: 7px 10px; } }
+
+/* atalho pra Cobrança Diária no cabeçalho */
+.atalho-cobranca { color: var(--texto-suave); text-decoration: none; font-size: 0.9rem; white-space: nowrap; }
+.atalho-cobranca:hover { color: var(--texto); }

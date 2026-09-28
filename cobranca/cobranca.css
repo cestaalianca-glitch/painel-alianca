@@ -1,0 +1,67 @@
+/* Cobrança Diária — complementos ao design system (estilo-alianca.css + painel.css). Cores sempre por token. */
+.voltar { color: var(--texto-suave); text-decoration: none; font-size: 0.9rem; margin-left: 12px; }
+.voltar:hover { color: var(--texto); }
+
+.aviso-trava { background: var(--critico-bg); color: var(--texto); border-left: 4px solid var(--critico); border-radius: 12px; padding: 12px 16px; margin: 0 0 16px; }
+
+.frase { font-size: 1.25rem; line-height: 1.45; color: var(--texto-suave); margin: 4px 0 24px; max-width: 760px; }
+.frase b { color: var(--texto); }
+
+.numeros { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.num { background: var(--superficie); border: 1px solid var(--borda); border-radius: 16px; padding: 16px 18px; border-top: 3px solid var(--borda); }
+.num.bom { border-top-color: var(--bom); } .num.ruim { border-top-color: var(--critico); } .num.meio { border-top-color: var(--atencao); }
+.num b { display: block; font-size: 1.7rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.num span { color: var(--texto-suave); font-size: 0.85rem; }
+
+/* dias: barras empilhadas pagou / remarcou / sem retorno */
+.dias { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; align-items: end; height: 150px; margin: 8px 0 6px; }
+.dia { display: flex; flex-direction: column; align-items: stretch; height: 100%; justify-content: flex-end; gap: 1px; }
+.dia i { display: block; border-radius: 3px; min-height: 0; }
+.dia .p { background: var(--bom); } .dia .r { background: var(--atencao); } .dia .n { background: var(--borda-forte); }
+.dia-rot { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; overflow: hidden; font-size: 0.72rem; color: var(--texto-mudo); text-align: center; }
+.leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.leg .p { background: var(--bom); } .leg .r { background: var(--atencao); } .leg .n { background: var(--borda-forte); }
+
+.barra-acoes { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0 14px; }
+.lista-cli { display: flex; flex-direction: column; gap: 10px; }
+.cli { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 12px 16px; border-left: 4px solid var(--borda); }
+.cli.esq { border-left-color: var(--critico); } .cli.parado { border-left-color: var(--atencao); }
+.cli-top { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.cli-top b { font-size: 1rem; }
+.cli-top .val { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cli .sub { color: var(--texto-suave); font-size: 0.85rem; }
+.cli .sinais { font-size: 0.85rem; margin-top: 4px; }
+.cli .cestas { font-size: 0.85rem; color: var(--texto-suave); margin-top: 2px; }
+.rota-tit { font-size: 1rem; margin: 22px 0 8px; color: var(--texto-suave); font-weight: 600; }
+
+.tab-todos td b { font-variant-numeric: tabular-nums; }
+.tab-todos tr { cursor: pointer; }
+
+.so-imprime { display: none; }
+
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  body { background: #fff !important; color: #000 !important; font: 11px/1.3 Arial, Helvetica, sans-serif; }
+  #conteudoPainel > header, #conteudoPainel > main, .portao { display: none !important; }
+  .so-imprime { display: block !important; }
+  .folha h1 { font-size: 16px; margin: 0 0 2px; }
+  .folha .sub { margin: 0 0 6px; }
+  .folha .guia { border: 1px solid #000; padding: 5px 8px; margin: 0 0 8px; }
+  .folha section { break-before: page; } .folha section:first-of-type { break-before: auto; }
+  .folha h2 { font-size: 14px; margin: 4px 0; border-bottom: 2px solid #000; }
+  .folha table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .folha th { background: #e6e6e6; font-size: 10px; text-align: left; padding: 3px 4px; border: 1px solid #000; }
+  .folha td { border: 1px solid #000; padding: 3px 4px; vertical-align: top; font-size: 10px; }
+  .folha thead { display: table-header-group; } .folha tr { break-inside: avoid; }
+  .folha td.num { text-align: center; font-weight: 700; }
+  .folha tr.esq td:first-child { border-left: 4px solid #000; }
+  .folha .resp span { display: block; line-height: 2; }
+}
+.tab-todos td.ult { white-space: normal; min-width: 220px; font-size: 0.9rem; }
+.tab-todos .ok { color: var(--bom); }
+.tab-todos td, .tab-todos th { white-space: normal; }
+@media (max-width: 600px) {
+  .dia-rot span:nth-child(even) { visibility: hidden; }
+  .dia-rot { font-size: 0.62rem; }
+  .frase { font-size: 1.05rem; }
+}

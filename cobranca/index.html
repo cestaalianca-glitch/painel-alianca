@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cobrança Diária</title>
+<link rel="stylesheet" href="../estilo-alianca.css">
+<link rel="stylesheet" href="../painel.css">
+<link rel="stylesheet" href="cobranca.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script src="../login-gate.js"></script>
+</head>
+<body>
+
+<div id="gateLogin" class="portao">
+  <div class="portao-caixa">
+    <div class="al-marca"><span class="al-bolinha"></span><strong>Cobrança Diária</strong></div>
+    <p>Entre com a sua conta da Central Aliança.</p>
+    <input id="inputEmail" type="email" placeholder="E-mail" autocomplete="username" autofocus>
+    <input id="inputSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button id="btnEntrar" class="al-botao al-dourado">Entrar</button>
+    <a id="linkEsqueciSenha" href="#">Esqueci minha senha</a>
+    <div id="erroLogin" class="portao-erro" style="display:none"></div>
+    <div id="msgReset" class="portao-ok" style="display:none"></div>
+  </div>
+</div>
+<div id="gateNovaSenha" class="portao" style="display:none">
+  <div class="portao-caixa">
+    <strong>Criar senha nova</strong>
+    <p>Digite a senha que você vai usar daqui pra frente.</p>
+    <input id="inputNovaSenha" type="password" placeholder="Senha nova (mín. 6 caracteres)" autocomplete="new-password">
+    <button id="btnSalvarNovaSenha" class="al-botao al-dourado">Salvar senha nova</button>
+    <div id="erroNovaSenha" class="portao-erro" style="display:none"></div>
+  </div>
+</div>
+<div id="carregando" class="portao" hidden><div class="portao-caixa"><p>Carregando a cobrança…</p></div></div>
+
+<div id="conteudoPainel" style="display:none">
+<header class="al-header nao-imprime">
+  <div class="al-marca"><span class="al-bolinha"></span><h1>Cobrança Diária</h1></div>
+  <a class="voltar" href="../">← Painel</a>
+  <div class="al-info" id="dadoAte"></div>
+</header>
+
+<main class="al-main">
+  <div id="alertas"></div>
+  <div class="pilulas nao-imprime" id="seletor" role="group" aria-label="Escolher vendedor"></div>
+  <div id="visao"></div>
+</main>
+<div id="folha" class="so-imprime"></div>
+</div>
+
+<script src="cobranca.js"></script>
+</body>
+</html>
