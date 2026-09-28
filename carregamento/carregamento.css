@@ -1,0 +1,68 @@
+/* Carregamento e Trocas V2 — pensado pro celular do conferente. Cores sempre por token. */
+.cc { padding-bottom: 96px; }
+.voltar { color: var(--texto-suave); text-decoration: none; font-size: 0.9rem; margin-left: 12px; }
+.topo-dir { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--texto-suave); margin-left: auto; }
+#btnSair { background: transparent; border: 1px solid var(--borda); color: var(--texto-suave); padding: 6px 12px; border-radius: 99px; cursor: pointer; font-size: 0.8rem; }
+.estado { font-weight: 600; }
+.estado.ok { color: var(--bom); } .estado.erro { color: var(--critico); }
+@media (max-width: 600px) { #usuarioLogado { display: none; } }
+
+/* navegação por baixo (polegar) */
+.abas-baixo { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; background: var(--superficie); border-top: 1px solid var(--borda); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
+.aba-b { flex: 1; background: none; border: 0; color: var(--texto-suave); font-size: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border-radius: 12px; cursor: pointer; position: relative; min-height: 52px; }
+.aba-b span { font-size: 0.72rem; font-weight: 600; }
+.aba-b.ativa { color: var(--texto); background: var(--superficie-2); }
+.aba-b i { position: absolute; top: 2px; right: calc(50% - 22px); background: var(--critico); color: #fff; font-style: normal; font-size: 0.65rem; font-weight: 700; border-radius: 99px; padding: 1px 6px; }
+
+.dia-sel { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 18px; }
+.dia-sel input { font: inherit; font-size: 1rem; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); }
+.dia-sel button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); font-size: 1.4rem; cursor: pointer; }
+
+.totais { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.tot { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 10px 12px; text-align: center; }
+.tot b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.tot span { font-size: 0.75rem; color: var(--texto-suave); }
+
+.vend { background: var(--superficie); border: 1px solid var(--borda); border-radius: 18px; padding: 14px 16px; margin-bottom: 12px; border-left: 4px solid var(--borda); }
+.vend.saiu { border-left-color: var(--atencao); } .vend.voltou { border-left-color: var(--bom); } .vend.faltou { opacity: .6; }
+.vend-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.vend-top b { font-size: 1.1rem; }
+.vend-top .st { margin-left: auto; font-size: 0.78rem; color: var(--texto-suave); }
+.vend-top label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--texto-suave); }
+.grupo-tit { font-size: 0.78rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .04em; margin: 10px 0 6px; }
+.passos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.passo { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.passo small { font-size: 0.75rem; color: var(--texto-suave); }
+.passo { min-width: 0; }
+.passo .ctl { display: flex; align-items: center; width: 100%; border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; }
+.passo button { flex: 0 0 34px; width: 34px; height: 44px; border: 0; background: var(--superficie-2); color: var(--texto); font-size: 1.2rem; cursor: pointer; }
+.passo input { flex: 1; min-width: 0; width: auto; height: 44px; border: 0; text-align: center; font: inherit; font-size: 1.05rem; font-weight: 700; background: var(--superficie); color: var(--texto); }
+.saldo { margin-top: 10px; font-size: 0.88rem; color: var(--texto-suave); }
+.saldo b { color: var(--texto); }
+.btn-volta { margin-top: 10px; width: 100%; }
+.vend textarea { width: 100%; margin-top: 10px; font: inherit; font-size: 0.9rem; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); resize: vertical; min-height: 38px; }
+
+.form { display: flex; flex-direction: column; gap: 12px; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--texto-suave); }
+.form input:not([type=radio]), .form select { font: inherit; font-size: 1rem; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); }
+.form fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.form legend { font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 4px; }
+.form .op { flex-direction: row; align-items: flex-start; gap: 10px; border: 1px solid var(--borda); border-radius: 12px; padding: 10px 12px; color: var(--texto); cursor: pointer; }
+.form .op input { margin-top: 3px; }
+.form .op small { color: var(--texto-suave); }
+
+.sub-tit { font-size: 1.05rem; margin: 22px 0 8px; }
+.sub-tit small { color: var(--texto-suave); font-weight: 500; }
+.lista-cc { display: flex; flex-direction: column; gap: 8px; }
+.item-cc { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 12px 14px; }
+.item-cc .l1 { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.item-cc .l1 .dir { margin-left: auto; font-weight: 700; }
+.item-cc .l2 { font-size: 0.88rem; color: var(--texto-suave); margin-top: 3px; }
+.item-cc button { margin-top: 8px; }
+.item-cc.pend { border-left: 4px solid var(--atencao); }
+.vazio-cc { color: var(--texto-mudo); font-size: 0.9rem; padding: 6px 2px; }
+
+.res-tab { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.res-tab th, .res-tab td { padding: 7px 6px; border-bottom: 1px solid var(--borda); text-align: right; font-variant-numeric: tabular-nums; }
+.res-tab th:first-child, .res-tab td:first-child { text-align: left; }
+.res-tab th { color: var(--texto-suave); font-weight: 500; font-size: 0.78rem; }

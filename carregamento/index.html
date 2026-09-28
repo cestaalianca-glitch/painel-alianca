@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0d1b40">
+<title>Carregamento e Trocas</title>
+<link rel="stylesheet" href="../estilo-alianca.css">
+<link rel="stylesheet" href="../painel.css">
+<link rel="stylesheet" href="carregamento.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script src="../login-gate.js"></script>
+</head>
+<body>
+
+<div id="gateLogin" class="portao">
+  <div class="portao-caixa">
+    <div class="al-marca"><span class="al-bolinha"></span><strong>Carregamento e Trocas</strong></div>
+    <p>Entre com a sua conta.</p>
+    <input id="inputEmail" type="email" placeholder="E-mail" autocomplete="username" autofocus>
+    <input id="inputSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button id="btnEntrar" class="al-botao al-dourado">Entrar</button>
+    <a id="linkEsqueciSenha" href="#">Esqueci minha senha</a>
+    <div id="erroLogin" class="portao-erro" style="display:none"></div>
+    <div id="msgReset" class="portao-ok" style="display:none"></div>
+  </div>
+</div>
+<div id="gateNovaSenha" class="portao" style="display:none">
+  <div class="portao-caixa">
+    <strong>Criar senha nova</strong>
+    <p>Digite a senha que você vai usar daqui pra frente.</p>
+    <input id="inputNovaSenha" type="password" placeholder="Senha nova (mín. 6 caracteres)" autocomplete="new-password">
+    <button id="btnSalvarNovaSenha" class="al-botao al-dourado">Salvar senha nova</button>
+    <div id="erroNovaSenha" class="portao-erro" style="display:none"></div>
+  </div>
+</div>
+<div id="semAcesso" class="portao" hidden><div class="portao-caixa"><p>Esta conta não tem acesso ao Carregamento. Fale com o Leonardo.</p><button id="btnSair2" class="al-botao">Sair</button></div></div>
+
+<div id="conteudoPainel" style="display:none">
+<header class="al-header">
+  <div class="al-marca"><span class="al-bolinha"></span><h1>Carregamento</h1></div>
+  <a class="voltar so-admin" href="../central/" hidden>Central</a>
+  <div class="topo-dir"><span id="estadoSalvo" class="estado"></span><span id="usuarioLogado"></span><button id="btnSair">Sair</button></div>
+</header>
+
+<nav class="abas-baixo" role="tablist" aria-label="Seções">
+  <button class="aba-b ativa" data-aba="hoje">🚚<span>Cestas</span></button>
+  <button class="aba-b" data-aba="trocas">🔄<span>Trocas</span><i id="badgePend" hidden></i></button>
+  <button class="aba-b" data-aba="compras">🛒<span>Compras</span></button>
+  <button class="aba-b so-admin" data-aba="resumo" hidden>📊<span>Resumo</span></button>
+</nav>
+
+<main class="al-main cc">
+  <div class="dia-sel">
+    <button id="diaAnt" aria-label="Dia anterior">‹</button>
+    <input type="date" id="dia">
+    <button id="diaProx" aria-label="Próximo dia">›</button>
+  </div>
+
+  <section id="aba-hoje">
+    <div class="totais" id="totais"></div>
+    <div id="listaVend"></div>
+  </section>
+
+  <section id="aba-trocas" hidden>
+    <details class="bloco" id="formTrocaBox">
+      <summary><span class="bloco-tit">+ Registrar troca</span><span class="bloco-resumo">Cliente pediu pra trocar um item da cesta</span></summary>
+      <div class="bloco-corpo form">
+        <label>Vendedor<select id="tVend"></select></label>
+        <label>Cliente<input id="tCli" placeholder="Nome do cliente"></label>
+        <fieldset><legend>Como foi a troca?</legend>
+          <label class="op"><input type="radio" name="tCen" value="pap_na_hora" checked><span><b>Na hora, na casa do cliente</b><br><small>O vendedor tirou o item e deixou o outro na mesma visita.</small></span></label>
+          <label class="op"><input type="radio" name="tCen" value="antecipada_item_deixado"><span><b>Combinada antes, item já está aqui</b><br><small>O cliente avisou antes e o item que ele não quer já voltou pra empresa.</small></span></label>
+          <label class="op"><input type="radio" name="tCen" value="antecipada_sem_item"><span><b>Combinada antes, item ainda com o cliente</b><br><small>O vendedor levou o item novo. Fica pendente até o item antigo voltar.</small></span></label>
+        </fieldset>
+        <label>Item que saiu da cesta<input id="tRet" placeholder="Ex.: arroz marca X"></label>
+        <label>Item que foi no lugar<input id="tEnt" placeholder="Ex.: arroz marca Y"></label>
+        <label>Observação<input id="tObs" placeholder="Opcional"></label>
+        <button class="al-botao al-dourado" id="tSalvar">Registrar troca</button>
+      </div>
+    </details>
+    <h2 class="sub-tit">Pendentes <small id="nPend"></small></h2>
+    <div id="listaPend" class="lista-cc"></div>
+    <h2 class="sub-tit">Concluídas no dia</h2>
+    <div id="listaConc" class="lista-cc"></div>
+  </section>
+
+  <section id="aba-compras" hidden>
+    <details class="bloco" id="formCompraBox">
+      <summary><span class="bloco-tit">+ Registrar compra fora do estoque</span><span class="bloco-resumo">Sempre com o dinheiro do próprio cliente</span></summary>
+      <div class="bloco-corpo form">
+        <label>Vendedor<select id="cVend"></select></label>
+        <label>Cliente<input id="cCli" placeholder="Nome do cliente"></label>
+        <label>O que foi comprado<input id="cItem" placeholder="Ex.: 2 pacotes de fralda"></label>
+        <label>Valor (R$)<input id="cValor" inputmode="decimal" placeholder="0,00"></label>
+        <label>Observação<input id="cObs" placeholder="Opcional"></label>
+        <button class="al-botao al-dourado" id="cSalvar">Registrar compra</button>
+      </div>
+    </details>
+    <div id="listaCompras" class="lista-cc"></div>
+  </section>
+
+  <section id="aba-resumo" hidden>
+    <div id="resumo"></div>
+  </section>
+</main>
+</div>
+
+<script src="carregamento.js"></script>
+</body>
+</html>
