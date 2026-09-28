@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Central Aliança</title>
+<link rel="stylesheet" href="../estilo-alianca.css">
+<link rel="stylesheet" href="../painel.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../config.js"></script>
+<script src="../login-gate.js"></script>
+<style>
+  /* Central (28/09/2026): saiu do Netlify pro GitHub Pages, junto do Painel — não gasta crédito. */
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .ferr { display: block; text-decoration: none; color: var(--texto); background: var(--superficie); border: 1px solid var(--borda); border-radius: 18px; padding: 20px; box-shadow: var(--sombra); transition: transform var(--transicao), box-shadow var(--transicao); }
+  .ferr:hover { transform: translateY(-2px); box-shadow: var(--sombra-hover); }
+  .ferr b { display: block; font-size: 1.1rem; margin-bottom: 6px; }
+  .ferr p { margin: 0; color: var(--texto-suave); font-size: 0.92rem; line-height: 1.45; }
+  .ferr .tag { display: inline-block; margin-top: 12px; font-size: 0.72rem; font-weight: 600; padding: 2px 10px; border-radius: 99px; background: var(--superficie-2); color: var(--texto-suave); }
+  .ferr .tag.aviso { background: var(--atencao-bg); color: var(--texto); }
+  .topo-dir { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--texto-suave); }
+  #btnSair { background: transparent; border: 1px solid var(--borda); color: var(--texto-suave); padding: 6px 14px; border-radius: 99px; cursor: pointer; font-size: 0.8rem; }
+  #btnSair:hover { color: var(--texto); border-color: var(--texto-suave); }
+</style>
+</head>
+<body>
+
+<div id="gateLogin" class="portao">
+  <div class="portao-caixa">
+    <div class="al-marca"><span class="al-bolinha"></span><strong>Central Aliança</strong></div>
+    <p>Entre com a sua conta.</p>
+    <input id="inputEmail" type="email" placeholder="E-mail" autocomplete="username" autofocus>
+    <input id="inputSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button id="btnEntrar" class="al-botao al-dourado">Entrar</button>
+    <a id="linkEsqueciSenha" href="#">Esqueci minha senha</a>
+    <div id="erroLogin" class="portao-erro" style="display:none"></div>
+    <div id="msgReset" class="portao-ok" style="display:none"></div>
+  </div>
+</div>
+<div id="gateNovaSenha" class="portao" style="display:none">
+  <div class="portao-caixa">
+    <strong>Criar senha nova</strong>
+    <p>Digite a senha que você vai usar daqui pra frente.</p>
+    <input id="inputNovaSenha" type="password" placeholder="Senha nova (mín. 6 caracteres)" autocomplete="new-password">
+    <button id="btnSalvarNovaSenha" class="al-botao al-dourado">Salvar senha nova</button>
+    <div id="erroNovaSenha" class="portao-erro" style="display:none"></div>
+  </div>
+</div>
+
+<div id="conteudoPainel" style="display:none">
+<header class="al-header">
+  <div class="al-marca"><span class="al-bolinha"></span><h1>Central Aliança</h1></div>
+  <div class="topo-dir"><span id="usuarioLogado"></span><button id="btnSair">Sair</button></div>
+</header>
+
+<main class="al-main">
+  <section class="al-secao">
+    <h2>Gestão e dados</h2>
+    <div class="grade">
+      <a class="ferr" href="../">
+        <b>📊 Painel Aliança</b>
+        <p>O mês (ideal e ritmo de cada vendedor), clientes pra contatar e histórico. Atualiza sozinho toda noite.</p>
+        <span class="tag">mesmo login</span>
+      </a>
+      <a class="ferr" href="../cobranca/">
+        <b>📋 Cobrança Diária</b>
+        <p>A lista real de cada vendedor, os esquecidos e o que cada um fez no dia. Atualiza às 13h e à noite.</p>
+        <span class="tag">mesmo login</span>
+      </a>
+      <a class="ferr" href="https://cestaalianca-glitch.github.io/consulta-cliente-cesta/" target="_blank" rel="noopener">
+        <b>🔍 Consulta de Cliente</b>
+        <p>Os vendedores consultam CPF, nome e endereço na rua, pelo celular, antes de vender.</p>
+        <span class="tag">login próprio</span>
+      </a>
+      <a class="ferr" href="https://genuine-sunshine-3ff6ed.netlify.app/carregamento/index.html" target="_blank" rel="noopener">
+        <b>🚚 Carregamento e Trocas</b>
+        <p>Carregamento de cestas de cada vendedor de manhã e trocas de item. Versão antiga, a V2 está em construção.</p>
+        <span class="tag aviso">versão antiga · Netlify</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="al-secao">
+    <h2>Cadastro e equipe</h2>
+    <div class="grade">
+      <a class="ferr" href="https://illustrious-axolotl-a307dd.netlify.app" target="_blank" rel="noopener">
+        <b>📝 Painel de Cadastros</b>
+        <p>Revisar, aprovar ou recusar os cadastros que chegam pelo site.</p>
+        <span class="tag">site separado</span>
+      </a>
+      <a class="ferr" href="https://cestaalianca-glitch.github.io/painel-funcionarios/" target="_blank" rel="noopener">
+        <b>👥 Painel de Funcionários</b>
+        <p>Fechamento de pagamento dos funcionários (comissão, CLT, descontos).</p>
+        <span class="tag">site separado</span>
+      </a>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>iniciarLoginGate(function () {});</script>
+</body>
+</html>
