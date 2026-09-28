@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel Aliança</title>
+<link rel="stylesheet" href="estilo-alianca.css">
+<link rel="stylesheet" href="painel.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="login-gate.js"></script>
+</head>
+<body>
+
+<div id="gateLogin" class="portao">
+  <div class="portao-caixa">
+    <div class="al-marca"><span class="al-bolinha"></span><strong>Painel Aliança</strong></div>
+    <p>Entre com a sua conta da Central Aliança.</p>
+    <input id="inputEmail" type="email" placeholder="E-mail" autocomplete="username" autofocus>
+    <input id="inputSenha" type="password" placeholder="Senha" autocomplete="current-password">
+    <button id="btnEntrar" class="al-botao al-dourado">Entrar</button>
+    <a id="linkEsqueciSenha" href="#">Esqueci minha senha</a>
+    <div id="erroLogin" class="portao-erro" style="display:none"></div>
+    <div id="msgReset" class="portao-ok" style="display:none"></div>
+  </div>
+</div>
+<div id="gateNovaSenha" class="portao" style="display:none">
+  <div class="portao-caixa">
+    <strong>Criar senha nova</strong>
+    <p>Digite a senha que você vai usar daqui pra frente.</p>
+    <input id="inputNovaSenha" type="password" placeholder="Senha nova (mín. 6 caracteres)" autocomplete="new-password">
+    <button id="btnSalvarNovaSenha" class="al-botao al-dourado">Salvar senha nova</button>
+    <div id="erroNovaSenha" class="portao-erro" style="display:none"></div>
+  </div>
+</div>
+<div id="carregando" class="portao" hidden><div class="portao-caixa"><p>Carregando o painel…</p></div></div>
+
+<div id="conteudoPainel" style="display:none">
+
+<header class="al-header">
+  <div class="al-marca"><span class="al-bolinha"></span><h1>Painel Aliança</h1></div>
+  <nav class="abas" role="tablist" aria-label="Seções do painel">
+    <button class="aba ativa" role="tab" aria-selected="true" data-aba="mes">O mês</button>
+    <button class="aba" role="tab" aria-selected="false" data-aba="clientes">Clientes</button>
+    <button class="aba" role="tab" aria-selected="false" data-aba="historico">Histórico</button>
+  </nav>
+  <div class="al-info" id="dadoAte"></div>
+</header>
+
+<main class="al-main" id="aba-mes">
+
+  <!-- 1. Ritmo do mês -->
+  <section class="al-secao heroi" id="secRitmo">
+    <div class="sobre" id="ritmoSobre"></div>
+    <div class="heroi-linha">
+      <div class="heroi-num" id="ritmoPct"></div>
+      <div class="heroi-txt" id="ritmoTxt"></div>
+    </div>
+    <div class="medidor" id="ritmoMedidor" aria-hidden="true">
+      <div class="medidor-fill"></div>
+      <div class="medidor-marca"><span></span></div>
+    </div>
+    <div class="medidor-legenda" id="ritmoLegenda"></div>
+    <p class="veredito" id="ritmoVeredito"></p>
+  </section>
+
+
+  <section class="al-secao" id="secVendedores">
+    <h2 id="tituloVend">Cada vendedor no mês</h2>
+    <p class="al-secao-sub">O ideal de cada um é a mesma conta da comissão: a média do que ele vendeu nos 2 meses anteriores.</p>
+    <div class="vendedores" id="cardsVendedor"></div>
+  </section>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Recebido × Ideal, mês a mês</span><span class="bloco-resumo" id="resMeses"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">O ideal de cada mês é a média do que foi vendido nos 2 meses anteriores.</p>
+    <div class="painel-card">
+      <div class="legenda">
+        <span><i class="lg-barra"></i>Recebido</span>
+        <span><i class="lg-ideal"></i>Ideal</span>
+        <span><i class="lg-parcial"></i>Mês em andamento</span>
+      </div>
+      <div class="grafico" id="graficoMeses"></div>
+      <div class="mini-stats" id="miniMeses"></div>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Quando o dinheiro entra</span><span class="bloco-resumo" id="resRegua"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">A régua é metade em 30 dias e tudo em 60. Aqui está o que de fato entra, nas vendas dos últimos 12 meses.</p>
+    <div class="painel-card">
+      <div class="regua-destaques" id="reguaDestaques"></div>
+      <div class="curva" id="curvaEmpresa"></div>
+      <p class="nota" id="reguaNota"></p>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Rotas lado a lado</span><span class="bloco-resumo" id="resRotas"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">Só conta quem comprou nos últimos 12 meses.<span class="so-desktop"> Clique no título de uma coluna pra ordenar.</span></p>
+    <div class="pilulas" id="filtroVendedor" role="group" aria-label="Filtrar por vendedor"></div>
+    <div class="al-tabela-scroll tabela-rotas">
+      <table class="al-tabela" id="tabelaRotas"></table>
+    </div>
+    <div class="cards-rotas" id="cardsRotas"></div>
+    <p class="nota" id="rotasNota"></p>
+
+    </div>
+  </details>
+
+  <details class="regras">
+    <summary>Como cada número é calculado</summary>
+    <ul id="listaRegras"></ul>
+  </details>
+
+</main>
+
+<main class="al-main" id="aba-clientes" hidden>
+
+  <section class="al-secao abertura">
+    <div class="sobre">Com quem falar essa semana</div>
+    <h2 class="titulo-aba">Listas curtas, cada nome com o motivo de estar ali.</h2>
+    <p class="al-secao-sub">O painel não dá nota a ninguém. Ele separa os casos que merecem o seu olhar, e a decisão continua sendo sua.</p>
+    <div class="atalhos" id="atalhos"></div>
+  </section>
+
+  <details class="bloco" id="sec-travaram">
+    <summary><span class="bloco-tit">Bons clientes com venda travada</span><span class="bloco-resumo" id="resTravaram"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">Sempre pagaram direito, mas agora têm venda recente parada. É o caso mais urgente: quanto antes o contato, maior a chance de receber.</p>
+    <div class="pilulas" data-filtro="travaram" role="group" aria-label="Filtrar por vendedor"></div>
+    <div class="lista" id="listaTravaram"></div>
+
+    </div>
+  </details>
+
+  <details class="bloco" id="sec-pararam">
+    <summary><span class="bloco-tit">Bons clientes que pararam de comprar</span><span class="bloco-resumo" id="resPararam"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">Cada cliente é comparado com o próprio ritmo de compra. Primeiro veja quanto isso acontece com cada vendedor, depois os nomes.</p>
+    <div class="painel-card">
+      <h3 class="card-titulo">De cada 100 clientes bons, quantos pararam</h3>
+      <div class="barras-vend" id="barrasVendedor"></div>
+      <p class="nota" id="notaVendedor"></p>
+    </div>
+    <div class="pilulas espaco-cima" data-filtro="pararam" role="group" aria-label="Filtrar por vendedor"></div>
+    <div class="lista" id="listaPararam"></div>
+
+    </div>
+  </details>
+
+  <details class="bloco" id="sec-piora">
+    <summary><span class="bloco-tit">Demorando cada vez mais pra pagar</span><span class="bloco-resumo" id="resPiora"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">Pagam, mas cada vez mais devagar. Vale um contato pra combinar de novo o prazo de 30 e 60 dias antes que piore.</p>
+    <div class="pilulas" data-filtro="piora" role="group" aria-label="Filtrar por vendedor"></div>
+    <div class="lista" id="listaPiora"></div>
+
+    </div>
+  </details>
+
+  <details class="bloco" id="sec-revisar">
+    <summary><span class="bloco-tit">Olhe antes de ligar</span><span class="bloco-resumo" id="resRevisar"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">Saíram das listas de contato até você decidir: disseram que já pagaram, ou estão com situação Descontado, SPC, protesto, cartório, fórum ou cancelado no cadastro. Cada um com o motivo e a observação do Opy.</p>
+    <div class="pilulas" data-filtro="revisar" role="group" aria-label="Filtrar por vendedor"></div>
+    <div class="lista" id="listaRevisar"></div>
+
+    </div>
+  </details>
+
+  <details class="regras">
+    <summary>Como cada lista é montada</summary>
+    <ul id="regrasClientes"></ul>
+  </details>
+
+</main>
+
+<main class="al-main" id="aba-historico" hidden>
+
+  <section class="al-secao heroi">
+    <div class="sobre" id="hAnoSobre"></div>
+    <div class="heroi-linha">
+      <div class="heroi-num" id="hAnoVar"></div>
+      <div class="heroi-txt" id="hAnoTxt"></div>
+    </div>
+  </section>
+
+  <section class="al-secao">
+    <h2>Quanto de cada mês de venda já voltou</h2>
+    <p class="al-secao-sub" id="subSafras"></p>
+    <div class="painel-card">
+      <div class="legenda">
+        <span><i class="lg-entrou"></i>Já entrou</span>
+        <span><i class="lg-aberto"></i>Ainda em aberto</span>
+        <span><i class="lg-perdido"></i>Não vai entrar (baixado/perdido)</span>
+      </div>
+      <div class="safras" id="tabSafras"></div>
+    </div>
+  </section>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Quanto deve entrar nos próximos meses</span><span class="bloco-resumo" id="resPrev"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub" id="subPrev"></p>
+    <div class="painel-card">
+      <div class="legenda">
+        <span><i class="lg-barra"></i>Recebido</span>
+        <span><i class="lg-prev"></i>Previsto (faixa provável)</span>
+      </div>
+      <div class="grafico" id="gPrev"></div>
+      <div class="teste" id="tabTeste"></div>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Onde está a dívida × de onde vem o dinheiro</span><span class="bloco-resumo" id="resOrigem"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub">A dívida em aberto hoje e o dinheiro que entrou nos últimos 12 meses, separados pela idade da venda.</p>
+    <div class="painel-card">
+      <div class="origem" id="gOrigem"></div>
+      <p class="nota" id="notaOrigem"></p>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Vendido por ano</span><span class="bloco-resumo" id="resAnos"></span></summary>
+    <div class="bloco-corpo">
+    <div class="painel-card">
+      <div class="grafico" id="gAnos"></div>
+      <p class="nota" id="notaAnos"></p>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="bloco">
+    <summary><span class="bloco-tit">Meses fortes e fracos do ano</span><span class="bloco-resumo" id="resSaz"></span></summary>
+    <div class="bloco-corpo">
+    <p class="al-secao-sub" id="subSaz"></p>
+    <div class="painel-card">
+      <div class="grafico" id="gSaz"></div>
+    </div>
+
+    </div>
+  </details>
+
+  <details class="regras">
+    <summary>Como cada número é calculado</summary>
+    <ul id="regrasHist"></ul>
+  </details>
+
+</main>
+
+<div class="dica" id="dica" role="tooltip"></div>
+
+</div>
+<script src="carregar.js"></script>
+</body>
+</html>

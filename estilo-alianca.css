@@ -1,0 +1,316 @@
+/* ===================================================================
+   DESIGN SYSTEM v2 — Cesta Básica Aliança
+   Reescrito em 25/09/2026, inspirado no estilo Apple: bastante espaço em
+   branco, hierarquia tipográfica clara e confiante, cor usada com
+   moderação (só marca + status), profundidade sutil em vez de sombra
+   pesada, cantos grandes, movimento suave. Paleta de status validada
+   (contraste/daltonismo) — não trocar os hex de status por outros.
+
+   Como usar: copiar este arquivo pra dentro de cada projeto (cada um é
+   um deploy separado — Netlify/GitHub Pages não compartilham arquivo
+   entre si) e linkar com <link rel="stylesheet" href="estilo-alianca.css">.
+   Qualquer ajuste de marca muda aqui primeiro, depois copia pra cada
+   projeto.
+
+   Responsivo por padrão — celular é uso real (vendedor na rua), não é
+   caso extra. Testar sempre em 375px antes de dar como pronto.
+   Dark mode segue o sistema automaticamente (prefers-color-scheme).
+=================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Marca oficial — usada com moderação: acento, não bloco de cor */
+  --navy: #0d1b40;
+  --navy-claro: #17285f;
+  --gold: #f2b705;
+  --gold-escuro: #c99a04;
+
+  /* Superfícies e texto — off-white, não branco puro; hierarquia por peso, não por cor */
+  --plano: #f9f9f7;
+  --superficie: #ffffff;
+  --superficie-2: #f4f4f2;
+  --texto: #0b0b0b;
+  --texto-suave: #52514e;
+  --texto-mudo: #898781;
+  --borda: rgba(11, 11, 11, 0.08);
+  --borda-forte: rgba(11, 11, 11, 0.14);
+
+  /* Status (paleta validada — daltonismo/contraste) */
+  --bom: #0ca30c;
+  --bom-bg: #e3f6e3;
+  --atencao: #fab219;
+  --atencao-bg: #fef3dc;
+  --serio: #ec835a;
+  --serio-bg: #fce6dc;
+  --critico: #d03b3b;
+  --critico-bg: #fbdfdf;
+
+  /* Forma e movimento */
+  --raio: 16px;
+  --raio-pequeno: 10px;
+  --raio-pilula: 999px;
+  --sombra: 0 1px 2px rgba(11, 11, 11, 0.04), 0 8px 24px rgba(11, 11, 11, 0.06);
+  --sombra-hover: 0 2px 4px rgba(11, 11, 11, 0.05), 0 16px 32px rgba(11, 11, 11, 0.09);
+  --transicao: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --fonte: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --plano: #0d0d0d;
+    --superficie: #1a1a1a;
+    --superficie-2: #222222;
+    --texto: #f5f5f5;
+    --texto-suave: #c3c2b7;
+    --texto-mudo: #8a8a86;
+    --borda: rgba(255, 255, 255, 0.09);
+    --borda-forte: rgba(255, 255, 255, 0.16);
+    --gold: #f5c530;
+    --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --sombra-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plano: #0d0d0d;
+  --superficie: #1a1a1a;
+  --superficie-2: #222222;
+  --texto: #f5f5f5;
+  --texto-suave: #c3c2b7;
+  --texto-mudo: #8a8a86;
+  --borda: rgba(255, 255, 255, 0.09);
+  --borda-forte: rgba(255, 255, 255, 0.16);
+  --gold: #f5c530;
+  --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --sombra-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 32px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--fonte);
+  background: var(--plano);
+  color: var(--texto);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em;
+}
+
+/* ---------- Cabeçalho — barra translúcida fixa, estilo nav da Apple ---------- */
+.al-header {
+  background: color-mix(in srgb, var(--superficie) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  color: var(--texto);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--borda);
+}
+.al-header h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.al-header .al-info { color: var(--texto-mudo); font-size: 0.78rem; }
+.al-header .al-marca { display: flex; align-items: center; gap: 8px; }
+.al-header .al-marca .al-bolinha {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--gold);
+}
+
+/* ---------- Layout de conteúdo ---------- */
+.al-main { padding: 32px 24px 64px; max-width: 1160px; margin: 0 auto; }
+.al-secao { margin-bottom: 40px; }
+.al-secao h2 {
+  color: var(--texto);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 0 4px;
+}
+.al-secao .al-secao-sub { color: var(--texto-suave); font-size: 0.95rem; margin: 0 0 20px; }
+.al-secao h3 { color: var(--texto); font-size: 1.1rem; font-weight: 600; letter-spacing: -0.015em; }
+
+/* ---------- Cards — elevação leve, sem borda colorida pesada ---------- */
+.al-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.al-card {
+  background: var(--superficie);
+  border-radius: var(--raio);
+  padding: 20px;
+  box-shadow: var(--sombra);
+  border: 1px solid var(--borda);
+  transition: box-shadow var(--transicao), transform var(--transicao);
+}
+.al-card .al-rotulo {
+  font-size: 0.78rem;
+  color: var(--texto-mudo);
+  font-weight: 500;
+}
+.al-card .al-valor {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--texto);
+  margin-top: 6px;
+  word-break: break-word;
+  font-variant-numeric: proportional-nums;
+}
+.al-card .al-sub { font-size: 0.82rem; color: var(--texto-mudo); margin-top: 4px; }
+/* status vira um traço fino no topo, não a borda inteira lateral */
+.al-card.al-bom { box-shadow: inset 0 2px 0 var(--bom), var(--sombra); }
+.al-card.al-atencao { box-shadow: inset 0 2px 0 var(--atencao), var(--sombra); }
+.al-card.al-critico { box-shadow: inset 0 2px 0 var(--critico), var(--sombra); }
+.al-card.al-neutro { box-shadow: inset 0 2px 0 var(--gold), var(--sombra); }
+
+/* ---------- Tabelas ---------- */
+.al-tabela-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--raio); border: 1px solid var(--borda); }
+.al-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--superficie);
+  font-size: 0.88rem;
+  min-width: 480px;
+}
+.al-tabela th, .al-tabela td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+  white-space: nowrap;
+}
+.al-tabela th {
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  position: sticky;
+  top: 0;
+}
+.al-tabela tbody tr:last-child td { border-bottom: none; }
+.al-tabela tbody tr:hover { background: var(--superficie-2); cursor: pointer; }
+
+/* ---------- Formulários / filtros ---------- */
+.al-filtros { margin: 10px 0; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.al-filtros label { font-size: 0.82rem; color: var(--texto-suave); display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+.al-select, .al-input {
+  padding: 10px 14px;
+  border-radius: var(--raio-pequeno);
+  border: 1px solid var(--borda-forte);
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 0.92rem;
+  font-family: var(--fonte);
+  min-height: 40px;
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+.al-select:focus, .al-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy) 18%, transparent);
+}
+:root[data-theme="dark"] .al-select:focus, :root[data-theme="dark"] .al-input:focus {
+  border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .al-select:focus, :root:not([data-theme="light"]) .al-input:focus {
+    border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent);
+  }
+}
+
+.al-botao {
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 11px 22px;
+  border-radius: var(--raio-pilula);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  min-height: 42px;
+  transition: transform var(--transicao), opacity var(--transicao);
+}
+.al-botao:hover { opacity: 0.88; }
+.al-botao:active { transform: scale(0.97); }
+.al-botao.al-secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda-forte); }
+.al-botao.al-secundario:hover { background: var(--superficie-2); opacity: 1; }
+.al-botao.al-dourado { background: var(--gold); color: var(--navy); }
+
+/* ---------- Badges de status (sempre com texto, nunca só cor) ---------- */
+.al-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: var(--raio-pilula);
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.al-badge.al-verde { background: var(--bom-bg); color: color-mix(in srgb, var(--bom) 70%, black); }
+.al-badge.al-amarelo { background: var(--atencao-bg); color: color-mix(in srgb, var(--atencao) 55%, black); }
+.al-badge.al-vermelho { background: var(--critico-bg); color: color-mix(in srgb, var(--critico) 75%, black); }
+
+/* ---------- Aviso / caixa de destaque ---------- */
+.al-aviso {
+  background: var(--atencao-bg);
+  border: 1px solid color-mix(in srgb, var(--atencao) 45%, transparent);
+  border-radius: var(--raio);
+  padding: 14px 18px;
+  font-size: 0.9rem;
+  color: var(--texto);
+}
+
+/* ---------- Hub de ferramentas — cards grandes, foto de produto Apple-like ---------- */
+.al-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.al-hub-card {
+  background: var(--superficie);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--sombra);
+  border: 1px solid var(--borda);
+  text-decoration: none;
+  color: var(--texto);
+  display: block;
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+.al-hub-card:hover { transform: translateY(-3px); box-shadow: var(--sombra-hover); }
+.al-hub-card .al-hub-titulo { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; color: var(--texto); margin-bottom: 6px; }
+.al-hub-card .al-hub-desc { font-size: 0.88rem; color: var(--texto-suave); line-height: 1.45; }
+
+/* ===================================================================
+   RESPONSIVO — celular primeiro nos ajustes finos
+=================================================================== */
+@media (max-width: 640px) {
+  .al-header { padding: 12px 16px; }
+  .al-header h1 { font-size: 0.98rem; }
+  .al-main { padding: 20px 16px 48px; }
+  .al-secao h2 { font-size: 1.3rem; }
+  .al-card { padding: 16px; }
+  .al-card .al-valor { font-size: 1.5rem; }
+  .al-filtros { flex-direction: column; align-items: stretch; gap: 10px; }
+  .al-filtros label { width: 100%; }
+  .al-select, .al-input, .al-botao { width: 100%; }
+  .al-tabela { font-size: 0.82rem; }
+}
