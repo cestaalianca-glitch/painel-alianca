@@ -66,3 +66,16 @@
 .res-tab th, .res-tab td { padding: 7px 6px; border-bottom: 1px solid var(--borda); text-align: right; font-variant-numeric: tabular-nums; }
 .res-tab th:first-child, .res-tab td:first-child { text-align: left; }
 .res-tab th { color: var(--texto-suave); font-weight: 500; font-size: 0.78rem; }
+
+/* V2 com estoque do carro (28/09) */
+.ajuda { font-size: 0.88rem; color: var(--texto-suave); margin: 0 0 14px; line-height: 1.45; }
+.conta { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--superficie-2); font-size: 0.9rem; line-height: 1.5; }
+.conta b { color: var(--texto); }
+.conta .alerta { color: var(--critico); font-weight: 600; display: block; }
+.form label.check { flex-direction: row; align-items: center; gap: 10px; color: var(--texto); font-size: 0.92rem; }
+.form label.check input { width: 22px; height: 22px; }
+.form textarea { font: inherit; font-size: 1rem; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); resize: vertical; }
+.compra-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.compra-form input { font: inherit; font-size: 1rem; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--superficie); color: var(--texto); }
+.item-cc.compra { border-left: 4px solid var(--critico); }
+.item-cc .l2 b { color: var(--texto); }
