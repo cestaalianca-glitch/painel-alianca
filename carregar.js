@@ -29,6 +29,7 @@
       window.DADOS_HISTORICO = data.dados.historico;
       await iniciarAbas();
       c.hidden = true;
+      if (window.montarBotaoAtualizar) montarBotaoAtualizar(document.getElementById('atualizarOpy'), () => location.reload());
     } catch (e) {
       mostrarErro('Não consegui carregar o painel (' + e.message + '). Tente recarregar a página em alguns minutos.');
     }

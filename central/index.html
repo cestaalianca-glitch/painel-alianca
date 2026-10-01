@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../config.js"></script>
 <script src="../login-gate.js"></script>
+<script src="../atualizar.js"></script>
 <style>
   /* Central (28/09/2026): saiu do Netlify pro GitHub Pages, junto do Painel — não gasta crédito. */
   .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
@@ -51,7 +52,7 @@
 <div id="conteudoPainel" style="display:none">
 <header class="al-header">
   <div class="al-marca"><span class="al-bolinha"></span><h1>Central Aliança</h1></div>
-  <div class="topo-dir"><span id="usuarioLogado"></span><button id="btnSair">Sair</button></div>
+  <div class="topo-dir"><span id="atualizarOpy"></span><span id="usuarioLogado"></span><button id="btnSair">Sair</button></div>
 </header>
 
 <main class="al-main">
@@ -99,6 +100,6 @@
 </main>
 </div>
 
-<script>iniciarLoginGate(function () {});</script>
+<script>iniciarLoginGate(function () { montarBotaoAtualizar(document.getElementById('atualizarOpy'), null); });</script>
 </body>
 </html>

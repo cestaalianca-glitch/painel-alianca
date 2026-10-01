@@ -158,6 +158,7 @@
       const { data, error } = await window.dbAuth.from('painel_dados').select('dados').eq('id', 'cobranca').single();
       if (error || !data) throw new Error(error ? error.message : 'sem dado');
       c.hidden = true; iniciarTela(data.dados);
+      if (window.montarBotaoAtualizar) montarBotaoAtualizar(document.getElementById('atualizarOpy'), () => location.reload());
     } catch (e) {
       c.querySelector('p').textContent = 'Não consegui carregar a cobrança (' + e.message + '). Tente recarregar em alguns minutos.';
     }
