@@ -637,6 +637,7 @@ let largura = innerWidth; addEventListener('resize', () => { document.documentEl
 // Se não conseguir ler, o escritório continua com o último dado embutido e mostra "sem conexão".
 var LIVE = { url: 'https://pjzmzwaarrqxghfbwtsm.supabase.co', key: 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX', ms: 60000, velhoMin: 15, desligado: false };
 var LIVE_ROBO = { 'Central': 'central', 'Rota 1': 'rota-1', 'Rota 6': 'rota-6', 'Rotas 18 21 25': 'rotas-18', 'Novo 1': 'novo-1', 'Ajudante': 'ajudante', 'Varredura': 'varredura' };
+var SNAP_B9 = null;   // (Bloco 9) foto do ROI/equipe/chips para o Artifact (o gerador troca este null)
 var LIVE_ESTADO = { ok: false, erro: 'carregando…', quando: null, pc: null, srv: null, robos: {} };
 var minAtras = iso => iso ? Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)) : null;
 var quando = min => min == null ? 'sem dado' : min < 1 ? 'agora' : min < 60 ? 'há ' + min + ' min' : 'há ' + Math.round(min / 60) + ' h';
@@ -678,7 +679,8 @@ function liveAplicaRobos() {
   return mudou;
 }
 function liveHtml() {
-  const E = LIVE_ESTADO; if (!E || LIVE.desligado) return '';   // analise() roda antes deste módulo ser carregado: var + guarda evitam o erro
+  const E = LIVE_ESTADO; if (!E) return '';   // analise() roda antes deste módulo ser carregado: var + guarda evitam o erro
+  if (LIVE.desligado) return SNAP_B9 ? '<h2>Desempenho (foto de ' + esc(SNAP_B9.quando || '') + ')</h2>' + liveRoiEquipeHtml(SNAP_B9) : '';   // Artifact: sem Supabase, mostra a foto do dia gravada na geração
   const cab = '<h2>Ao vivo</h2>';
   if (!E.ok) return cab + '<p class="nota">Sem conexão com o servidor de dados (' + esc(E.erro) + '). O escritório mostra o último estado conhecido.</p>' + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
   const pc = E.pc && E.pc.dados, srv = E.srv && E.srv.dados, linhas = [];
@@ -700,12 +702,44 @@ function liveHtml() {
   if (br) linhas.push('<h3>ROTAS DO BRUNO (' + br.rotas.join(', ') + ')</h3><div class="setor"><span class="n">Carteira em aberto · vencido até 30 dias</span><span class="p">R$ ' + br.aberto.toLocaleString('pt-BR') + ' · R$ ' + br.vencido30.toLocaleString('pt-BR') + (br.deltaVencidoOntem == null ? '' : ' (' + (br.deltaVencidoOntem > 0 ? '+' : '') + br.deltaVencidoOntem.toLocaleString('pt-BR') + ' vs ontem)') + '</span></div>' +
     '<div class="setor"><span class="n">Vendas do mês (mês anterior até o mesmo dia)</span><span class="p">R$ ' + br.vendasMes.toLocaleString('pt-BR') + ' (R$ ' + br.vendasMesAnterior.toLocaleString('pt-BR') + ')</span></div>' +
     '<div class="setor"><i class="q" style="background:' + (br.copiloto && br.copiloto.ligado ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Pedidos abertos · promessas hoje · casos sensíveis</span><span class="p">' + br.pedidosAbertos + ' · ' + br.promessasHoje + ' · ' + br.sensiveis + ' · co-piloto ' + (br.copiloto && br.copiloto.ligado ? 'ligado' : 'desligado') + '</span></div>');
+  try { const rq = liveRoiEquipeHtml((srv && (srv.roi || srv.equipe)) ? srv : pc || {}); if (rq) linhas.push(rq); } catch (e) {}   // (13/11/2026, Bloco 9) ROI Sistema × Empresa, todas as rotas e vendedores, placar dos chips
   const ind = (srv && srv.indicadores ? srv : pc || {}).indicadores;
   if (ind) linhas.push('<h3>INDICADORES</h3><div class="setor"><span class="n">Pendências a atender (7 dias)</span><span class="p">' + ind.pendenciasAbertas + '</span></div>' +
     '<div class="setor"><span class="n">Atendimentos hoje</span><span class="p">' + ind.atendidosHoje + '</span></div>' +
+    (ind.donoPedido ? '<div class="setor"><i class="q" style="background:' + (ind.donoPedido.semAtender3h ? '#f2b705' : '#2fb36b') + '"></i><span class="n">Pedidos de compra sem atendimento (&gt; 3 h)</span><span class="p">' + ind.donoPedido.semAtender3h + (ind.donoPedido.semAtender3h ? ' · mais antigo há ' + ind.donoPedido.maisAntigoNovoH + ' h' : '') + '</span></div><p class="nota">' + ind.donoPedido.antigos + ' pedido(s) abertos há mais de 36 h; vigia avisou sobre ' + ind.donoPedido.alertasHoje + ' hoje.</p>' : '') +
     '<div class="setor"><span class="n">Filas: pós-quitação · recado · data</span><span class="p">' + [ind.filas.posQuitacao, ind.filas.recadoVendedor, ind.filas.perguntaData].map(v => v ?? '–').join(' · ') + '</span></div>' +
     '<p class="nota">Fora da conta: ' + ind.pendenciasAtualizarContato + ' de atualizar contato e acúmulo antigo (' + ind.pendenciasNaoResolvidasTotalBruto + ' não resolvidas no total).</p>');
   return cab + linhas.join('') + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
+}
+// ===== Bloco 9: ROI real, equipe completa e chips (só números: nenhum dado de cliente) =====
+var fR = v => 'R$ ' + Math.round(+v || 0).toLocaleString('pt-BR'), fP = v => v == null ? '–' : (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%', fC = n => (n || 0) + (n === 1 ? ' cesta' : ' cestas');
+function liveRoiEquipeHtml(d) {
+  var out = [], g = 'display:grid;grid-template-columns:minmax(78px,1fr) 1fr 1fr;gap:2px 8px;font-size:12px;align-items:baseline';
+  var roi = d && d.roi;
+  if (roi && roi.dia && roi.mes) {
+    var lin = function (rot, p) { var e = p.empresa, s = p.sistema, pt = p.participacao || {};
+      return '<div style="margin:6px 0 2px;font-weight:600">' + rot + '</div><div style="' + g + '"><span></span><b>🏢 Empresa</b><b>🤖 Sistema</b>' +
+        '<span>Cestas</span><span>' + e.cestas + '</span><span>' + s.cestas + '</span>' +
+        '<span>R$ vendidos</span><span>' + fR(e.vendido) + '</span><span>' + fR(s.vendido) + '</span>' +
+        '<span>R$ recebidos</span><span>' + fR(e.recebido) + '</span><span>' + fR(s.recebido) + '</span>' +
+        '<span>Conversão</span><span title="compradores ÷ carteira ativa de 12 meses">' + fP(e.conversao) + '</span><span title="abordados que compraram ÷ abordados">' + fP(s.conversao) + '</span></div>' +
+        '<p class="nota">Sistema = ' + fP(pt.vendido) + ' das vendas e ' + fP(pt.recebido) + ' dos recebimentos</p>'; };
+    var orig = (roi.mes.porOrigem || []).map(function (o) { return esc(o.nome) + ' ' + o.cestas + ' (' + fR(o.vendido) + ')'; }).join(' · ');
+    out.push('<h3>ROI REAL — EMPRESA × SISTEMA</h3>' + lin('Hoje', roi.dia) + lin('Mês até hoje', roi.mes) + (orig ? '<p class="nota">Vendas do mês por origem: ' + orig + '</p>' : '') +
+      '<p class="nota">Atribuído = compra ou pagamento até ' + roi.janelaDias + ' dias depois de contato do robô (receptivo, VIP, Indique e Ganhe, pós-quitação, lembrete, cobrança, promessa). É proximidade, não prova de causa.' + (roi.dadosVendasAte && roi.dadosVendasAte < roi.hoje ? ' Vendas lançadas até ' + roi.dadosVendasAte.split('-').reverse().join('/') + '.' : '') + '</p>');
+  }
+  var eq = d && d.equipe;
+  if (eq && eq.vendedores) {
+    var linhaV = function (v) { return '<div class="setor"><span class="n">' + esc(v.vendedor) + (v.rotas ? ' <small>(rotas ' + v.rotas.join(', ') + ')</small>' : v.rota ? ' <small>(rota ' + esc(v.rota) + ')</small>' : '') + '</span><span class="p">' + fC(v.cestas) + ' · ' + fR(v.vendido) + ' vend. · ' + fR(v.recebido) + ' rec. · conv ' + fP(v.conversao) + ' · 🤖 ' + (v.sisCestas || 0) + ' (' + fR(v.sisVendido) + ')</span></div>'; };
+    out.push('<h3>VENDEDORES — TODAS AS ROTAS (mês)</h3>' + eq.vendedores.map(linhaV).join('') +
+      '<details><summary class="nota" style="cursor:pointer">Ver as ' + (eq.rotas || []).length + ' rotas</summary>' + (eq.rotas || []).map(function (r) { return '<div class="setor"><span class="n">Rota ' + esc(r.rota) + ' <small>' + esc(r.vendedor || '') + '</small></span><span class="p">' + fC(r.cestas) + ' · ' + fR(r.vendido) + ' vend. · ' + fR(r.recebido) + ' rec. · aberto ' + fR(r.aberto) + ' · vencido ' + fR(r.vencido) + ' · 🤖 ' + (r.sisCestas || 0) + '</span></div>'; }).join('') + '</details>' +
+      '<p class="nota">Conversão = compradores do mês ÷ carteira ativa de 12 meses. 🤖 = cestas atribuídas ao sistema.</p>');
+  }
+  if (eq && eq.chips && eq.chips.length) {
+    var cor = function (c) { return c.situacao === 'ok' ? '#2fb36b' : (c.situacao === 'desligado' || c.situacao === 'desconhecido' || c.situacao === 'parado') ? '#f2b705' : '#e5484d'; };
+    out.push('<h3>PLACAR DOS ' + eq.chips.length + ' CHIPS</h3>' + eq.chips.map(function (c) { return '<div class="setor"><i class="q" style="background:' + cor(c) + '"></i><span class="n">' + esc(c.nome) + ' <small>' + esc((c.papel || '').replace(/_/g, ' ')) + '</small></span><span class="p">envios ' + c.enviadosHoje + '/' + c.limiteHoje + ' · atend. ' + c.atendidosHoje + ' · mês ' + c.mes.cestas + ' cestas (' + fR(c.mes.vendido) + ') · conv ' + fP(c.mes.conversao) + '</span></div>'; }).join(''));
+  }
+  return out.join('');
 }
 // as chaves podem estar no PC ou no servidor (desde a migração de 13/11 moram no servidor): uma chave conta como ligada se estiver em qualquer um dos dois
 function liveChaves(E) {
@@ -735,6 +769,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== ALIANÇA HQ — CONTROLE DO GESTOR (só na versão hospedada fora do Artifact) =====
 // Sem login: a página só mostra as contagens públicas (hq-pc, hq-servidor). Com login de ADMIN (Supabase Auth, mesma conta do Painel):
