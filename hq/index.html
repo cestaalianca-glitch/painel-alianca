@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Pixelify+Sans:wght@500;700&display=swap">
 <link rel="stylesheet" href="office.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <style>
 /* Moldura no mesmo mundo do escritório: tela de jogo em pixel. Ameixa escura em volta, papel creme nos painéis,
    madeira e dourado nas bordas, Pixelify nos títulos e números, Nunito no texto corrido. Cantos em degrau, sem arredondado. */
@@ -517,7 +518,7 @@ function abreChat(p){
   pintaMsgs(p); mostraPainel(); if (innerWidth >= 1000) txt.focus({ preventScroll: true });
   sampleP.then(s => { if (!s && falando === p) aviso('A conversa não está disponível agora.'); });
 }
-const chatVazio = () => { chat.innerHTML = '<div class="vazio"><span class="ch still k-rotina t-2">' + corpo({}) + '</span><h2>Nenhuma conversa aberta</h2><p>Escolha alguém no escritório e toque em Conversar.</p></div>'; };
+var chatVazio = () => { chat.innerHTML = '<div class="vazio"><span class="ch still k-rotina t-2">' + corpo({}) + '</span><h2>Nenhuma conversa aberta</h2><p>Escolha alguém no escritório e toque em Conversar.</p></div>'; };
 function fechaChat(){ const volta = !!falando; if (ctrl) ctrl.abort(); ctrl = null; ocupado = false; falando = null; chatVazio(); if (volta) aba('ficha'); }
 function pintaMsgs(p){ const box = document.getElementById('msgs'); if (!box) return;
   const h = HIST[p.id] || [];
@@ -676,7 +677,7 @@ function liveAplicaRobos() {
 function liveHtml() {
   const E = LIVE_ESTADO; if (!E || LIVE.desligado) return '';   // analise() roda antes deste módulo ser carregado: var + guarda evitam o erro
   const cab = '<h2>Ao vivo</h2>';
-  if (!E.ok) return cab + '<p class="nota">Sem conexão com o servidor de dados (' + esc(E.erro) + '). O escritório mostra o último estado conhecido.</p>';
+  if (!E.ok) return cab + '<p class="nota">Sem conexão com o servidor de dados (' + esc(E.erro) + '). O escritório mostra o último estado conhecido.</p>' + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
   const pc = E.pc && E.pc.dados, srv = E.srv && E.srv.dados, linhas = [];
   const idPc = minAtras(E.pc && E.pc.atualizado_em), idSrv = minAtras(E.srv && E.srv.atualizado_em);
   const estOrig = (n, id) => '<span class="tag" style="' + (id == null || id > LIVE.velhoMin ? 'background:#fde2e2;color:#b4232a' : 'background:#def5e7;color:#1d7a47') + '">' + n + ' ' + quando(id) + '</span>';
@@ -684,9 +685,9 @@ function liveHtml() {
   const vivos = Object.values(E.robos).filter(x => x.nivel === 3).length;
   linhas.push('<h3>ROBÔS (' + vivos + ' de 7 conectados)</h3>' + Object.entries(LIVE_ROBO).map(([nome, id]) => { const x = E.robos[id], c = !x ? '#8b5cf6' : x.nivel === 3 ? '#2fb36b' : x.nivel === 1 ? '#e5484d' : '#f2b705';
     return '<div class="setor"><i class="q" style="background:' + c + '"></i><span class="n">' + esc(nome) + '</span><span class="p">' + (x ? (x.nivel ? x.onde : 'desligado') : 'sem dado') + '</span></div>'; }).join(''));
-  const ch = (pc && pc.chaves) || {};
-  linhas.push('<h3>CHAVES AO VIVO (' + (ch.ligadas ?? '?') + ' de ' + ((ch.lista || []).length || 10) + ' ligadas, no PC)</h3>' + ((ch.lista || []).map(c => '<div class="setor"><i class="q" style="background:' + (c.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">' + esc(c.titulo || c.nome) + '</span><span class="p">' + (c.ligada ? 'LIGADA' : 'desligada') + '</span></div>').join('') || '<p class="nota">Sem dado das chaves.</p>'));
-  if (srv && srv.chaves && srv.chaves.ligadas) linhas.push('<p class="nota">Atenção: ' + srv.chaves.ligadas + ' chave(s) ligada(s) no servidor.</p>');
+  const ch = liveChaves(E);
+  linhas.push('<h3>CHAVES AO VIVO (' + ch.ligadas + ' de ' + (ch.lista.length || 10) + ' ligadas)</h3>' + (ch.lista.map(c => '<div class="setor"><i class="q" style="background:' + (c.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">' + esc(c.titulo || c.nome) + '</span><span class="p">' + (c.ligada ? 'LIGADA' + (c.onde ? ' · ' + c.onde : '') : 'desligada') + '</span></div>').join('') || '<p class="nota">Sem dado das chaves.</p>'));
+  if (ch.duplas.length) linhas.push('<p class="nota" style="color:#b4232a">Atenção: ligada no PC E no servidor (risco de mensagem repetida): ' + esc(ch.duplas.join(', ')) + '</p>');
   const t = pc && pc.triagem;
   if (t && !t.erro) linhas.push('<h3>CENTRAL DE TRIAGEM (' + t.abertos + ' abertos)</h3>' + Object.entries(t.porCategoria || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div class="setor"><span class="n">' + esc(k.replace(/_/g, ' ')) + '</span><span class="p">' + v + '</span></div>').join(''));
   const ind = pc && pc.indicadores;
@@ -694,7 +695,14 @@ function liveHtml() {
     '<div class="setor"><span class="n">Atendimentos hoje</span><span class="p">' + ind.atendidosHoje + '</span></div>' +
     '<div class="setor"><span class="n">Filas: pós-quitação · recado · data</span><span class="p">' + [ind.filas.posQuitacao, ind.filas.recadoVendedor, ind.filas.perguntaData].map(v => v ?? '–').join(' · ') + '</span></div>' +
     '<p class="nota">Fora da conta: ' + ind.pendenciasAtualizarContato + ' de atualizar contato e acúmulo antigo (' + ind.pendenciasNaoResolvidasTotalBruto + ' não resolvidas no total).</p>');
-  return cab + linhas.join('');
+  return cab + linhas.join('') + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
+}
+// as chaves podem estar no PC ou no servidor (desde a migração de 13/11 moram no servidor): uma chave conta como ligada se estiver em qualquer um dos dois
+function liveChaves(E) {
+  const a = (E.pc && E.pc.dados && E.pc.dados.chaves && E.pc.dados.chaves.lista) || [], b = (E.srv && E.srv.dados && E.srv.dados.chaves && E.srv.dados.chaves.lista) || [], mapa = new Map(), duplas = [];
+  for (const [onde, l] of [['PC', a], ['servidor', b]]) for (const c of l) { const x = mapa.get(c.nome) || { ...c, ligada: false, onde: '' };
+    if (c.ligada) { if (x.ligada) duplas.push(c.nome); x.ligada = true; x.onde = onde; } mapa.set(c.nome, x); }
+  const lista = [...mapa.values()]; return { lista, ligadas: lista.filter(c => c.ligada).length, duplas };
 }
 function liveCont() {
   const c = document.getElementById('cont'); if (!c || LIVE.desligado) return;
@@ -703,7 +711,7 @@ function liveCont() {
   const chip = (cor, txt, val) => '<span style="display:flex"><i style="background:' + cor + '"></i>' + txt + ' <b>' + val + '</b></span>';
   el.innerHTML = !E.ok ? chip('#e5484d', 'Ao vivo', 'sem conexão') :
     chip(vivos === 7 ? '#2fb36b' : vivos >= 4 ? '#f2b705' : '#e5484d', 'Robôs', vivos + '/7') +
-    chip('#f2b705', 'Chaves', pc && pc.chaves ? pc.chaves.ligadas + '/10' : '–') +
+    chip('#f2b705', 'Chaves', liveChaves(E).ligadas + '/' + (liveChaves(E).lista.length || 10)) +
     chip('#8b5cf6', 'Triagem', pc && pc.triagem && !pc.triagem.erro ? pc.triagem.abertos : '–') +
     chip('#2fb36b', 'Atualizado', quando(minAtras(E.pc && E.pc.atualizado_em)));
 }
@@ -717,8 +725,136 @@ async function liveCiclo() {
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
 // ===== fim do ao vivo =====
+// ===== ALIANÇA HQ — CONTROLE DO GESTOR (só na versão hospedada fora do Artifact) =====
+// Sem login: a página só mostra as contagens públicas (hq-pc, hq-servidor). Com login de ADMIN (Supabase Auth, mesma conta do Painel):
+//   · Central de Ordens (aba "Conversa"): liga/desliga as chaves, reinicia um robô do servidor, dispara a cobrança 12h15, registra diretriz.
+//   · Contratar: grava o PEDIDO (hq-pedido-...) e a vaga aparece no mapa.
+//   · Relatórios protegidos (v2, cobrança, comissão): resumo no painel "O dia".
+// As ordens viram linhas hq-cmd-... no Supabase; quem executa é o worker do servidor/PC (ecossistema/hq-worker.js), só numa LISTA FECHADA de ações.
+// A permissão de criar ordem é da regra de banco (RLS: só admin), não desta página: esconder o botão não é a trava.
+var CTL = { sb: null, admin: false, email: '', erro: '', ordens: [], pedidos: [], rel: null, relEm: null };
+var CTL_URL = 'https://pjzmzwaarrqxghfbwtsm.supabase.co', CTL_KEY = 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX';
+function ctlInicia() {
+  try { if (window.supabase && window.supabase.createClient) CTL.sb = window.supabase.createClient(CTL_URL, CTL_KEY); } catch (e) { CTL.sb = null; }
+  const hud = document.getElementById('hud'); if (hud && !document.getElementById('ctl-entrar')) {
+    const b = document.createElement('button'); b.id = 'ctl-entrar'; b.type = 'button'; b.className = 'zb w'; b.style.cssText = 'height:34px;font-size:13px;margin-left:8px'; b.textContent = 'Entrar como Gestor';
+    b.onclick = () => CTL.admin ? ctlSai() : ctlAbreLogin(); hud.appendChild(b);
+  }
+  if (!CTL.sb) return;
+  CTL.sb.auth.getSession().then(({ data }) => { if (data && data.session) ctlVerificaPapel(data.session.user.email); });
+}
+function ctlBotao() { const b = document.getElementById('ctl-entrar'); if (b) b.textContent = CTL.admin ? 'Gestor · sair' : 'Entrar como Gestor'; }
+function ctlAbreLogin() {
+  if (!CTL.sb) { alert('Não consegui carregar o login (sem internet ou biblioteca bloqueada).'); return; }
+  let m = document.getElementById('ctl-modal'); if (m) m.remove();
+  m = document.createElement('div'); m.id = 'ctl-modal'; m.style.cssText = 'position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(34,29,39,.78)';
+  m.innerHTML = '<form id="ctl-form" style="background:var(--papel);padding:20px;width:min(92vw,340px);display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 0 3px var(--madeira)"><h2 class="px" style="margin:0">Entrar como Gestor</h2>' +
+    '<input class="campo" id="ctl-email" type="email" placeholder="e-mail" autocomplete="username" style="min-height:44px" required><input class="campo" id="ctl-senha" type="password" placeholder="senha" autocomplete="current-password" style="min-height:44px" required>' +
+    '<p class="nota" id="ctl-erro" style="color:#b4232a" role="alert"></p><div class="linha"><button class="acao" type="submit" style="flex:1">Entrar</button><button class="acao roxo" type="button" id="ctl-x">Cancelar</button></div>' +
+    '<p class="nota">É o mesmo login do Painel. Sem login, esta página mostra só contagens.</p></form>';
+  document.body.appendChild(m); document.getElementById('ctl-x').onclick = () => m.remove(); document.getElementById('ctl-email').focus();
+  document.getElementById('ctl-form').onsubmit = async e => { e.preventDefault(); const er = document.getElementById('ctl-erro'); er.textContent = 'Entrando…';
+    const { data, error } = await CTL.sb.auth.signInWithPassword({ email: document.getElementById('ctl-email').value.trim(), password: document.getElementById('ctl-senha').value });
+    if (error) { er.textContent = error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : 'Não consegui entrar: ' + error.message; return; }
+    const ok = await ctlVerificaPapel(data.user.email); if (ok) m.remove(); else er.textContent = 'Essa conta não é de gestor.'; };
+}
+async function ctlVerificaPapel(email) {
+  const { data, error } = await CTL.sb.from('al_papeis').select('papel').limit(1);
+  CTL.admin = !error && !!data && data[0] && data[0].papel === 'admin'; CTL.email = CTL.admin ? email : '';
+  if (!CTL.admin) await CTL.sb.auth.signOut();
+  ctlBotao(); if (CTL.admin) { await ctlCarrega(); } ctlRepinta(); return CTL.admin;
+}
+async function ctlSai() { await CTL.sb.auth.signOut(); CTL.admin = false; CTL.email = ''; CTL.ordens = []; CTL.pedidos = []; CTL.rel = null; ctlBotao(); ctlRepinta(); }
+function ctlRepinta() { ctlPedidosNoMapa(); try { chatVazio(); } catch (e) {} analise(); }
+
+// ---- dados protegidos (só admin; o banco recusa para os outros) ----
+async function ctlCarrega() {
+  if (!CTL.admin) return;
+  const [o, p] = await Promise.all([
+    CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-cmd-%').order('atualizado_em', { ascending: false }).limit(12),
+    CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-pedido-%').order('atualizado_em', { ascending: true }).limit(60)]);
+  CTL.ordens = (o.data || []); CTL.pedidos = (p.data || []);
+}
+async function ctlCarregaRelatorios() {
+  if (!CTL.admin) return; const r = await CTL.sb.from('painel_dados').select('id,dados,atualizado_em').in('id', ['v2', 'cobranca', 'comissao']);
+  const por = {}; (r.data || []).forEach(x => por[x.id] = x); CTL.rel = por; CTL.relEm = Date.now(); analise();
+}
+function ctlRelatoriosHtml() {
+  if (!CTL.admin) return '<p class="nota" style="margin-top:12px">Relatórios protegidos (v2, cobrança, comissão): entre como gestor para ver.</p>';
+  const quando = iso => iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+  if (!CTL.rel) return '<h3 style="margin-top:12px">RELATÓRIOS PROTEGIDOS</h3><button class="acao" type="button" id="ctl-rel">Carregar v2, cobrança e comissão</button>';
+  const v2 = CTL.rel.v2, cb = CTL.rel.cobranca, cm = CTL.rel.comissao, n = x => Array.isArray(x) ? x.length : x && typeof x === 'object' ? Object.keys(x).length : '—';
+  const lin = (t, a, b) => '<div class="setor"><span class="n">' + t + '</span><span class="p">' + a + '</span><span class="p">' + b + '</span></div>';
+  return '<h3 style="margin-top:12px">RELATÓRIOS PROTEGIDOS (' + esc(CTL.email) + ')</h3>' +
+    lin('Painel v2', 'dado até ' + esc((v2 && v2.dados && v2.dados.mes && v2.dados.mes.dadoAte) || '—'), 'enviado ' + quando(v2 && v2.atualizado_em)) +
+    lin('Cobrança', n(cb && cb.dados && cb.dados.itens) + ' itens · ' + n(cb && cb.dados && cb.dados.alertas) + ' alertas · ' + n(cb && cb.dados && cb.dados.vendedores) + ' vendedores', 'dado até ' + esc((cb && cb.dados && cb.dados.dadoAte) || '—')) +
+    lin('Comissão', 'vendedores: ' + n(cm && cm.dados && cm.dados.vendedores), 'gerado ' + quando(cm && cm.dados && cm.dados.geradoEm)) +
+    '<button class="limpa" type="button" id="ctl-rel">Atualizar</button><p class="nota">Aqui só vão totais; os detalhes por cliente continuam no Painel (com login).</p>';
+}
+document.addEventListener('click', e => { if (e.target && e.target.id === 'ctl-rel') ctlCarregaRelatorios(); });
+
+// ---- ordens ----
+async function ctlOrdem(tipo, dados, resumo) {
+  if (!CTL.admin) return alert('Entre como gestor.');
+  if (!confirm('Confirmar a ordem?\n\n' + resumo)) return;
+  const agora = new Date().toISOString(), id = 'hq-cmd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { tipo, dados, status: 'pendente', criadoEm: agora, por: CTL.email }, atualizado_em: agora });
+  if (error) { alert('O banco recusou a ordem: ' + error.message); return; }
+  await ctlCarrega(); ctlPainelOrdens();
+}
+function ctlPainelOrdens() {
+  const el = document.getElementById('chat'); if (!el) return;
+  if (!CTL.admin) { el.innerHTML = '<div class="vazio"><h2>Central de Ordens</h2><p>Entre como gestor (botão no topo) para ligar chaves, reiniciar robôs e dar ordens ao servidor.</p></div>'; return; }
+  const E = (typeof LIVE_ESTADO !== 'undefined' && LIVE_ESTADO) || {}, srv = E.srv && E.srv.dados, chs = (srv && srv.chaves && srv.chaves.lista) || [];
+  const noSrv = Object.entries(LIVE_ROBO).filter(([, id]) => E.robos && E.robos[id] && E.robos[id].onde === 'Servidor' && E.robos[id].nivel >= 2);
+  const cor = s => s === 'feito' ? '#1d7a47' : s === 'pendente' ? '#8a6100' : '#b4232a';
+  el.innerHTML = '<h2>Central de Ordens</h2><p class="nota">Cada ordem vira uma linha no banco; o servidor lê a cada minuto e executa só o que está na lista. O resultado aparece embaixo.</p>' +
+    '<h3>CHAVES AO VIVO (no servidor' + (srv ? '' : ' — sem dado') + ')</h3>' + (chs.map(c => '<div class="setor"><i class="q" style="background:' + (c.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">' + esc(c.titulo || c.nome) + '</span>' +
+      (c.nome === 'CONCILIADOR_AUTO_GRAVAR' ? '<span class="p">só pelo terminal</span>' : '<button class="zb w" type="button" data-ch="' + esc(c.nome) + '" data-v="' + (c.ligada ? 0 : 1) + '">' + (c.ligada ? 'Desligar' : 'Ligar') + '</button>') + '</div>').join('') || '<p class="nota">Sem dado das chaves do servidor.</p>') +
+    '<h3>REINICIAR ROBÔ (só os que estão no servidor)</h3>' + (noSrv.map(([nome, id]) => '<div class="setor"><span class="n">' + esc(nome) + '</span><button class="zb w" type="button" data-rb="' + esc(CTL_CONTA[id] || '') + '" data-nome="' + esc(nome) + '">Reiniciar</button></div>').join('') || '<p class="nota">Nenhum robô conectado no servidor agora.</p>') +
+    '<h3>COBRANÇA 12h15</h3><button class="acao" type="button" id="ctl-cob">Disparar a rodada de cobrança (PC)</button><p class="nota">Seg–sáb, 12h–17h, no máximo uma vez a cada 3 h. Só sai cliente que passar na conferência da ficha.</p>' +
+    '<h3>DIRETRIZ</h3><textarea class="campo" id="ctl-dir" maxlength="500" placeholder="Registrar uma diretriz para a equipe (fica guardada, ninguém executa o texto)"></textarea><button class="acao roxo" type="button" id="ctl-dir-ok">Registrar diretriz</button>' +
+    '<h3>ÚLTIMAS ORDENS</h3>' + (CTL.ordens.map(o => { const d = o.dados || {}; return '<div class="setor"><span class="n">' + esc(d.tipo) + ' ' + esc(JSON.stringify(d.dados || {}).slice(0, 60)) + '</span><span class="tag" style="color:' + cor(d.status) + '">' + esc(d.status) + '</span><span class="p" style="flex-basis:100%">' + esc(d.resultado || 'aguardando o servidor (até 1 min)') + '</span></div>'; }).join('') || '<p class="nota">Nenhuma ordem ainda.</p>');
+  el.onclick = e => { const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.ch) ctlOrdem('chave', { nome: b.dataset.ch, valor: +b.dataset.v }, (+b.dataset.v ? 'LIGAR' : 'DESLIGAR') + ' a chave ' + b.dataset.ch + ' no servidor');
+    else if (b.dataset.rb) ctlOrdem('reiniciar_robo', { conta: b.dataset.rb }, 'REINICIAR o robô ' + b.dataset.nome + ' no servidor (fica uns minutos sem responder)');
+    else if (b.id === 'ctl-cob') ctlOrdem('cobranca_1215', {}, 'DISPARAR a rodada de cobrança das 12h15 agora');
+    else if (b.id === 'ctl-dir-ok') { const t = document.getElementById('ctl-dir').value.trim(); if (t) ctlOrdem('diretriz', { texto: t }, 'REGISTRAR a diretriz:\n' + t); } };
+}
+var CTL_CONTA = { central: 'numero-4-mvgs4icz', 'rota-1': 'numero-3-mvbb4brb', 'rota-6': 'automacao-whatsapp', 'rotas-18': 'numero-2-mvb9scy6', 'novo-1': 'numero-5-mvkz6k7t', ajudante: 'numero-7-mvme540p', varredura: 'numero-6-mvkz6l8j' };
+chatVazio = function () { ctlPainelOrdens(); };
+abreChat = function () { aba('conversa'); ctlPainelOrdens(); mostraPainel(); };
+
+// ---- contratar (pedido) ----
+blocoContratar = function (F) { return '<div style="border-top:2px dashed var(--linha);padding-top:10px;display:flex;flex-direction:column;gap:8px"><h3>CONTRATAR</h3>' +
+  (CTL.admin ? '<input class="campo" id="ct-nome" style="min-height:44px" maxlength="60" placeholder="Nome do agente ou rotina (ex.: Dono do pedido)"><input class="campo" id="ct-gatilho" style="min-height:44px" maxlength="80" placeholder="Quando trabalha (ex.: todo dia 8h, ou quando entra Pix)"><textarea class="campo" id="ct-obj" maxlength="300" placeholder="O que ele resolve"></textarea><button class="acao" type="button" id="ct-ok" data-f="' + F.id + '">Fazer o pedido</button><p class="nota" id="ct-msg">O pedido fica registrado no servidor e a vaga aparece no mapa. Não cria robô sozinho.</p>'
+    : '<p class="nota">Entre como gestor (botão no topo) para fazer o pedido de contratação.</p>') + '</div>'; };
+ligaContratar = function (F) { const b = document.getElementById('ct-ok'); if (!b) return;
+  b.onclick = async () => { const nome = document.getElementById('ct-nome').value.trim(), gat = document.getElementById('ct-gatilho').value.trim(), obj = document.getElementById('ct-obj').value.trim(), msg = document.getElementById('ct-msg');
+    if (!nome || !gat) { msg.textContent = 'Preencha o nome e quando ele trabalha.'; return; }
+    const agora = new Date().toISOString(), id = 'hq-pedido-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { pedido: { papel: F.n, setor: F.r, nome, gatilho: gat, objetivo: obj, por: CTL.email }, status: 'pendente', criadoEm: agora }, atualizado_em: agora });
+    if (error) { msg.textContent = 'O banco recusou: ' + error.message; return; }
+    msg.textContent = 'Pedido feito. A vaga já está no mapa.'; await ctlCarrega(); ctlPedidosNoMapa(); desenha(); }; };
+function ctlPedidosNoMapa() {
+  const ped = (CTL.admin ? CTL.pedidos : []); let mudou = false;
+  for (let i = P.length - 1; i >= 0; i--) if (P[i].ctlPedido) { P.splice(i, 1); mudou = true; }
+  for (const x of ped) { const p = (x.dados || {}).pedido; if (!p) continue;
+    // a sala pedida primeiro; se estiver cheia, a primeira sala com lugar livre (o pedido nunca some do mapa)
+    let sala = null, pos = null; const ordem = [R[p.setor], ...ROOMS].filter(Boolean);
+    for (const s of ordem) { const cols = Math.max(1, Math.floor(s.w / 96));
+      for (let row = 0; row < 2 && !pos; row++) for (let c = 0; c < cols && !pos; c++) if (!P.some(q => q.r === s.id && q.c === c && q.row === row)) { pos = { c, row }; sala = s; }
+      if (pos) break; }
+    if (!pos) continue; P.push({ id: x.id, n: p.nome, k: 'rotina', r: sala.id, s: 'purple', c: pos.c, row: pos.row, runs: '—', does: 'Pedido de contratação: ' + (p.objetivo || 'sem descrição') + ' · Quando trabalha: ' + p.gatilho + ' · Pedido por ' + p.por + '.', today: 'Pedido feito, aguardando construção.', ctlPedido: true }); mudou = true; }
+  if (mudou) { try { desenha(); } catch (e) {} }
+}
+// o ficha() reescreve o topo e apagava os números ao vivo: refaz logo depois
+(function () { const f = ficha; ficha = function () { f(); try { liveCont(); } catch (e) {} }; })();
+ctlInicia(); ctlPainelOrdens();
+setInterval(async () => { if (CTL.admin) { await ctlCarrega(); ctlPedidosNoMapa(); const a = document.getElementById('chat'); if (a && !a.hidden && !(document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) ctlPainelOrdens(); } }, 20000);
+// ===== fim do controle =====
 </script>
 
-<!-- análise 2026-11-12 + ao vivo 2026-11-13 -->
+<!-- análise 2026-11-12 + ao vivo + controle 2026-11-13 -->
 
 </body></html>
