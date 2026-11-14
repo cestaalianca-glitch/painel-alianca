@@ -740,6 +740,10 @@ function liveRoiEquipeHtml(d) {
     var cor = function (c) { return c.situacao === 'ok' ? '#2fb36b' : (c.situacao === 'desligado' || c.situacao === 'desconhecido' || c.situacao === 'parado') ? '#f2b705' : '#e5484d'; };
     out.push('<h3>PLACAR DOS ' + eq.chips.length + ' CHIPS</h3>' + eq.chips.map(function (c) { return '<div class="setor"><i class="q" style="background:' + cor(c) + '"></i><span class="n">' + esc(c.nome) + ' <small>' + esc((c.papel || '').replace(/_/g, ' ')) + '</small></span><span class="p">envios ' + c.enviadosHoje + '/' + c.limiteHoje + ' · atend. ' + c.atendidosHoje + ' · mês ' + c.mes.cestas + ' cestas (' + fR(c.mes.vendido) + ') · conv ' + fP(c.mes.conversao) + '</span></div>'; }).join(''));
   }
+  if (d && d.credito && d.credito.length) {
+    var corF = { verde: '#2fb36b', amarela: '#f2b705', vermelha: '#e5484d' };
+    out.push('<h3>ANÁLISE DE CRÉDITO (últimos ' + d.credito.length + ')</h3>' + d.credito.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.faixa] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc((c.faixa || '').toUpperCase()) + ' ' + c.score + '/100' + (c.pendente ? ' · falta documento' : '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
+  }
   return out.join('');
 }
 // as chaves podem estar no PC ou no servidor (desde a migração de 13/11 moram no servidor): uma chave conta como ligada se estiver em qualquer um dos dois
@@ -771,6 +775,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== ALIANÇA HQ — CONTROLE DO GESTOR (só na versão hospedada fora do Artifact) =====
