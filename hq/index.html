@@ -740,9 +740,18 @@ function liveRoiEquipeHtml(d) {
     var cor = function (c) { return c.situacao === 'ok' ? '#2fb36b' : (c.situacao === 'desligado' || c.situacao === 'desconhecido' || c.situacao === 'parado') ? '#f2b705' : '#e5484d'; };
     out.push('<h3>PLACAR DOS ' + eq.chips.length + ' CHIPS</h3>' + eq.chips.map(function (c) { return '<div class="setor"><i class="q" style="background:' + cor(c) + '"></i><span class="n">' + esc(c.nome) + ' <small>' + esc((c.papel || '').replace(/_/g, ' ')) + '</small></span><span class="p">envios ' + c.enviadosHoje + '/' + c.limiteHoje + ' · atend. ' + c.atendidosHoje + ' · mês ' + c.mes.cestas + ' cestas (' + fR(c.mes.vendido) + ') · conv ' + fP(c.mes.conversao) + '</span></div>'; }).join(''));
   }
-  if (d && d.credito && d.credito.length) {
-    var corF = { pronto: '#2fb36b', aguardando: '#f2b705', reprovado: '#e5484d' };
-    out.push('<h3>ANÁLISE DE CRÉDITO (últimos ' + d.credito.length + ')</h3>' + d.credito.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.status] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc(c.rotulo || c.status || '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
+  var cr = d && d.credito, corF = { pronto: '#2fb36b', aguardando: '#f2b705', reprovado: '#e5484d' };
+  if (cr && !Array.isArray(cr) && cr.funil) {
+    var tot = cr.funil.total || {}, gestor = typeof CTL !== 'undefined' && CTL.admin;
+    out.push('<h3>ANALISTA DE CRÉDITO · FUNIL POR ORIGEM</h3><p class="nota">Leads ' + (tot.leads || 0) + ' → Aprovados ' + (tot.aprovados || 0) + ' · Reprovados ' + (tot.reprovados || 0) + ' · Exceções ' + (tot.excecoes || 0) + ' · aguardando dados ou comprovante ' + (tot.aguardando || 0) + ' · pararam na etapa 1: ' + (tot.parciais || 0) + '</p>' +
+      (cr.funil.porOrigem || []).map(function (o) { return '<div class="setor"><span class="n">' + esc(o.origem) + '</span><span class="p">leads ' + o.leads + ' → aprovados ' + o.aprovados + ' · reprovados ' + o.reprovados + ' · exceções ' + o.excecoes + '</span></div>'; }).join(''));
+    var ex = cr.excecoes || [];
+    out.push('<h3>EXCEÇÕES PARA DECIDIR (' + ex.length + ')</h3>' + (ex.length ? ex.map(function (c) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + ' · origem ' + esc(c.origem || '') + '</small></summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '<p class="nota"><b>Por que caiu na revisão:</b> ' + esc((c.motivos || []).join('; ')) + '</p>' +
+      (gestor ? '<div style="display:flex;gap:8px;margin-top:6px"><button class="acao" type="button" data-credito="aprovar" data-lead="' + esc(c.leadId) + '">Aprovar</button><button class="acao roxo" type="button" data-credito="recusar" data-lead="' + esc(c.leadId) + '">Recusar</button></div>' : '<p class="nota">🔒 Entre como Gestor para aprovar ou recusar.</p>') + '</details>'; }).join('') : '<p class="nota">Nenhuma exceção esperando decisão.</p>'));
+  }
+  var rec = Array.isArray(cr) ? cr : (cr && cr.recentes) || [];
+  if (rec.length) {
+    out.push('<h3>ÚLTIMAS ANÁLISES (' + rec.length + ')</h3>' + rec.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.status] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc(c.desfecho || c.rotulo || c.status || '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
   }
   return out.join('');
 }
@@ -775,6 +784,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
@@ -852,6 +862,15 @@ function ctlRelatoriosHtml() {
     '<button class="limpa" type="button" id="ctl-rel">Atualizar</button><p class="nota">Aqui só vão totais; os detalhes por cliente continuam no Painel (com login).</p>';
 }
 document.addEventListener('click', e => { if (e.target && e.target.id === 'ctl-rel') ctlCarregaRelatorios(); });
+// (Bloco 12) botões Aprovar / Recusar da fila de exceções do crédito: 1 clique grava a ordem; o worker do servidor decide o lead e enfileira as mensagens
+async function ctlDecisaoCredito(leadId, decisao, botao) {
+  if (!CTL.admin) return;
+  if (botao) { botao.disabled = true; botao.textContent = 'Enviando…'; }
+  const agora = new Date().toISOString(), id = 'hq-cmd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { tipo: 'credito_decidir', dados: { leadId, decisao }, status: 'pendente', criadoEm: agora, por: CTL.email }, atualizado_em: agora });
+  if (botao) botao.textContent = error ? 'O banco recusou' : (decisao === 'aprovar' ? 'Aprovação enviada' : 'Recusa enviada');
+}
+document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('[data-credito]'); if (b) ctlDecisaoCredito(b.getAttribute('data-lead'), b.getAttribute('data-credito'), b); });
 
 // ---- ordens ----
 async function ctlOrdem(tipo, dados, resumo) {
