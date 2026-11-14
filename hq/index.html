@@ -774,7 +774,28 @@ function liveRoiEquipeHtml(d) {
   if (cr && !Array.isArray(cr) && cr.pedidos) {   // (Bloco 13) pedidos aprovados prontos para entrega, por rota/cidade
     var fila = cr.pedidos, totPed = fila.reduce(function (s, g) { return s + g.pedidos.length; }, 0), dBr = function (iso) { return iso ? String(iso).split('-').reverse().join('/') : ''; };
     out.push('<h3>PEDIDOS APROVADOS · FILA DE ROTA (' + totPed + ')</h3>' + (fila.length ? fila.map(function (g) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Rota ' + esc(g.rota || 'sem rota') + ' · ' + esc(g.cidade || '') + ' <small>' + g.pedidos.length + ' pedido(s)</small></summary>' + g.pedidos.map(function (p) {
-      return '<p class="nota"><b>' + esc(p.pedidoId) + '</b> · ' + esc(p.nome) + ' · ' + esc(p.bairro || '') + (p.semCep ? ' <i>(sem CEP)</i>' : '') + '<br>' + esc(p.cesta) + ' · parcelas: ' + p.parcelas.map(function (x) { return fR(x.valor) + ' em ' + dBr(x.vencimento); }).join(' + ') + '<br>Código VIP: <b>' + esc(p.codigoVip) + '</b> · ' + esc(p.selo) + ' · ' + esc(p.origem) + (p.avisoRota ? ' · aviso à rota: ' + esc(p.avisoRota) : '') + '</p>'; }).join('') + '</details>'; }).join('') : '<p class="nota">Nenhum pedido aguardando entrega.</p>'));
+      return '<p class="nota"><b>' + esc(p.pedidoId) + '</b> · ' + esc(p.nome) + ' · ' + esc(p.bairro || '') + (p.semCep ? ' <i>(sem CEP)</i>' : '') + '<br>' + esc(p.cesta) + ' · parcelas: ' + p.parcelas.map(function (x) { return fR(x.valor) + ' em ' + dBr(x.vencimento); }).join(' + ') + '<br>Código VIP: <b>' + esc(p.codigoVip) + '</b> · ' + esc(p.selo) + ' · ' + esc(p.origem) + (p.avisoRota ? ' · aviso à rota: ' + esc(p.avisoRota) : '') + (typeof CTL !== 'undefined' && CTL.admin ? '<br><button class="acao" type="button" data-entrega="' + esc(p.pedidoId) + '">Confirmar entrega</button>' : '') + '</p>'; }).join('') + '</details>'; }).join('') : '<p class="nota">Nenhum pedido aguardando entrega.</p>'));
+  }
+  if (cr && !Array.isArray(cr) && cr.regua) {   // (Bloco 16) Régua de Cobrança & Saúde da Carteira: só na linha privada
+    var rg = cr.regua, sc = rg.carteira || {}, bx = cr.baixaPix || { ultimas: [], revisao: [] };
+    out.push('<h3>RÉGUA DE COBRANÇA &amp; SAÚDE DA CARTEIRA</h3>' +
+      '<div class="setor"><i class="q" style="background:' + (rg.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave REGUA_COBRANCA_AO_VIVO</span><span class="p">' + (rg.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
+      '<div class="setor"><span class="n">Lembretes agendados (D-3 · D0 · D+3)</span><span class="p">' + rg.agendados.d_menos_3 + ' · ' + rg.agendados.d0 + ' · ' + rg.agendados.d_mais_3 + ' (enviados ' + rg.enviados + ', hoje ' + rg.enviadosHoje + '/' + rg.limiteDiario + ')</span></div>' +
+      '<div class="setor"><span class="n">Carteira do site: em aberto · a vencer em 7 dias · vencido</span><span class="p">' + fR(sc.abertoTotal) + ' · ' + fR(sc.aVencer7d) + ' · ' + fR(sc.vencido) + ' (' + (sc.inadimplenciaPct || 0) + '%)</span></div>' +
+      '<div class="setor"><span class="n">Vencido até 5 dias · acima de 5 dias (trava o score)</span><span class="p">' + fR(sc.vencidoAte5d) + ' · ' + fR(sc.vencidoMais5d) + ' · ' + (sc.inadimplentes || 0) + ' pedido(s)</span></div>' +
+      '<div class="setor"><span class="n">Pedidos ativos · quitados · aguardando entrega</span><span class="p">' + (sc.pedidosAtivos || 0) + ' · ' + (sc.quitados || 0) + ' · ' + (sc.aguardandoEntrega || 0) + '</span></div>' +
+      '<div class="setor"><span class="n">Parcelas pagas em dia · com atraso</span><span class="p">' + (sc.pagasEmDia || 0) + ' · ' + (sc.pagasComAtraso || 0) + '</span></div>' +
+      '<div class="setor"><span class="n">Baixa automática por Pix hoje</span><span class="p">' + (bx.baixasHoje || 0) + ' parcela(s) · ' + fR(bx.valorBaixadoHoje) + '</span></div>' +
+      ((bx.revisao || []).length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Pix para revisão humana (' + bx.revisao.length + ')</summary>' + bx.revisao.map(function (x) { return '<p class="nota">' + esc(x.pagador) + ' · ' + fR(x.valor) + ' · ' + esc(x.data) + ' · ' + esc(String(x.motivo).replace(/_/g, ' ')) + (x.pedidoId ? ' · ' + esc(x.pedidoId) : '') + '</p>'; }).join('') + '</details>' : '') +
+      (rg.proximos.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Próximos lembretes programados</summary>' + rg.proximos.map(function (x) { return '<p class="nota">' + hI(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.faixa.replace(/_/g, ' ')) + ' · ' + fR(x.valor) + ' · vence ' + esc(x.vencimento) + '</p>'; }).join('') + '</details>' : ''));
+  }
+  if (cr && !Array.isArray(cr) && cr.caixa) {   // (Bloco 17) Conciliação diária de caixa: só na linha privada
+    var cx = cr.caixa;
+    out.push('<h3>CONCILIAÇÃO DE CAIXA · HOJE</h3>' +
+      '<div class="setor"><span class="n">Pix confirmado hoje (site · base · total)</span><span class="p">' + fR(cx.pixHoje.site) + ' · ' + fR(cx.pixHoje.base) + ' · <b>' + fR(cx.pixHoje.total) + '</b></span></div>' +
+      '<div class="setor"><span class="n">Previsão de recebimento nos próximos 7 dias (site · base · total)</span><span class="p">' + fR(cx.previsao7d.site) + ' · ' + fR(cx.previsao7d.base) + ' · <b>' + fR(cx.previsao7d.total) + '</b></span></div>' +
+      '<div class="setor"><span class="n">Inadimplência ativa (site · base · total)</span><span class="p">' + fR(cx.inadimplencia.site) + ' · ' + fR(cx.inadimplencia.base) + ' · <b>' + fR(cx.inadimplencia.total) + '</b></span></div>' +
+      '<div class="setor"><span class="n">Bônus VIP disponíveis na carteira · pendentes de entrega</span><span class="p">' + fR(cx.bonusDisponivel) + ' · ' + fR(cx.bonusPendente) + '</span></div>');
   }
   var rec = Array.isArray(cr) ? cr : (cr && cr.recentes) || [];
   if (rec.length) {
@@ -810,7 +831,10 @@ async function liveCiclo() {
   if (mudou) desenha();            // só redesenha o escritório se algum robô mudou de estado (a animação reinicia ao redesenhar)
   analise();
 }
+// (Bloco 17) botão "Confirmar entrega" da fila de rota: grava a ordem entrega_confirmar (o worker do servidor confirma, recalcula as parcelas e libera o bônus do padrinho)
+if (!window.__alvEntrega) { window.__alvEntrega = true; document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-entrega]'); if (!b || typeof ctlOrdem !== 'function') return; var id = b.getAttribute('data-entrega'); ctlOrdem('entrega_confirmar', { pedidoId: id }, 'Confirmar a ENTREGA do pedido ' + id + ' hoje? As 2 parcelas passam a contar 30 e 60 dias a partir de hoje.'); }); }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
