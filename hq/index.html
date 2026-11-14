@@ -749,6 +749,17 @@ function liveRoiEquipeHtml(d) {
     out.push('<h3>EXCEÇÕES PARA DECIDIR (' + ex.length + ')</h3>' + (ex.length ? ex.map(function (c) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + ' · origem ' + esc(c.origem || '') + '</small></summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '<p class="nota"><b>Por que caiu na revisão:</b> ' + esc((c.motivos || []).join('; ')) + '</p>' +
       (gestor ? '<div style="display:flex;gap:8px;margin-top:6px"><button class="acao" type="button" data-credito="aprovar" data-lead="' + esc(c.leadId) + '">Aprovar</button><button class="acao roxo" type="button" data-credito="recusar" data-lead="' + esc(c.leadId) + '">Recusar</button></div>' : '<p class="nota">🔒 Entre como Gestor para aprovar ou recusar.</p>') + '</details>'; }).join('') : '<p class="nota">Nenhuma exceção esperando decisão.</p>'));
   }
+  if (cr && !Array.isArray(cr) && cr.recompra) {   // (Bloco 14) Radar de Recompra e Reativação: só na linha privada
+    var rc = cr.recompra, hh = function (iso) { try { return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, ign = rc.elegiveis ? Object.entries(rc.elegiveis.ignorados || {}).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6) : [];
+    out.push('<h3>RADAR DE RECOMPRA E REATIVAÇÃO</h3>' +
+      '<div class="setor"><i class="q" style="background:' + (rc.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave REATIVACAO_BASE_AO_VIVO</span><span class="p">' + (rc.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
+      '<div class="setor"><span class="n">Bons pagadores elegíveis na base</span><span class="p">' + (rc.elegiveis ? rc.elegiveis.total + ' de ' + Number(rc.elegiveis.totalBase).toLocaleString('pt-BR') : 'ainda sem varredura') + '</span></div>' +
+      '<div class="setor"><span class="n">Fila de hoje</span><span class="p">' + rc.hoje.programados + ' programados · ' + rc.hoje.enviados + ' de ' + rc.hoje.limite + ' enviados</span></div>' +
+      '<div class="setor"><span class="n">Renovações na quitação</span><span class="p">' + rc.renovacoes.agendadas + ' agendadas · ' + rc.renovacoes.enviadas + ' enviadas</span></div>' +
+      '<div class="setor"><span class="n">Pedidos reconvertidos</span><span class="p">' + rc.reconvertidos.total + ' (renovação rápida ' + rc.reconvertidos.pelaRenovacaoRapida.length + ' · resposta no WhatsApp ' + rc.reconvertidos.porRespostaNoWhatsApp.length + ')</span></div>' +
+      (rc.hoje.fila.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800">Fila programada de hoje (' + rc.hoje.fila.length + ')</summary>' + rc.hoje.fila.map(function (x) { return '<p class="nota">' + hh(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.cidade || '') + ' · rota ' + esc(x.rota) + ' · ' + esc(x.status) + '</p>'; }).join('') + '</details>' : '') +
+      (ign.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Por que o resto da base ficou de fora</summary>' + ign.map(function (x) { return '<p class="nota">' + esc(String(x[0]).replace(/_/g, ' ')) + ': ' + Number(x[1]).toLocaleString('pt-BR') + '</p>'; }).join('') + '</details>' : ''));
+  }
   if (cr && !Array.isArray(cr) && cr.pedidos) {   // (Bloco 13) pedidos aprovados prontos para entrega, por rota/cidade
     var fila = cr.pedidos, totPed = fila.reduce(function (s, g) { return s + g.pedidos.length; }, 0), dBr = function (iso) { return iso ? String(iso).split('-').reverse().join('/') : ''; };
     out.push('<h3>PEDIDOS APROVADOS · FILA DE ROTA (' + totPed + ')</h3>' + (fila.length ? fila.map(function (g) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Rota ' + esc(g.rota || 'sem rota') + ' · ' + esc(g.cidade || '') + ' <small>' + g.pedidos.length + ' pedido(s)</small></summary>' + g.pedidos.map(function (p) {
@@ -789,6 +800,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
