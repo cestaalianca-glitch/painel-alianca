@@ -749,6 +749,11 @@ function liveRoiEquipeHtml(d) {
     out.push('<h3>EXCEÇÕES PARA DECIDIR (' + ex.length + ')</h3>' + (ex.length ? ex.map(function (c) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + ' · origem ' + esc(c.origem || '') + '</small></summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '<p class="nota"><b>Por que caiu na revisão:</b> ' + esc((c.motivos || []).join('; ')) + '</p>' +
       (gestor ? '<div style="display:flex;gap:8px;margin-top:6px"><button class="acao" type="button" data-credito="aprovar" data-lead="' + esc(c.leadId) + '">Aprovar</button><button class="acao roxo" type="button" data-credito="recusar" data-lead="' + esc(c.leadId) + '">Recusar</button></div>' : '<p class="nota">🔒 Entre como Gestor para aprovar ou recusar.</p>') + '</details>'; }).join('') : '<p class="nota">Nenhuma exceção esperando decisão.</p>'));
   }
+  if (cr && !Array.isArray(cr) && cr.pedidos) {   // (Bloco 13) pedidos aprovados prontos para entrega, por rota/cidade
+    var fila = cr.pedidos, totPed = fila.reduce(function (s, g) { return s + g.pedidos.length; }, 0), dBr = function (iso) { return iso ? String(iso).split('-').reverse().join('/') : ''; };
+    out.push('<h3>PEDIDOS APROVADOS · FILA DE ROTA (' + totPed + ')</h3>' + (fila.length ? fila.map(function (g) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Rota ' + esc(g.rota || 'sem rota') + ' · ' + esc(g.cidade || '') + ' <small>' + g.pedidos.length + ' pedido(s)</small></summary>' + g.pedidos.map(function (p) {
+      return '<p class="nota"><b>' + esc(p.pedidoId) + '</b> · ' + esc(p.nome) + ' · ' + esc(p.bairro || '') + (p.semCep ? ' <i>(sem CEP)</i>' : '') + '<br>' + esc(p.cesta) + ' · parcelas: ' + p.parcelas.map(function (x) { return fR(x.valor) + ' em ' + dBr(x.vencimento); }).join(' + ') + '<br>Código VIP: <b>' + esc(p.codigoVip) + '</b> · ' + esc(p.selo) + ' · ' + esc(p.origem) + (p.avisoRota ? ' · aviso à rota: ' + esc(p.avisoRota) : '') + '</p>'; }).join('') + '</details>'; }).join('') : '<p class="nota">Nenhum pedido aguardando entrega.</p>'));
+  }
   var rec = Array.isArray(cr) ? cr : (cr && cr.recentes) || [];
   if (rec.length) {
     out.push('<h3>ÚLTIMAS ANÁLISES (' + rec.length + ')</h3>' + rec.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.status] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc(c.desfecho || c.rotulo || c.status || '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
@@ -784,6 +789,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
