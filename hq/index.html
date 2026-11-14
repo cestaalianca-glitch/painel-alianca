@@ -637,6 +637,7 @@ let largura = innerWidth; addEventListener('resize', () => { document.documentEl
 // Se não conseguir ler, o escritório continua com o último dado embutido e mostra "sem conexão".
 var LIVE = { url: 'https://pjzmzwaarrqxghfbwtsm.supabase.co', key: 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX', ms: 60000, velhoMin: 15, desligado: false };
 var LIVE_ROBO = { 'Central': 'central', 'Rota 1': 'rota-1', 'Rota 6': 'rota-6', 'Rotas 18 21 25': 'rotas-18', 'Novo 1': 'novo-1', 'Ajudante': 'ajudante', 'Varredura': 'varredura' };
+var LIVE_FIN = null;   // (14/11) linha 'hq-financeiro': só o Gestor logado lê (carregada pelo controle.js)
 var SNAP_B9 = null;   // (Bloco 9) foto do ROI/equipe/chips para o Artifact (o gerador troca este null)
 var LIVE_ESTADO = { ok: false, erro: 'carregando…', quando: null, pc: null, srv: null, robos: {} };
 var minAtras = iso => iso ? Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)) : null;
@@ -698,11 +699,11 @@ function liveHtml() {
   const cam = (srv && srv.campanhas) || (pc && pc.campanhas);
   if (cam) linhas.push('<h3>CAMPANHA VIP (R$ 620 / R$ 520)</h3><div class="setor"><i class="q" style="background:' + (cam.ativa ? '#2fb36b' : cam.chaveLigada ? '#f2b705' : '#cfc5b3') + '"></i><span class="n">' + (cam.ativa ? 'Ligadas' : cam.chaveLigada ? 'Ligadas, travadas (revisar o brinde)' : 'Desligadas') + '</span><span class="p">hoje ' + cam.total.hoje + ' · 7 dias: ' + cam.total.semana + ' enviadas, ' + cam.total.interesse + ' com interesse, ' + cam.total.conversoes + ' conversões</span></div>' +
     '<div class="setor"><span class="n">Renovação VIP · Indique e Ganhe · Reativação (desligada)</span><span class="p">' + [cam.renovacaoVip.semana, cam.indique.semana, cam.reativacao.semana].join(' · ') + ' enviadas</span></div>' + (cam.brindesAEntregar ? '<div class="setor"><span class="n">Descontos de indicação liberados</span><span class="p">' + cam.brindesAEntregar + '</span></div>' : ''));
-  const br = (srv && srv.bruno) || (pc && pc.bruno);
+  const br = LIVE_FIN && LIVE_FIN.bruno;
   if (br) linhas.push('<h3>ROTAS DO BRUNO (' + br.rotas.join(', ') + ')</h3><div class="setor"><span class="n">Carteira em aberto · vencido até 30 dias</span><span class="p">R$ ' + br.aberto.toLocaleString('pt-BR') + ' · R$ ' + br.vencido30.toLocaleString('pt-BR') + (br.deltaVencidoOntem == null ? '' : ' (' + (br.deltaVencidoOntem > 0 ? '+' : '') + br.deltaVencidoOntem.toLocaleString('pt-BR') + ' vs ontem)') + '</span></div>' +
     '<div class="setor"><span class="n">Vendas do mês (mês anterior até o mesmo dia)</span><span class="p">R$ ' + br.vendasMes.toLocaleString('pt-BR') + ' (R$ ' + br.vendasMesAnterior.toLocaleString('pt-BR') + ')</span></div>' +
     '<div class="setor"><i class="q" style="background:' + (br.copiloto && br.copiloto.ligado ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Pedidos abertos · promessas hoje · casos sensíveis</span><span class="p">' + br.pedidosAbertos + ' · ' + br.promessasHoje + ' · ' + br.sensiveis + ' · co-piloto ' + (br.copiloto && br.copiloto.ligado ? 'ligado' : 'desligado') + '</span></div>');
-  try { const rq = liveRoiEquipeHtml((srv && (srv.roi || srv.equipe)) ? srv : pc || {}); if (rq) linhas.push(rq); } catch (e) {}   // (13/11/2026, Bloco 9) ROI Sistema × Empresa, todas as rotas e vendedores, placar dos chips
+  try { const rq = LIVE_FIN ? liveRoiEquipeHtml(LIVE_FIN) : ''; linhas.push(rq || '<h3>FINANCEIRO</h3><p class="nota">🔒 Valores de vendas, recebimentos, carteira e placar dos vendedores só aparecem para o Gestor. Use "Entrar como Gestor".</p>'); } catch (e) {}   // (13/11/2026, Bloco 9) ROI Sistema × Empresa, todas as rotas e vendedores, placar dos chips
   const ind = (srv && srv.indicadores ? srv : pc || {}).indicadores;
   if (ind) linhas.push('<h3>INDICADORES</h3><div class="setor"><span class="n">Pendências a atender (7 dias)</span><span class="p">' + ind.pendenciasAbertas + '</span></div>' +
     '<div class="setor"><span class="n">Atendimentos hoje</span><span class="p">' + ind.atendidosHoje + '</span></div>' +
@@ -762,6 +763,7 @@ function liveCont() {
 }
 async function liveCiclo() {
   if (LIVE.desligado) return;   // versão dentro do Artifact: o ambiente bloqueia o Supabase, então nem tenta (a versão hospedada fora é a ao vivo)
+  try { if (typeof CTL !== 'undefined' && CTL.admin && typeof ctlCarregaFin === 'function') await ctlCarregaFin(); } catch (e) {}
   try { LIVE_ESTADO = liveMonta(await liveBusca()); } catch (e) { LIVE_ESTADO = { ...LIVE_ESTADO, ok: false, erro: (e && e.message) || 'falhou' }; }
   const mudou = liveAplicaRobos();
   liveCont();
@@ -810,7 +812,7 @@ async function ctlVerificaPapel(email) {
   if (!CTL.admin) await CTL.sb.auth.signOut();
   ctlBotao(); if (CTL.admin) { await ctlCarrega(); } ctlRepinta(); return CTL.admin;
 }
-async function ctlSai() { await CTL.sb.auth.signOut(); CTL.admin = false; CTL.email = ''; CTL.ordens = []; CTL.pedidos = []; CTL.rel = null; ctlBotao(); ctlRepinta(); }
+async function ctlSai() { await CTL.sb.auth.signOut(); LIVE_FIN = null; CTL.admin = false; CTL.email = ''; CTL.ordens = []; CTL.pedidos = []; CTL.rel = null; ctlBotao(); ctlRepinta(); }
 function ctlRepinta() { ctlPedidosNoMapa(); try { chatVazio(); } catch (e) {} analise(); }
 
 // ---- dados protegidos (só admin; o banco recusa para os outros) ----
@@ -820,6 +822,12 @@ async function ctlCarrega() {
     CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-cmd-%').order('atualizado_em', { ascending: false }).limit(12),
     CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-pedido-%').order('atualizado_em', { ascending: true }).limit(60)]);
   CTL.ordens = (o.data || []); CTL.pedidos = (p.data || []);
+  await ctlCarregaFin();
+}
+// (14/11) números financeiros (linha 'hq-financeiro'): o banco só entrega para o Gestor logado
+async function ctlCarregaFin() {
+  if (!CTL.admin) { LIVE_FIN = null; return; }
+  try { const r = await CTL.sb.from('painel_dados').select('dados').eq('id', 'hq-financeiro').maybeSingle(); LIVE_FIN = (r && r.data && r.data.dados) || null; } catch (e) { LIVE_FIN = null; }
 }
 async function ctlCarregaRelatorios() {
   if (!CTL.admin) return; const r = await CTL.sb.from('painel_dados').select('id,dados,atualizado_em').in('id', ['v2', 'cobranca', 'comissao']);
