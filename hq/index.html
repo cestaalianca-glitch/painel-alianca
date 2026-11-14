@@ -749,6 +749,17 @@ function liveRoiEquipeHtml(d) {
     out.push('<h3>EXCEÇÕES PARA DECIDIR (' + ex.length + ')</h3>' + (ex.length ? ex.map(function (c) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + ' · origem ' + esc(c.origem || '') + '</small></summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '<p class="nota"><b>Por que caiu na revisão:</b> ' + esc((c.motivos || []).join('; ')) + '</p>' +
       (gestor ? '<div style="display:flex;gap:8px;margin-top:6px"><button class="acao" type="button" data-credito="aprovar" data-lead="' + esc(c.leadId) + '">Aprovar</button><button class="acao roxo" type="button" data-credito="recusar" data-lead="' + esc(c.leadId) + '">Recusar</button></div>' : '<p class="nota">🔒 Entre como Gestor para aprovar ou recusar.</p>') + '</details>'; }).join('') : '<p class="nota">Nenhuma exceção esperando decisão.</p>'));
   }
+  if (cr && !Array.isArray(cr) && cr.indicacaoVip) {   // (Bloco 15) painel Indique e Ganhe VIP: só na linha privada
+    var iv = cr.indicacaoVip, tt = iv.totais || {}, hI = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, mot = Object.entries(iv.motivosRecusa || {});
+    out.push('<h3>INDIQUE E GANHE VIP</h3>' +
+      '<div class="setor"><i class="q" style="background:' + (iv.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave INDICACAO_VIP_AO_VIVO</span><span class="p">' + (iv.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
+      '<div class="setor"><span class="n">Convites do link VIP</span><span class="p">' + iv.convites.agendados + ' agendados · ' + iv.convites.enviados + ' enviados</span></div>' +
+      '<div class="setor"><span class="n">Indicações recebidas · aprovadas · recusadas</span><span class="p">' + (tt.recebidas || 0) + ' · ' + (tt.aprovadas || 0) + ' · ' + (tt.recusadas || 0) + '</span></div>' +
+      '<div class="setor"><span class="n">Bônus de ' + fR(iv.bonusPorIndicado) + ' por amigo aprovado: pendentes · disponíveis</span><span class="p">' + fR(tt.pendente) + ' · ' + fR(tt.disponivel) + ' (reservado ' + fR(tt.reservado) + ' · usado ' + fR(tt.usado) + ')</span></div>' +
+      (iv.ranking.length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Ranking de padrinhos (' + iv.ranking.length + ')</summary>' + iv.ranking.map(function (p, i) { return '<p class="nota">' + (i + 1) + '. <b>' + esc(p.nome) + '</b> (' + esc(p.codigo) + ') · recebidas ' + p.recebidas + ' · aprovadas ' + p.aprovadas + ' · bônus pendente ' + fR(p.pendente) + ' · disponível ' + fR(p.disponivel) + (p.recusadas ? ' · recusadas ' + p.recusadas : '') + '</p>'; }).join('') + '</details>' : '<p class="nota">Ainda não há indicações.</p>') +
+      (mot.length ? '<p class="nota">Trava antifraude: ' + mot.map(function (m) { return esc(String(m[0]).replace(/_/g, ' ')) + ' ' + m[1]; }).join(' · ') + '</p>' : '') +
+      (iv.convites.proximos.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Próximos convites programados</summary>' + iv.convites.proximos.map(function (x) { return '<p class="nota">' + hI(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.cidade || '') + '</p>'; }).join('') + '</details>' : ''));
+  }
   if (cr && !Array.isArray(cr) && cr.recompra) {   // (Bloco 14) Radar de Recompra e Reativação: só na linha privada
     var rc = cr.recompra, hh = function (iso) { try { return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, ign = rc.elegiveis ? Object.entries(rc.elegiveis.ignorados || {}).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6) : [];
     out.push('<h3>RADAR DE RECOMPRA E REATIVAÇÃO</h3>' +
@@ -800,6 +811,7 @@ async function liveCiclo() {
   analise();
 }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
