@@ -391,7 +391,7 @@ m.insertAdjacentHTML('afterbegin', '<div class="room fl f-cor" style="left:0;top
 const gente = document.createElement('div'); m.appendChild(gente);
 // ---------- os 7 funcionários de verdade (agente + skills + conector). O resto do escritório são as FERRAMENTAS deles. ----------
 const FUNCS = [
-  { cargo: 'gerente', n: 'Gerente', r: 'dir', slot: 'agente-leonardo', k: 'vigia', t: 0, meta: 'Voltar a receber R$ 320 mil por mês (hoje cerca de R$ 225 mil).', does: 'Lê o relatório de todos os funcionários, cobra resultado e decide. Só chama o Leonardo em caso grave.' },
+  { cargo: 'gerente', n: 'Gerente', r: 'dir', slot: 'agente-leonardo', k: 'vigia', t: 0, meta: 'Recuperar o recebimento do mês (meta e valores só no acesso do Gestor).', does: 'Lê o relatório de todos os funcionários, cobra resultado e decide. Só chama o Leonardo em caso grave.' },
   { cargo: 'atendente', n: 'Atendente', r: 'ate', slot: 'memoria', k: 'rotina', t: 1, meta: 'Ninguém esperando mais de 15 minutos e zero resposta errada.', does: 'Responde os clientes em todos os números do WhatsApp, guarda a memória de cada cliente e o livro de casos.' },
   { cargo: 'cobrador', n: 'Cobrador', r: 'cob', slot: 'promessa', k: 'rotina', t: 2, meta: 'Cobrança viva (o que venceu nos últimos 60 dias) caindo, recebido subindo, promessas cumpridas e zero cobrança errada.', does: 'Dono da cobrança inteira: rotina da manhã, rodada das 16h40, régua, promessas e recados de receber para os vendedores.' },
   { cargo: 'vendedor', n: 'Vendedor', r: 'ven', slot: 'dono-pedido', k: 'rotina', t: 3, meta: 'Mais vendas novas e reativadas, com crédito certo.', does: 'Reativação de clientes, indicação, entrevista de crédito e cadastro aprovado rápido.' },
@@ -697,7 +697,7 @@ function liveHtml() {
   const t = (srv && srv.triagem && !srv.triagem.erro ? srv : pc || {}).triagem;   // (13/11) bloco 5: o servidor é o motor; cai para o PC se ele não trouxer
   if (t && !t.erro) linhas.push('<h3>CENTRAL DE TRIAGEM (' + t.abertos + ' abertos)</h3>' + Object.entries(t.porCategoria || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div class="setor"><span class="n">' + esc(k.replace(/_/g, ' ')) + '</span><span class="p">' + v + '</span></div>').join(''));
   const cam = (srv && srv.campanhas) || (pc && pc.campanhas);
-  if (cam) linhas.push('<h3>CAMPANHA VIP (R$ 620 / R$ 520)</h3><div class="setor"><i class="q" style="background:' + (cam.ativa ? '#2fb36b' : cam.chaveLigada ? '#f2b705' : '#cfc5b3') + '"></i><span class="n">' + (cam.ativa ? 'Ligadas' : cam.chaveLigada ? 'Ligadas, travadas (revisar o brinde)' : 'Desligadas') + '</span><span class="p">hoje ' + cam.total.hoje + ' · 7 dias: ' + cam.total.semana + ' enviadas, ' + cam.total.interesse + ' com interesse, ' + cam.total.conversoes + ' conversões</span></div>' +
+  if (cam) linhas.push('<h3>CAMPANHA VIP</h3><div class="setor"><i class="q" style="background:' + (cam.ativa ? '#2fb36b' : cam.chaveLigada ? '#f2b705' : '#cfc5b3') + '"></i><span class="n">' + (cam.ativa ? 'Ligadas' : cam.chaveLigada ? 'Ligadas, travadas (revisar o brinde)' : 'Desligadas') + '</span><span class="p">hoje ' + cam.total.hoje + ' · 7 dias: ' + cam.total.semana + ' enviadas, ' + cam.total.interesse + ' com interesse, ' + cam.total.conversoes + ' conversões</span></div>' +
     '<div class="setor"><span class="n">Renovação VIP · Indique e Ganhe · Reativação (desligada)</span><span class="p">' + [cam.renovacaoVip.semana, cam.indique.semana, cam.reativacao.semana].join(' · ') + ' enviadas</span></div>' + (cam.brindesAEntregar ? '<div class="setor"><span class="n">Descontos de indicação liberados</span><span class="p">' + cam.brindesAEntregar + '</span></div>' : ''));
   const br = LIVE_FIN && LIVE_FIN.bruno;
   if (br) linhas.push('<h3>ROTAS DO BRUNO (' + br.rotas.join(', ') + ')</h3><div class="setor"><span class="n">Carteira em aberto · vencido até 30 dias</span><span class="p">R$ ' + br.aberto.toLocaleString('pt-BR') + ' · R$ ' + br.vencido30.toLocaleString('pt-BR') + (br.deltaVencidoOntem == null ? '' : ' (' + (br.deltaVencidoOntem > 0 ? '+' : '') + br.deltaVencidoOntem.toLocaleString('pt-BR') + ' vs ontem)') + '</span></div>' +
@@ -807,6 +807,24 @@ function liveRoiEquipeHtml(d) {
       ((cx.inadimplencia || {}).baseLida === false ? '<div class="setor" style="border-left:4px solid #d9534f"><span class="n">⚠ Base não lida</span><span class="p">previsão e atraso da base ficaram sem dado</span></div>' : '') +
       '<div class="setor"><span class="n">Bônus VIP disponíveis na carteira · pendentes de entrega</span><span class="p">' + fR(cx.bonusDisponivel) + ' · ' + fR(cx.bonusPendente) + '</span></div>');
   }
+  var hA = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, dDM = function (iso) { return String(iso || '').split('-').reverse().slice(0, 2).join('/'); };
+  var ag = d && d.gestor;   // (Bloco 18) modo silencioso do Gestor: o que NÃO foi para o WhatsApp do dono fica aqui (só na linha privada)
+  if (ag && ag.hoje) {
+    out.push('<h3>AVISOS AO GESTOR · MODO SILENCIOSO</h3>' +
+      '<div class="setor"><span class="n">Hoje: no seu WhatsApp · só aqui no painel</span><span class="p">' + (ag.hoje.whatsapp || 0) + ' · ' + (ag.hoje.silenciosos || 0) + '</span></div>' +
+      '<p class="nota">' + esc(ag.regra || '') + '</p>' +
+      ((ag.ultimos || []).length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Últimos avisos (' + ag.ultimos.length + ')</summary>' + ag.ultimos.map(function (x) { return '<p class="nota">' + (x.whatsapp ? '📲 ' : '🔕 ') + esc(hA(x.em)) + ' · ' + esc(String(x.tipo || '').replace(/_/g, ' ')) + (x.origem ? ' · ' + esc(x.origem) : '') + '<br>' + esc(x.texto) + '</p>'; }).join('') + '</details>' : '<p class="nota">Nenhum aviso registrado ainda.</p>'));
+  }
+  var bv = d && d.boletim;   // (Bloco 18) boletim dos vendedores: 3 por dia (08h30, 13h30, 17h00) em vez de recado solto no grupo
+  if (bv && bv.horarios) {
+    var pg = Object.entries(bv.porGrupo || {}), hj = bv.hoje || {};
+    out.push('<h3>BOLETIM DOS VENDEDORES</h3>' +
+      '<div class="setor"><span class="n">Horários (seg–sáb)</span><span class="p">' + esc(bv.horarios.join(' · ')) + (bv.proximo ? ' · próximo: ' + esc(bv.proximo.hora) + ' (' + esc(dDM(bv.proximo.dia)) + ')' : '') + '</span></div>' +
+      '<div class="setor"><span class="n">Recados esperando o próximo boletim</span><span class="p">' + (bv.aguardando || 0) + (pg.length ? ' (' + pg.map(function (g) { return esc(g[0]) + ': ' + g[1]; }).join(' · ') + ')' : '') + '</span></div>' +
+      '<div class="setor"><span class="n">Hoje: boletins · recados agrupados · urgentes</span><span class="p">' + (hj.boletins || 0) + ' · ' + (hj.recados || 0) + ' · ' + (hj.urgentes || 0) + '</span></div>' + avisoCiclo(bv.ultimoCiclo) +
+      ((bv.ultimos || []).length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Últimos boletins (' + bv.ultimos.length + ')</summary>' + bv.ultimos.map(function (x) { return '<p class="nota">' + esc(dDM(x.dia)) + ' ' + esc(x.turno || '') + ' · ' + esc(x.grupo) + ' · ' + (x.n || 0) + ' recado(s) · ' + esc(String(x.status || '').replace(/_/g, ' ')) + '</p>'; }).join('') + '</details>' : '') +
+      '<p class="nota">Sai na hora, sem esperar o boletim, só: ' + esc((bv.imediatos || []).join(', ').replace(/_/g, ' ') || 'nada') + '.</p>');
+  }
   var rec = Array.isArray(cr) ? cr : (cr && cr.recentes) || [];
   if (rec.length) {
     out.push('<h3>ÚLTIMAS ANÁLISES (' + rec.length + ')</h3>' + rec.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.status] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc(c.desfecho || c.rotulo || c.status || '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
@@ -844,6 +862,9 @@ async function liveCiclo() {
 // (Bloco 17) botão "Confirmar entrega" da fila de rota: grava a ordem entrega_confirmar (o worker do servidor confirma, recalcula as parcelas e libera o bônus do padrinho)
 if (!window.__alvEntrega) { window.__alvEntrega = true; document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-entrega]'); if (!b || typeof ctlOrdem !== 'function') return; var id = b.getAttribute('data-entrega'); ctlOrdem('entrega_confirmar', { pedidoId: id }, 'Confirmar a ENTREGA do pedido ' + id + ' hoje? As 2 parcelas passam a contar 30 e 60 dias a partir de hoje.'); }); }
 liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+// ===== fim do ao vivo =====
+// ===== fim do ao vivo =====
+// ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====

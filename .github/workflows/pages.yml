@@ -1,0 +1,61 @@
+# ESTEIRA DO ALIANÇA HQ (Bloco 19, 14/11/2026). A cada push ou pull request:
+#   1) confere a linha pública (nenhum .bak-*, chave de serviço ou dado de cliente/financeiro na página);
+#   2) monta a versão limpa (_site/, só páginas) e guarda como prévia baixável;
+#   3) só no main, e só se os passos acima passarem, publica no GitHub Pages.
+# Branch de layout novo (feat/...) roda a conferência e gera a prévia, mas NUNCA publica (o ambiente github-pages só aceita o main).
+name: HQ — conferir e publicar
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hq-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  conferir:
+    name: Conferir linha pública e montar a versão limpa
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Trava da linha pública (.bak, segredo, CPF, telefone, valores, pedidos)
+        run: node .github/ci/conferir-publico.js
+      - name: Montar a versão limpa
+        run: node .github/ci/montar-site.js
+      - name: Prévia para baixar (abra hq/index.html no navegador)
+        uses: actions/upload-artifact@v4
+        with:
+          name: previa-hq-${{ github.sha }}
+          path: _site
+          retention-days: 14
+      - name: Pacote do GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    name: Publicar no GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: conferir
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
