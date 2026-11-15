@@ -1,8 +1,11 @@
-# ESTEIRA DO ALIANÇA HQ (Bloco 19, 14/11/2026). A cada push ou pull request:
-#   1) confere a linha pública (nenhum .bak-*, chave de serviço ou dado de cliente/financeiro na página);
-#   2) monta a versão limpa (_site/, só páginas) e guarda como prévia baixável;
-#   3) só no main, e só se os passos acima passarem, publica no GitHub Pages.
-# Branch de layout novo (feat/...) roda a conferência e gera a prévia, mas NUNCA publica (o ambiente github-pages só aceita o main).
+# ESTEIRA DO PAINEL E DO ALIANÇA HQ (Bloco 19, 14/11/2026; ampliada na governança de 15/11/2026). A cada push ou pull request, em
+# qualquer branch:
+#   1) confere a linha pública (nenhum .bak-*, segredo, arquivo de dado ou dado de cliente/financeiro escrito em nenhuma página);
+#   2) confere a sintaxe (todo .js e todo <script> embutido nas páginas precisa compilar) e o padrão das esteiras;
+#   3) monta a versão limpa (_site/, só páginas) e guarda como prévia baixável: artefato "previa-hq-<commit>", 14 dias;
+#   4) só no main, e só se os passos acima passarem, publica no GitHub Pages.
+# Branch de trabalho (feat/...) e pull request rodam a conferência e geram a prévia, mas NUNCA publicam: o job de publicação só existe
+# para o main e o ambiente github-pages só aceita o main.
 name: HQ — conferir e publicar
 
 on:
@@ -28,16 +31,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Trava da linha pública (.bak, segredo, CPF, telefone, valores, pedidos)
+      - name: Trava da linha pública (.bak, segredo, arquivo de dado, CPF, telefone, valores, pedidos)
         run: node .github/ci/conferir-publico.js
+      - name: Sintaxe (.js, scripts embutidos nas páginas, .json)
+        if: ${{ !cancelled() }}
+        run: node .github/ci/conferir-sintaxe.js
+      - name: Padrão das esteiras (permissão mínima, tempo-limite, ações oficiais)
+        if: ${{ !cancelled() }}
+        run: node .github/ci/conferir-esteiras.js
       - name: Montar a versão limpa
         run: node .github/ci/montar-site.js
-      - name: Prévia para baixar (abra hq/index.html no navegador)
+      - name: Prévia para baixar (abra index.html ou hq/index.html no navegador)
         uses: actions/upload-artifact@v4
         with:
           name: previa-hq-${{ github.sha }}
           path: _site
           retention-days: 14
+      - name: Resumo da prévia
+        env:
+          PUBLICA: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          RAMO: ${{ github.head_ref || github.ref_name }}
+        run: |
+          {
+            echo "### Prévia de \`${RAMO}\` (commit ${GITHUB_SHA:0:7})"
+            echo "- Baixe o artefato **previa-hq-${GITHUB_SHA}** (no fim desta página, em Artifacts), descompacte e abra \`index.html\` (painel) ou \`hq/index.html\` (HQ) no navegador."
+            echo "- Para testar no celular: na pasta descompactada, rode \`npx --yes http-server -p 8080 -c-1 .\` e abra o endereço do computador na mesma rede."
+            if [ "$PUBLICA" = "true" ]; then echo "- Esta execução é do **main**: depois de conferida, a página é publicada."; else echo "- Esta execução **não publica nada**: produção só sai do main, depois do merge aprovado pelo Gestor."; fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Pacote do GitHub Pages
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
