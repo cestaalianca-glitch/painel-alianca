@@ -185,15 +185,19 @@ function retorno() {
 }
 function comoCalcula() {
   const dias = pega(E.fin, 'roi.janelaDias', 7);
-  return `<details class="como"><summary>Como cada número é calculado</summary><ul>
-    <li><b>Enviados</b>: clientes que tiveram contato de um robô no mês (lembrete, cobrança da rotina, campanha ou atendimento). Vem do registro de envios e do log de atendimento.</li>
-    <li><b>Fecharam</b>: desses clientes, quantos tiveram uma venda lançada até ${esc(dias)} dias depois do contato. É proximidade, não prova de que foi o robô que vendeu. Serve para comparar meses.</li>
-    <li><b>Pagaram</b>: parcelas baixadas até ${esc(dias)} dias depois de um lembrete, de uma cobrança ou de uma promessa registrada pelo robô.</li>
-    <li><b>Resposta das campanhas</b>: de cada convite enviado nos últimos 7 dias, quantos responderam com interesse e quantos viraram pedido. Só as campanhas contam isso hoje.</li>
-    <li><b>Pontualidade da rota</b>: parte do valor vendido que entra em até 60 dias da compra, nas vendas dos últimos 12 meses com 90 dias ou mais (mesma conta do Painel de vendas). Rota com menos de ${AMOSTRA_MIN} vendas nessa conta aparece como amostra pequena.</li>
-    <li><b>Atraso aberto</b>: saldo em aberto com a data combinada já vencida, pela rota atual do cliente.</li>
-    <li><b>Retorno por funcionário</b>: cada venda com toque do robô vai para o funcionário daquela abordagem. Atendimento e oferta de quem quitou: Atendente. Reativação e renovação: Recuperador. Indicação: Especialista VIP. Lembrete: Cobrador.</li>
-  </ul></details>`;
+  const item = (nome, origem, serve) => `<li><b>${nome}</b><br><i>De onde vem:</i> ${origem}<br><i>Para que serve:</i> ${serve}</li>`;
+  return `<details class="como"><summary>De onde vem cada número e para que ele serve</summary><ul>` +
+    item('Vendido e recebido no mês', 'relatório de vendas por período e livro de recebimentos do sistema, do dia 1º até hoje. A parte da equipe digital é o que veio depois de um contato de robô.', 'ver se o mês está andando e quanto dele já passa pela equipe digital.') +
+    item('Enviados', 'clientes que tiveram contato de um robô no mês (lembrete, cobrança da rotina, campanha ou atendimento), pelo registro de envios e pelo log de atendimento.', 'saber o tamanho do trabalho dos robôs antes de olhar o resultado.') +
+    item('Fecharam', `desses clientes, quantos tiveram uma venda lançada até ${esc(dias)} dias depois do contato. É proximidade, não prova de que foi o robô que vendeu.`, 'comparar um mês com o outro e decidir se vale manter os robôs abordando.') +
+    item('Pagaram', `parcelas baixadas no livro de recebimentos até ${esc(dias)} dias depois de um lembrete, de uma cobrança ou de uma promessa registrada pelo robô.`, 'ver se lembrete e promessa estão trazendo dinheiro.') +
+    item('Resposta e fechamento por abordagem', 'fila de cada campanha: convites enviados, respostas com interesse e pedidos, nos últimos 7 dias. No Indique e Ganhe VIP: convites, indicações recebidas e aprovadas.', 'decidir qual abordagem manter, qual texto trocar e qual desligar.') +
+    item('Vendas do mês por abordagem', 'cada venda com contato de robô nos 7 dias anteriores vai para a abordagem do contato mais recente.', 'saber de onde está vindo a venda nova.') +
+    item('Vendas e recebido por rota e por vendedor', 'relatório de vendas por período e livro de recebimentos, pela rota atual do cliente (mesma atribuição da comissão).', 'ver quem está vendendo e quem está recebendo no mês.') +
+    item('Pontualidade da rota', `parte do valor vendido que entra em até 60 dias da compra, nas vendas dos últimos 12 meses com 90 dias ou mais (mesma conta do painel completo). Rota com menos de ${AMOSTRA_MIN} vendas nessa conta aparece como amostra pequena.`, 'separar a rota que vende e recebe da rota que vende e não vê o dinheiro voltar.') +
+    item('Atraso aberto', 'relatório de cobrança: saldo em aberto com a data combinada já vencida, pela rota atual do cliente.', 'decidir onde cobrar primeiro.') +
+    item('Retorno por funcionário digital', 'as vendas por abordagem, somadas por funcionário: atendimento e oferta de quem quitou vão para o Atendente; reativação e renovação, para o Recuperador; indicação, para o Especialista VIP; lembrete, para o Cobrador.', 'decidir qual funcionário digital ligar, ajustar ou deixar em pausa.') +
+    '</ul></details>';
 }
 function rodape() { return `<footer class="rodape"><p>Acesso do Gestor${E.g.email ? ' (' + esc(E.g.email) + ')' : ''}.</p><nav><a href="painel-completo.html">Painel completo (listas de clientes e histórico)</a><a href="hq/">Aliança HQ</a><a href="cobranca/">Cobrança diária</a></nav></footer>`; }
 

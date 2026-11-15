@@ -127,7 +127,9 @@ main { max-width: 1040px; margin: 0 auto; padding: 0 16px 56px; }
 details.como { margin-top: 30px; }
 details.como > summary { cursor: pointer; font-weight: 700; padding: 14px 4px; }
 details.como ul { margin: 0; padding: 0 4px 0 1.2em; font-size: .92rem; line-height: 1.5; color: var(--tinta-2); }
-details.como li + li { margin-top: 8px; }
+details.como li + li { margin-top: 12px; }
+details.como li b { color: var(--tinta); }
+details.como li i { font-style: normal; font-weight: 650; }
 .rodape { margin: 26px 4px 0; font-size: .84rem; color: var(--tinta-3); }
 .rodape nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; }
 .rodape a { color: var(--tinta-2); text-underline-offset: 3px; }
