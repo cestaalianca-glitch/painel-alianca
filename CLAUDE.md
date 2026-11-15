@@ -23,9 +23,12 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 6. Exceção: correção urgente de dado sensível que vazou entra direto no `main`, num commit pequeno.
 
 ## De onde vem a página
-- `hq/index.html` é gerada no repositório do ecossistema (`Painel Alianca`). Para atualizar o módulo ao vivo e copiar a página para cá, rode lá:
+- **No `main` (página antiga, o escritório)**: `hq/index.html` é gerada no repositório do ecossistema (`Painel Alianca`). Para atualizar o módulo ao vivo e copiar a página para cá, rode lá:
   ```
   node ecossistema/hq/atualizar-modulo.js --pages
   ```
   A limpeza da linha pública (`ecossistema/hq/linha-publica.js`) tira valores em reais do texto fixo.
+- **Na branch `feat/novo-layout-hq` (layout novo)**: a página é escrita à mão aqui mesmo (`hq/index.html`, `hq/hq.css` e `hq/hq.js`) e não guarda dado nenhum. Ela lê as linhas `hq-pc` e `hq-servidor` sem login e a `hq-financeiro` com o login do Gestor. Os detalhes estão no `NOVO-LAYOUT.md`.
+  - Depois que essa branch entrar no `main`, **não rodar mais o comando `--pages`**: ele copia a página antiga por cima da nova.
+  - Texto fixo da página nunca leva valor em reais, nome, telefone ou pedido: a trava barra. Valor só aparece montado na tela, com o dado que vem do banco depois do login.
 - Nunca criar arquivo `.bak-*` dentro deste repositório. Backup de página fica no repositório do ecossistema, que ignora `.bak`.
