@@ -87,7 +87,7 @@ const MOTIVO_CICLO = { chave_desligada: 'A chave está desligada: só montou a p
 const frase = s => { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); };
 const origem = o => ORIGEM[o] || humano(o);
 const inteiro = v => Math.round(+v || 0).toLocaleString('pt-BR');
-const reais = v => (num(+v) == null ? '–' : 'R$ ' + inteiro(v));
+const reais = v => (num(+v) == null ? '–' : 'R$\u00a0' + inteiro(v));   // espaço que não quebra: o valor nunca se separa do R$
 const reaisGrande = v => (num(+v) == null ? '–' : '<small>R$</small>' + inteiro(v));
 const pct = v => (num(v) == null ? '–' : (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%');
 const poe = (el, html) => { if (el && el.__html !== html) { el.innerHTML = html; el.__html = html; } };
