@@ -1,5 +1,11 @@
 {
   "_sobre": "Regras de governança deste repositório PÚBLICO, lidas pelos scripts de .github/ci (padrão das esteiras, saúde e limpeza). Mudar aqui é decisão do Gestor: explique no commit.",
+  "site": {
+    "obrigatorios": [
+      "index.html",
+      "hq/index.html"
+    ]
+  },
   "esteiras": {
     "acoesPermitidas": [
       "actions/"
