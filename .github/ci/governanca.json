@@ -1,0 +1,34 @@
+{
+  "_sobre": "Regras de governança deste repositório PÚBLICO, lidas pelos scripts de .github/ci (padrão das esteiras, saúde e limpeza). Mudar aqui é decisão do Gestor: explique no commit.",
+  "site": {
+    "obrigatorios": [
+      "index.html",
+      "hq/index.html"
+    ]
+  },
+  "esteiras": {
+    "acoesPermitidas": [
+      "actions/"
+    ],
+    "producaoSoNoMain": [],
+    "segredoSemTravaDeMain": {}
+  },
+  "limpeza": {
+    "diasMinimos": 7,
+    "branchesProtegidas": [
+      "main"
+    ]
+  },
+  "saude": {
+    "falhasSeguidasAlerta": 2,
+    "agendadoSemRodarDias": 3,
+    "agendadoSemRodarPorArquivo": {
+      "saude.yml": 9
+    },
+    "branchParadaDias": 30,
+    "paginas": [
+      "https://cestaalianca-glitch.github.io/painel-alianca/",
+      "https://cestaalianca-glitch.github.io/painel-alianca/hq/"
+    ]
+  }
+}
