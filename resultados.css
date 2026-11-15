@@ -48,6 +48,8 @@ main { max-width: 1040px; margin: 0 auto; padding: 0 16px 56px; }
 .porta h1 { font-size: clamp(2rem, 8.6vw, 3rem); line-height: 1.02; letter-spacing: -.04em; font-weight: 800; }
 .porta p { margin-top: 12px; font-size: 1.05rem; color: var(--tinta-2); }
 .porta .botao { margin-top: 22px; }
+.porta .outra-porta { margin-top: 26px; font-size: .92rem; color: var(--tinta-3); }
+.porta a { color: var(--tinta-2); text-underline-offset: 3px; }
 .botao { border: 0; border-radius: 999px; background: var(--navy); color: #fff; font-weight: 650; font-size: .95rem; min-height: 46px; padding: 0 22px; cursor: pointer; }
 .botao.secundario { background: transparent; color: var(--tinta); border: 1px solid var(--linha); }
 @media (prefers-color-scheme: dark) { .botao:not(.secundario) { background: var(--ouro); color: var(--navy); } }

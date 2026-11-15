@@ -89,7 +89,7 @@ function pinta() {
   pintaTopo();
   const tela = $('tela');
   if (E.g.conferindo) { tela.innerHTML = '<section class="porta"><h1>Um instante</h1><p>Conferindo o seu acesso…</p></section>'; return; }
-  if (!E.g.admin) { tela.innerHTML = `<section class="porta"><h1>Resultados de vendas e recebimentos</h1><p>${esc(E.g.recusa || 'Entre como Gestor para ver o funil, o ranking das rotas e o retorno de cada funcionário digital.')}</p><button type="button" class="botao" data-entrar>Entrar como Gestor</button></section>`; return; }
+  if (!E.g.admin) { tela.innerHTML = `<section class="porta"><h1>Resultados de vendas e recebimentos</h1><p>${esc(E.g.recusa || 'Entre como Gestor para ver o funil, o ranking das rotas e o retorno de cada funcionário digital.')}</p><button type="button" class="botao" data-entrar>Entrar como Gestor</button><p class="outra-porta">Procurando as listas de clientes e o histórico? Estão no <a href="painel-completo.html">painel completo</a>.</p></section>`; return; }
   if (!E.lido) { tela.innerHTML = '<section class="porta"><h1>Um instante</h1><p>Lendo os resultados…</p></section>'; return; }
   if (!E.fin) { tela.innerHTML = `<section class="porta"><h1>Sem resultados para mostrar</h1><p>${esc(E.erro ? 'Não consegui ler os números agora: ' + E.erro : 'O servidor ainda não publicou os números do mês.')}</p><button type="button" class="botao" data-atualizar>Tentar de novo</button></section>`; return; }
   tela.innerHTML = abertura() + resumo() + funil() + abordagens() + ranking() + retorno() + comoCalcula() + rodape();
@@ -138,7 +138,7 @@ function abordagens() {
   const janelas = pega(E.fin, 'resultados.janelas', null);
   const parte3 = Array.isArray(janelas) && janelas.length
     ? '<ul class="linhas">' + janelas.map(j => `<li><div class="cab"><b>${esc(j.nome)}</b></div><div class="tres"><div><b>${inteiro(j.enviados)}</b><span>enviadas</span></div><div><b>${j.enviados ? pct((j.responderam || 0) / j.enviados) : '–'}</b><span>responderam</span></div><div><b>${j.enviados ? pct((j.fecharam || 0) / j.enviados) : '–'}</b><span>fecharam</span></div></div></li>`).join('') + '</ul>'
-    : '<p class="vazio">Ainda não medido. O servidor não registra em qual janela de pagamento cada mensagem saiu, então não dá para comparar as janelas sem inventar número. Quando ele passar a registrar, a comparação aparece aqui.</p>';
+    : '<p class="vazio">Ainda não medido. O servidor ainda não publica o resultado separado por janela de pagamento, então não dá para comparar as janelas sem inventar número. Quando ele publicar, a comparação aparece aqui.</p>';
 
   return `<section class="bloco"><h2>O que funciona melhor</h2><p class="sub">Cada abordagem com o que foi enviado, quem respondeu e quem fechou.</p><div class="caixa partes">
     <div class="parte"><p class="titulo-parte">Resposta e fechamento por abordagem</p>${parte1}</div>
@@ -195,7 +195,7 @@ function comoCalcula() {
     <li><b>Retorno por funcionário</b>: cada venda com toque do robô vai para o funcionário daquela abordagem. Atendimento e oferta de quem quitou: Atendente. Reativação e renovação: Recuperador. Indicação: Especialista VIP. Lembrete: Cobrador.</li>
   </ul></details>`;
 }
-function rodape() { return `<footer class="rodape"><p>Acesso do Gestor${E.g.email ? ' (' + esc(E.g.email) + ')' : ''}.</p><nav><a href="../hq/">Aliança HQ</a><a href="../">Painel de vendas</a><a href="../cobranca/">Cobrança diária</a></nav></footer>`; }
+function rodape() { return `<footer class="rodape"><p>Acesso do Gestor${E.g.email ? ' (' + esc(E.g.email) + ')' : ''}.</p><nav><a href="painel-completo.html">Painel completo (listas de clientes e histórico)</a><a href="hq/">Aliança HQ</a><a href="cobranca/">Cobrança diária</a></nav></footer>`; }
 
 /* ---------------- ações ---------------- */
 async function entrar(email, senha) {
