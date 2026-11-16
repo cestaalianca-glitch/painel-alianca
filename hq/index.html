@@ -1,1025 +1,128 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light" data-bs-theme-base="slate">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
 <title>Aliança HQ</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Pixelify+Sans:wght@500;700&display=swap">
-<link rel="stylesheet" href="office.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<style>
-/* Moldura no mesmo mundo do escritório: tela de jogo em pixel. Ameixa escura em volta, papel creme nos painéis,
-   madeira e dourado nas bordas, Pixelify nos títulos e números, Nunito no texto corrido. Cantos em degrau, sem arredondado. */
-:root{ --noite:#221d27; --ameixa:#2d2a32; --ameixa2:#3f3540; --papel:#f6f0e4; --papel2:#ebe2d1; --madeira:#8a6a4c; --madeira2:#5a4330;
-  --ouro:#f2c14e; --verde:#2f6b4f; --verde2:#245540; --tinta:#2d2a32; --tinta2:#5f5763; --linha:#d9cdb8; color-scheme:light }
-*{box-sizing:border-box}
-html,body{background:var(--noite)}
-body{margin:0;color:var(--tinta);font:500 15px/1.45 'Nunito',system-ui,sans-serif}
-::selection{background:var(--ouro);color:var(--ameixa)}
-.px{font-family:'Pixelify Sans',monospace}
-/* degrau de pixel nos cantos */
-.degrau{clip-path:polygon(0 6px,3px 6px,3px 3px,6px 3px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px))}
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1b40'/%3E%3Ccircle cx='12.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3Ccircle cx='19.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3C/svg%3E">
+<!-- Visual: Tabler 1.7.5 (github.com/tabler/tabler, licença MIT), tema claro fixo. Cada trava de integridade vale só para esta versão:
+     ao trocar de versão, copiar de novo as três linhas da documentação (docs.tabler.io), não mudar só o número. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css" integrity="sha384-BY4EnLpEeqBnDZno/u4SjmwHqbv1/U9as69Q0Jk/zeaDJ8iV10NK7FP+6fFEGW4i" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler-themes.min.css" integrity="sha384-8ynacb8IixxaphA1N8dVVP2cnDKTD2tJJ6GHjaGoR37CPjmC6gT0xqNNXxX5tA1t" crossorigin="anonymous">
+<link rel="stylesheet" href="hq.css">
+</head>
+<body>
 
-/* ---------- barra de cima ---------- */
-.hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:var(--ameixa);border-bottom:3px solid var(--ouro);color:#fff8e1}
-.placa{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 8px;background:var(--verde);box-shadow:inset 0 0 0 3px var(--ouro),inset 0 0 0 6px var(--verde2)}
-.placa b{display:grid;place-items:center;width:30px;height:30px;background:var(--ouro);color:var(--ameixa);font:700 19px/1 'Pixelify Sans',monospace}
-.placa h1{margin:0;font:700 20px/1 'Pixelify Sans',monospace;letter-spacing:1.5px;white-space:nowrap}
-.hud .sub{font-size:13px;color:#cfc5b3;font-weight:700}
-.cont{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
-.cont span{display:flex;align-items:center;gap:7px;padding:6px 10px;background:var(--ameixa2);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);font-size:13px;font-weight:800;color:#e9e1d2}
-.cont span b{font:700 16px/1 'Pixelify Sans',monospace;color:#fff8e1}
-.cont i,.leg i{width:10px;height:10px;display:inline-block;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+<!-- LINHA PÚBLICA: esta página não guarda dado nenhum. Sem login ela mostra só o estado de cada funcionário digital
+     (contagens das linhas hq-pc e hq-servidor). Valores, filas e nomes só chegam do banco depois do login do Gestor. -->
 
-/* ---------- palco: escritório + painel ---------- */
-.palco{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,410px);gap:16px;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px));height:calc(100dvh - var(--hudH,64px));min-height:520px}
-.mapa-e-leg{min-width:0;min-height:0}
-.mapa{position:relative;height:100%;min-width:0;min-height:0;background:var(--ameixa2);box-shadow:inset 0 0 0 3px var(--ameixa),0 8px 0 rgba(0,0,0,.3)}
-.vp{position:absolute;inset:3px;overflow:auto;display:flex;cursor:grab;touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none;scrollbar-color:var(--madeira) var(--ameixa)}
-.vp.arr{cursor:grabbing}
-.caixa{position:relative;margin:auto;flex:none}
-.zoom{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;background:var(--ameixa);box-shadow:inset 0 0 0 3px var(--madeira2),0 4px 0 rgba(0,0,0,.35);padding:3px}
-.zb{width:40px;height:40px;border:0;background:var(--papel);color:var(--tinta);font:700 20px/1 'Pixelify Sans',monospace;cursor:pointer;box-shadow:inset 0 -4px 0 var(--papel2)}
-.zb:hover{background:#fff}.zb:active{box-shadow:inset 0 3px 0 var(--papel2)}
-.zb.w{width:auto;padding:0 12px;font-size:14px;margin-left:3px}
-.pct{min-width:50px;text-align:center;color:#fff8e1;font:700 14px/1 'Pixelify Sans',monospace}
-.leg{position:absolute;left:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:6px 14px;max-width:calc(100% - 280px);padding:8px 12px;background:rgba(45,42,50,.9);box-shadow:inset 0 0 0 3px var(--madeira2);color:#e9e1d2;font-size:12.5px;font-weight:800}
-.leg span{display:flex;align-items:center;gap:6px}
-.dica{position:absolute;right:12px;top:12px;transition:opacity .6s ease-out;padding:6px 10px;background:rgba(45,42,50,.88);color:#e9e1d2;font-size:12.5px;font-weight:700;pointer-events:none}
+<div class="page">
+  <header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+      <h1 class="navbar-brand navbar-brand-autodark pe-0 pe-md-3">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#0d1b40"/><circle cx="12.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/><circle cx="19.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/></svg>
+        <span class="ms-2">Aliança HQ</span>
+      </h1>
+      <div class="navbar-nav flex-row align-items-center order-md-last">
+        <span id="sinal" class="me-3" aria-live="polite"><span class="status status-secondary"><span class="status-dot"></span> Lendo</span></span>
+        <button type="button" class="btn btn-primary" id="botao-entrar">Entrar</button>
+      </div>
+    </div>
+  </header>
 
-/* ---------- painel com abas ---------- */
-.doca{display:flex;flex-direction:column;min-height:0;min-width:0}
-.abas{display:flex;gap:4px;padding:0 6px}
-.aba{flex:1;min-width:0;padding:10px 6px 9px;border:0;background:var(--ameixa2);color:#cfc5b3;font:700 14px/1 'Pixelify Sans',monospace;letter-spacing:.5px;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.3)}
-.aba:hover{color:#fff8e1;background:#4a3f4b}
-.aba[aria-selected="true"]{background:var(--papel);color:var(--tinta);box-shadow:inset 0 3px 0 var(--ouro)}
-.aba .n{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:5px;padding:0 4px;background:#e5484d;color:#fff;font-size:11px}
-.quadro{flex:1;min-height:0;overflow:auto;background:var(--papel);box-shadow:0 8px 0 rgba(0,0,0,.3);scrollbar-color:var(--madeira) var(--papel2)}
-.pane{padding:18px;display:flex;flex-direction:column;gap:16px}
-.pane h2{margin:0;font:700 19px/1.2 'Pixelify Sans',monospace;letter-spacing:.5px}
-.pane h3{margin:0 0 4px;font:700 13px/1.2 'Pixelify Sans',monospace;color:var(--madeira2);letter-spacing:.5px}
-.pane p{margin:0}
-.rodape{margin:0;padding:10px 6px 0;font-size:12px;color:#a99f8f}
-
-/* ficha */
-.fcab{position:relative;display:flex;gap:14px;align-items:center;padding-right:44px}
-.foto{position:relative;flex:none;width:72px;height:72px;box-shadow:inset 0 0 0 3px var(--ameixa);overflow:hidden}
-.fcab h2{margin:0 0 6px;overflow-wrap:anywhere}
-#fechar,#fechachat{position:absolute;top:0;right:0;width:36px;height:36px;font-size:18px}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;font-size:13px;font-weight:800}
-.pill i{width:8px;height:8px}
-.tres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.tres div{background:var(--papel2);padding:9px 10px;min-width:0;box-shadow:inset 0 -3px 0 var(--linha)}
-.tres b{display:block;font:700 11px/1.2 'Pixelify Sans',monospace;color:var(--tinta2);letter-spacing:.5px}
-.tres span{display:block;font-size:14px;font-weight:800;margin-top:3px;overflow-wrap:anywhere}
-.pane p.txt{font-size:15px}
-.setor{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 0;border-top:2px dashed var(--linha)}
-.setor:first-of-type{border-top:0}
-.setor .q{flex:none;width:14px;height:14px;box-shadow:inset 0 0 0 2px var(--ameixa)}
-.setor .n{flex:1;font-weight:800;font-size:15px}
-.setor .p{font-size:13px;color:var(--tinta2);font-weight:700}
-.tag{padding:2px 7px;font-size:12px;font-weight:800}
-.nota{font-size:12.5px;line-height:1.4;color:var(--tinta2);margin:0}
-.acao{border:0;padding:12px 14px;font:700 15px/1 'Pixelify Sans',monospace;letter-spacing:.5px;cursor:pointer;background:var(--verde);color:#fff8e1;box-shadow:inset 0 -4px 0 var(--verde2)}
-.acao:hover{background:#357a5a}.acao:active{box-shadow:inset 0 3px 0 var(--verde2)}.acao:disabled{opacity:.55;cursor:default}
-.acao.roxo{background:#6d4ad6;box-shadow:inset 0 -4px 0 #4c2a99}.acao.roxo:hover{background:#7a58e0}
-.zb:focus-visible,.aba:focus-visible,.acao:focus-visible,.campo:focus-visible,.limpa:focus-visible{outline:3px solid var(--ouro);outline-offset:2px}
-.campo{width:100%;min-height:72px;resize:vertical;border:0;padding:10px 12px;font:600 15px/1.4 'Nunito',sans-serif;color:var(--tinta);background:#fffdf8;box-shadow:inset 0 0 0 2px var(--linha),inset 0 3px 0 var(--papel2)}
-.campo::placeholder{color:#8d8478}
-/* conversa */
-.msgs{display:flex;flex-direction:column;gap:8px;min-height:160px;max-height:min(46vh,420px);overflow:auto;padding:10px;background:var(--papel2);box-shadow:inset 0 3px 0 rgba(0,0,0,.06)}
-.msg{max-width:88%;padding:8px 11px;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
-.msg.eu{align-self:flex-end;background:var(--verde);color:#fff8e1;box-shadow:inset 0 -3px 0 var(--verde2)}
-.msg.ele{align-self:flex-start;background:#fffdf8;box-shadow:inset 0 -3px 0 var(--linha)}
-.msg.aviso{align-self:center;background:#fdf1c7;color:#7a5500;font-size:13px}
-.linha{display:flex;gap:8px;align-items:stretch}.linha .campo{min-height:46px}
-.pedido{background:#ede7fe;color:#3d2690;padding:10px 12px;font-size:14px;line-height:1.45}
-.limpa{background:none;border:0;padding:0;font:700 12.5px 'Nunito',sans-serif;color:var(--tinta2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;align-self:flex-start}
-.vazio{display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 10px;text-align:center;color:var(--tinta2)}
-.vazio .ch{position:relative!important;left:auto!important;top:auto!important}
-/* o dia */
-.achado{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:2px dashed var(--linha)}
-.achado:first-of-type{border-top:0}
-.achado i{flex:none;width:12px;height:12px;margin-top:5px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.2)}
-.achado p{font-size:14.5px}
-[hidden]{display:none!important}
-.pxm .slot.func .nm{background:#f2c14e;font-size:12px;padding:4px 8px 4px 6px}
-.pxm .slot.ferr .nm{background:#ece6db;font-size:10.5px;font-weight:700}
-.pxm .slot.afazer{opacity:.75}
-.linha-ferr{display:flex;align-items:center;gap:8px;width:100%;padding:8px 2px;border:0;border-top:2px dashed var(--linha);background:none;font:700 14px 'Nunito',sans-serif;color:var(--tinta);cursor:pointer;text-align:left}
-.linha-ferr:hover{background:var(--papel2)}.linha-ferr i{flex:none;width:10px;height:10px}.linha-ferr span{flex:1}.linha-ferr em{font-style:normal;font-size:12.5px;color:var(--tinta2)}
-button.setor{width:100%;border-left:0;border-right:0;border-bottom:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
-button.setor:hover{background:var(--papel2)}
-
-/* ---------- celular e tela estreita ---------- */
-@media (max-width:999px){
-  .palco{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}
-  .mapa{height:min(58vh,520px)}
-  .quadro{overflow:visible}
-  .leg{display:none}
-  .cont{margin-left:0;gap:4px}.cont span{padding:5px 8px;font-size:12px}.cont span:first-child{display:none}
-  .dica{left:12px;right:12px;text-align:center}
-  .hud{padding-block:8px}
-  .mapa-e-leg{display:flex;flex-direction:column}
-  .hud .sub{display:none}
-}
-@media (max-width:400px){.tres{grid-template-columns:repeat(2,minmax(0,1fr))}.aba{font-size:13px;padding-inline:3px}}
-@media (prefers-reduced-motion:reduce){.pxm *{animation:none!important}}
-</style>
-
-<header class="hud" id="hud">
-  <div class="placa degrau"><b aria-hidden="true">A</b><h1>Aliança HQ</h1></div>
-  <span class="sub">Cesta Básica Aliança · escritório virtual</span>
-  <div class="cont" id="cont"></div>
-</header>
-<main class="palco">
-  <section class="mapa-e-leg" aria-label="O escritório">
-    <div class="mapa degrau">
-      <div class="vp" id="vp"><div class="caixa" id="caixa"><div class="pxm" id="m"><div class="wall" style="width: 1344px">
-            <span class="win" style="left: 24px"></span>
-            <span class="win" style="left: 132px"></span>
-            <span class="win" style="left: 252px"></span>
-            <div class="brand" style="left: 348px; width: 336px">CESTA BÁSICA ALIANÇA</div>
-            <span class="win" style="left: 702px"></span>
-            <span class="win" style="left: 828px"></span>
-            <span class="win" style="left: 960px"></span>
-            <span class="win" style="left: 1092px"></span>
-            <span class="win" style="left: 1224px"></span>
+  <div class="page-wrapper">
+    <main class="page-body">
+      <div class="container-xl">
+        <!-- No celular: pendências, indicadores e equipe, um embaixo do outro. No computador: pendências à esquerda, indicadores e equipe à direita. -->
+        <div class="row row-cards">
+          <div class="col-lg-5" id="radar" hidden></div>
+          <div class="col-12" id="lado">
+            <div class="row row-cards">
+              <div class="col-12" id="pulso" hidden></div>
+              <div class="col-12" id="equipe"></div>
+            </div>
           </div>
+          <div class="col-lg-5" id="esteira" hidden></div>
+          <div class="col-lg-7" id="controles" hidden></div>
+        </div>
+      </div>
+    </main>
+    <footer class="footer footer-transparent d-print-none">
+      <div class="container-xl" id="rodape"></div>
+    </footer>
+  </div>
+</div>
 
-          <div class="room fl f-cor" style="left: 0px; top: 336px; width: 1344px; height: 144px"></div>
-          <div class="room fl f-cor" style="left: 720px; top: 480px; width: 48px; height: 240px"></div>
+<!-- detalhe de um funcionário, de um indicador ou de uma etapa -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="gaveta" aria-labelledby="gaveta-titulo">
+  <div class="offcanvas-header">
+    <div id="gaveta-cabeca"></div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+  </div>
+  <div class="offcanvas-body" id="gaveta-corpo"></div>
+</div>
 
-          <span class="beam" style="left: 12px"></span>
-          <span class="beam" style="left: 240px"></span>
-          <span class="beam" style="left: 690px"></span>
-          <span class="beam" style="left: 948px"></span>
-          <span class="beam" style="left: 1212px"></span>
+<div class="modal" id="login" tabindex="-1" aria-labelledby="login-titulo">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <form class="modal-content" id="login-form" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title" id="login-titulo">Entrar como Gestor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="login-email">E-mail</label>
+          <input class="form-control" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div>
+          <label class="form-label" for="login-senha">Senha</label>
+          <input class="form-control" id="login-senha" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="text-danger mt-2" id="login-erro" role="alert"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="login-ok">Entrar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-          <!-- Diretoria -->
-          <span class="d rug" style="left: 60px; top: 222px; width: 156px; height: 96px"></span>
-          <span class="d shelf" style="left: 141px; top: 108px; width: 66px; height: 72px"></span>
-          <span class="d plant" style="left: 207px; top: 190px"></span>
-          <span class="d sofa" style="left: 150px; top: 282px; width: 72px"></span>
-          <!-- Atendimento -->
-          <span class="d plant" style="left: 728px; top: 284px"></span>
-          <span class="d plant" style="left: 728px; top: 104px"></span>
-          <!-- Cobrança -->
-          <span class="d cab" style="left: 1182px; top: 132px"></span>
-          <span class="d cab" style="left: 1230px; top: 132px"></span>
-          <span class="d plant" style="left: 1302px; top: 104px"></span>
-          <span class="d chart" style="left: 912px; top: 246px"></span>
-          <span class="d cab" style="left: 1110px; top: 258px"></span>
-          <span class="d plant" style="left: 1302px; top: 284px"></span>
-          <!-- Corredor: café e entrada -->
-          <span class="d plant" style="left: 822px; top: 346px"></span>
-          <span class="d counter" style="left: 864px; top: 348px; width: 120px"></span>
-          <span class="d coffee" style="left: 876px; top: 324px"></span>
-          <span class="d steam" style="left: 888px; top: 316px"></span>
-          <span class="d cooler" style="left: 1002px; top: 330px"></span>
-          <span class="d sofa b" style="left: 1062px; top: 426px"></span>
-          <span class="d plant" style="left: 1176px; top: 424px"></span>
-          <span class="d plant" style="left: 18px; top: 424px"></span>
-          <span class="d mat" style="left: 720px; top: 690px; width: 48px; height: 24px"></span>
-          <span class="d floortag" style="left: 721px; top: 672px">ENTRADA</span>
-          <!-- Dados / Opy -->
-          <span class="d chart" style="left: 600px; top: 506px"></span>
-          <span class="d shelf fd" style="left: 690px; top: 502px; width: 24px; height: 90px"></span>
-          <span class="d shelf fd" style="left: 690px; top: 612px; width: 24px; height: 90px"></span>
-          <!-- Segurança -->
-          <span class="d cam" style="left: 930px; top: 498px"></span>
-          <!-- Máquinas -->
-          <div class="d rack" style="left: 1272px; top: 498px">
-            <i style="left: 6px; top: 6px"></i><i class="a" style="left: 15px; top: 6px"></i><i style="left: 6px; top: 24px; animation-delay: -.4s"></i><i class="r" style="left: 24px; top: 24px"></i><i style="left: 6px; top: 42px; animation-delay: -.8s"></i><i class="a" style="left: 15px; top: 60px; animation-delay: -.2s"></i><i style="left: 6px; top: 78px; animation-delay: -.6s"></i>
+<!-- pergunta antes de ligar ou pausar uma chave e antes das ordens de risco -->
+<div class="modal" id="confirma" tabindex="-1" aria-labelledby="confirma-titulo">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <div class="modal-status bg-primary" id="confirma-faixa"></div>
+      <div class="modal-body py-4">
+        <h3 id="confirma-titulo"></h3>
+        <div class="text-secondary" id="confirma-texto"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col"><button type="button" class="btn w-100" data-bs-dismiss="modal">Cancelar</button></div>
+            <div class="col"><button type="button" class="btn btn-primary w-100" id="confirma-sim"></button></div>
           </div>
-
-          <div class="cw" style="left: 336px; top: 528px" aria-hidden="true">
-            <span class="ch walk k-rotina t-0"><span class="sh"></span><span class="hd"></span><span class="hr"></span><span class="ck"></span><span class="ey"></span><span class="bd"></span><span class="ar"></span><span class="lg"></span></span>
-            <span class="cup"></span>
-          </div></div></div></div>
-      <span class="dica" id="dica">Arraste para mover · clique em alguém</span>
-      <div class="zoom degrau"><button class="zb" id="zout" type="button" aria-label="Diminuir zoom">−</button><div class="pct" id="pct">100%</div><button class="zb" id="zin" type="button" aria-label="Aumentar zoom">+</button><button class="zb w" id="fit" type="button">Ajustar</button></div>
-      <div class="leg degrau" id="leg"><span><i style="background:#2fb36b"></i>Funcionando</span><span><i style="background:#f2b705"></i>Atenção</span><span><i style="background:#e5484d"></i>Problema</span><span><i style="background:#8b5cf6"></i>Vaga</span></div>
+        </div>
+      </div>
     </div>
-  </section>
-  <aside class="doca" id="doca">
-    <div class="abas" role="tablist" aria-label="Painel">
-      <button class="aba degrau" role="tab" id="aba-dia" aria-controls="analise" type="button">O dia</button>
-      <button class="aba degrau" role="tab" id="aba-ficha" aria-controls="ficha" type="button">Ficha</button>
-      <button class="aba degrau" role="tab" id="aba-conversa" aria-controls="chat" type="button">Conversa</button>
-      <button class="aba degrau" role="tab" id="aba-setores" aria-controls="painel-setores" type="button">Equipe</button>
-    </div>
-    <div class="quadro degrau">
-      <div class="pane" id="analise" role="tabpanel" hidden></div>
-      <div class="pane" id="ficha" role="tabpanel" hidden></div>
-      <div class="pane" id="chat" role="tabpanel" hidden></div>
-      <div class="pane" id="painel-setores" role="tabpanel" hidden><h2>A equipe</h2><p class="nota">7 funcionários, cada um dono de um resultado. As máquinas do escritório são as ferramentas deles.</p><div id="setores"></div></div>
-    </div>
-    <p class="rodape">Robôs, chaves e triagem ao vivo (atualiza a cada minuto). Só contagens: nenhum dado de cliente. Resumo do dia de 13/11/2026 às 15:02.</p>
-  </aside>
-</main>
+  </div>
+</div>
 
-<script>
-const ROOMS = [
-      { id: 'dir', name: 'Diretoria', x: 0, y: 96, w: 240, h: 240, top: true, door: 84, cls: 'f-dir', swatch: '#c48a55' },
-      { id: 'ate', name: 'Atendimento', x: 240, y: 96, w: 528, h: 240, top: true, door: 228, cls: 'fl f-ate', swatch: '#9fdcbc' },
-      { id: 'cob', name: 'Cobrança', x: 768, y: 96, w: 576, h: 240, top: true, door: 420, cls: 'fl f-cob', swatch: '#ecd394' },
-      { id: 'ven', name: 'Vendas', x: 0, y: 480, w: 288, h: 240, top: false, door: 168, cls: 'fl f-ven', swatch: '#a6c9ec' },
-      { id: 'dad', name: 'Dados / Opy', x: 288, y: 480, w: 432, h: 240, top: false, door: 12, cls: 'fl f-dad', swatch: '#cdd2d8' },
-      { id: 'seg', name: 'Segurança', x: 768, y: 480, w: 192, h: 240, top: false, door: 108, cls: 'fl f-seg', swatch: '#c99aa0' },
-      { id: 'maq', name: 'Máquinas', x: 960, y: 480, w: 384, h: 240, top: false, door: 180, cls: 'fl f-maq', swatch: '#9aa7b5' }
-    ];
-    
-const P = [
-      { id: 'leonardo', n: 'Leonardo', k: 'dono', r: 'dir', s: 'green', c: 0, row: 0, t: 0, runs: '—', does: 'Dono da empresa. Recebe os alertas que precisam de uma decisão dele.', today: 'No escritório.' },
-      { id: 'agente-leonardo', n: 'Agente Leonardo', k: 'vigia', r: 'dir', s: 'yellow', c: 0, row: 1, p: 'pa', t: 0, runs: 'Nuvem', does: 'Assistente do dono: junta os alertas de todos os setores e avisa o Leonardo do que precisa de decisão.', today: 'Há itens esperando a sua decisão.' },
+<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3">
+  <div class="toast" id="aviso" role="status" aria-live="polite" aria-atomic="true">
+    <div class="toast-body" id="aviso-texto"></div>
+  </div>
+</div>
 
-      { id: 'central', n: 'Central', k: 'robo', r: 'ate', s: 'green', c: 0, row: 0, runs: 'Servidor', does: 'Número principal do WhatsApp: recebe e responde as mensagens dos clientes.' },
-      { id: 'rota-1', n: 'Rota 1', k: 'robo', r: 'ate', s: 'green', c: 1, row: 0, runs: 'Servidor', does: 'WhatsApp da rota 1: lembretes e conversas com os clientes da rota.' },
-      { id: 'rota-6', n: 'Rota 6', k: 'robo', r: 'ate', s: 'green', c: 2, row: 0, runs: 'Servidor', does: 'WhatsApp da rota 6: lembretes e conversas com os clientes da rota.' },
-      { id: 'rotas-18', n: 'Rotas 18/21/25', k: 'robo', r: 'ate', s: 'green', c: 3, row: 0, runs: 'Servidor', does: 'WhatsApp que atende os clientes das rotas 18, 21 e 25.' },
-      { id: 'cacador', n: 'Caçador', k: 'vigia', r: 'ate', s: 'green', c: 2, row: 1, p: 'pc', t: 1, runs: 'Nuvem', does: 'Procura conversas sem resposta e mensagens que ficaram para trás.' },
-      { id: 'prova', n: 'Prova', k: 'vigia', r: 'ate', s: 'green', c: 4, row: 0, p: 'pp', t: 2, runs: 'Nuvem', does: 'Confere os comprovantes enviados pelos clientes antes de dar baixa.' },
-      { id: 'memoria', n: 'Memória do cliente', k: 'fixer', r: 'ate', s: 'purple', c: 0, row: 1, does: 'Vai guardar o histórico de cada cliente para os robôs responderem com contexto.' },
-      { id: 'livro', n: 'Livro de casos', k: 'fixer', r: 'ate', s: 'purple', c: 1, row: 1, does: 'Vai registrar os casos resolvidos para reaproveitar as respostas.' },
+<noscript><div class="container-xl py-3">Esta página precisa de JavaScript para ler o estado da equipe.</div></noscript>
 
-      { id: 'rotina-manha', n: 'Rotina da manhã', k: 'rotina', r: 'cob', s: 'green', c: 0, row: 0, t: 1, runs: 'Servidor', does: 'Envia logo cedo os lembretes de vencimento do dia.' },
-      { id: 'rodada-1640', n: 'Rodada 16h40', k: 'rotina', r: 'cob', s: 'yellow', c: 1, row: 0, t: 2, runs: 'Servidor', does: 'Segunda rodada de cobrança, às 16h40, para quem ainda não pagou.', today: 'Precisa de atenção: conferir a rodada de hoje.' },
-      { id: 'trava-saldo', n: 'Trava de saldo', k: 'fixer', r: 'cob', s: 'green', c: 2, row: 0, t: 0, runs: 'Servidor', does: 'Impede cobrar quem já pagou: bloqueia o envio quando o saldo está zerado.' },
-      { id: 'correcao', n: 'Correção pronta', k: 'fixer', r: 'cob', s: 'green', c: 3, row: 0, t: 3, runs: 'Servidor', does: 'Corrige cadastros e valores com erro antes do envio.' },
-      { id: 'promessa', n: 'Promessa 3 passos', k: 'rotina', r: 'cob', s: 'purple', c: 0, row: 1, does: 'Vai acompanhar promessas de pagamento em 3 passos: lembrar, confirmar e cobrar.' },
-
-      { id: 'reativacao', n: 'Reativação', k: 'rotina', r: 'ven', s: 'yellow', c: 0, row: 0, t: 3, runs: 'Servidor', does: 'Oferece uma cesta nova para clientes que pararam de comprar.', today: 'Precisa de atenção: revisar a lista de hoje.' },
-      { id: 'recados', n: 'Recados', k: 'robo', r: 'ven', s: 'green', c: 1, row: 0, runs: 'Servidor', does: 'Envia recados e avisos gerais para os clientes.' },
-      { id: 'aviso-pix', n: 'Aviso de Pix', k: 'robo', r: 'ven', s: 'green', c: 2, row: 0, runs: 'Servidor', does: 'Avisa o cliente quando o Pix dele é recebido.' },
-      { id: 'entrevista', n: 'Entrevista', k: 'robo', r: 'ven', s: 'green', c: 0, row: 1, runs: 'Servidor', does: 'Conversa pelo WhatsApp com candidatos a vendedor.' },
-      { id: 'dono-pedido', n: 'Dono do pedido', k: 'vigia', r: 'ven', s: 'purple', c: 1, row: 1, does: 'Vai garantir que cada pedido tenha um vendedor responsável.' },
-      { id: 'indicacao', n: 'Indicação', k: 'rotina', r: 'ven', s: 'purple', c: 2, row: 1, does: 'Vai pedir indicações aos bons clientes.' },
-
-      { id: 'captura-noite', n: 'Captura da noite', k: 'rotina', r: 'dad', s: 'green', c: 0, row: 0, t: 0, runs: 'Servidor', does: 'Baixa os dados do Opy durante a noite.', today: 'Trabalho feito de madrugada. Agora, pausa para o café.' },
-      { id: 'captura-1640', n: 'Captura 16h40', k: 'rotina', r: 'dad', s: 'green', c: 1, row: 0, t: 1, runs: 'Servidor', does: 'Nova captura dos dados do Opy às 16h40.' },
-      { id: 'app-consulta', n: 'App de consulta', k: 'rotina', r: 'dad', s: 'green', c: 2, row: 0, t: 2, runs: 'Nuvem', does: 'App onde a equipe consulta clientes e saldos.' },
-      { id: 'conciliador', n: 'Conciliador', k: 'vigia', r: 'dad', s: 'yellow', c: 3, row: 1, p: 'pk', t: 3, runs: 'Nuvem', does: 'Compara os pagamentos recebidos com as baixas no sistema.', today: 'Precisa de atenção: há diferenças para conferir.' },
-      { id: 'tudo-bate', n: 'Tudo bate?', k: 'vigia', r: 'dad', s: 'purple', c: 0, row: 1, does: 'Vai conferir se os números do dia batem entre todos os sistemas.' },
-      { id: 'manual-opy', n: 'Manual do Opy', k: 'fixer', r: 'dad', s: 'purple', c: 1, row: 1, does: 'Vai documentar como usar e corrigir dados no Opy.' },
-      { id: 'open-finance', n: 'Open Finance', k: 'vigia', r: 'dad', s: 'purple', c: 2, row: 1, does: 'Vai ler o extrato do banco automaticamente.' },
-
-      { id: 'fiscal', n: 'Fiscal', k: 'vigia', r: 'seg', s: 'green', c: 0, row: 1, p: 'pf', t: 1, runs: 'Nuvem', does: 'Vigia as notas e as obrigações fiscais.' },
-      { id: 'pix-suspeito', n: 'Pix suspeito', k: 'vigia', r: 'seg', s: 'green', c: 1, row: 0, p: 'ps', t: 2, runs: 'Nuvem', does: 'Detecta Pix e comprovantes com sinais de fraude.' },
-      { id: 'dinheiro', n: 'Dinheiro no caminho', k: 'vigia', r: 'seg', s: 'purple', c: 0, row: 0, does: 'Vai acompanhar o dinheiro recebido pelos vendedores até chegar ao caixa.' },
-
-      { id: 'plantao', n: 'Plantão', k: 'vigia', r: 'maq', s: 'green', c: 3, row: 1, p: 'pl', t: 0, runs: 'Nuvem', does: 'Fica de plantão: avisa se algum robô ou rotina parar.' },
-      { id: 'vigia-servidor', n: 'Vigia servidor', k: 'fixer', r: 'maq', s: 'green', c: 0, row: 0, t: 2, runs: 'Servidor', does: 'Reinicia os serviços do servidor quando algo trava.' },
-      { id: 'troca', n: 'Troca PC↔servidor', k: 'fixer', r: 'maq', s: 'green', c: 1, row: 0, t: 1, runs: 'PC', does: 'Passa o trabalho do PC para o servidor (e vice-versa) se um deles cair.' },
-      { id: 'novo-1', n: 'Novo 1', k: 'robo', r: 'maq', s: 'green', c: 2, row: 0, runs: 'Servidor', does: 'Número de WhatsApp novo, em aquecimento.' },
-      { id: 'ajudante', n: 'Ajudante', k: 'robo', r: 'maq', s: 'green', c: 0, row: 1, runs: 'Servidor', does: 'WhatsApp de apoio que divide o volume de envios.' },
-      { id: 'varredura', n: 'Varredura', k: 'robo', r: 'maq', s: 'green', c: 1, row: 1, runs: 'Servidor', does: 'Varre conversas antigas e organiza os contatos.' },
-      { id: 'trava-celular', n: 'Trava celular', k: 'fixer', r: 'maq', s: 'green', c: 2, row: 1, t: 3, runs: 'Servidor', does: 'Protege os celulares dos robôs contra bloqueio do WhatsApp.' }
-    ];
-
-    
-const SALAS = [
- { nome:'Diretoria', x:0, y:0, w:6, d:5, piso:'#f2c27e', gente:[
-   {n:'Leonardo', t:'dono', e:'ok', o:'—', faz:'Decide o que só o dono decide: roubo, erro grave, DP ou perda depois de 120 dias.', hoje:'Aprovou o plano do WhatsApp e as regras novas do robô.'},
-   {n:'Agente Leonardo', t:'vigia', e:'atencao', o:'PC', faz:'Dá nota às respostas do robô como se fosse o Leonardo. Meta: subir de 6 até 10.', hoje:'Nota 6,0 nas 30 conversas reais (antes 3,5). Falta calibrar com o Leonardo.'},
- ]},
- { nome:'Atendimento', x:6, y:0, w:10, d:5, piso:'#a9d6b3', gente:[
-   {n:'Central', t:'robo', e:'ok', o:'PC', faz:'Atende e manda a rotina pelo número do escritório.', hoje:'Rotina e cobrança das 16h40 enviadas.'},
-   {n:'Rota 1', t:'robo', e:'ok', o:'PC', faz:'Atende os clientes da Rota 1.', hoje:'Rotina enviada.'},
-   {n:'Rota 6', t:'robo', e:'ok', o:'PC', faz:'Atende os clientes da Rota 6.', hoje:'Rotina enviada.'},
-   {n:'Rotas 18/21/25', t:'robo', e:'ok', o:'PC', faz:'Atende as rotas do Bruno e do Thiago.', hoje:'Rotina enviada.'},
-   {n:'Caçador', t:'vigia', e:'ok', o:'PC', faz:'Confere tudo o que saiu: saldo a mais, cobrança de quem pagou, Pix errado, grupo, repetida.', hoje:'Nenhum erro grave hoje.'},
-   {n:'Prova', t:'vigia', e:'ok', o:'PC', faz:'Testa toda mudança no robô antes de ir ao ar.', hoje:'42 de 42 casos certos.'},
-   {n:'Memória do cliente', t:'consertador', e:'vaga', o:'—', faz:'Guarda um resumo de cada cliente de um dia para o outro ("e a família, melhorou?").', hoje:'Vaga aberta.'},
-   {n:'Livro de casos', t:'consertador', e:'vaga', o:'—', faz:'Junta os casos que o Leonardo decidiu para o robô consultar.', hoje:'Vaga aberta.'},
- ]},
- { nome:'Cobrança', x:16, y:0, w:9, d:5, piso:'#f5d491', gente:[
-   {n:'Rotina da manhã', t:'rotina', e:'ok', o:'PC', faz:'Às 8h10 manda só o lembrete de véspera.', hoje:'Rodou às 8h27. Os 23 saldos conferidos estavam certos.'},
-   {n:'Rodada 16h40', t:'rotina', e:'ok', o:'PC', faz:'Cobra atraso com os saldos do fim da tarde, já com o acerto da manhã.', hoje:'Saiu às 16h40 com 65 mensagens. A partir de amanhã roda sozinha todo dia às 16h40.'},
-   {n:'Trava de saldo', t:'consertador', e:'ok', o:'PC', faz:'Sem dado do dia conferido, nenhuma mensagem com valor sai.', hoje:'Segurou a cobrança enquanto a captura falhava.'},
-   {n:'Correção pronta', t:'consertador', e:'ok', o:'PC', faz:'Manda a correção curta já aprovada quando um saldo sai errado.', hoje:'30 de 30 correções enviadas.'},
-   {n:'Promessa 3 passos', t:'rotina', e:'vaga', o:'—', faz:'Véspera, dia e, se não pagou, pergunta e visita do vendedor.', hoje:'Aprovado, a construir.'},
- ]},
- { nome:'Vendas', x:0, y:7, w:8, d:7, piso:'#b9d3f0', gente:[
-   {n:'Reativação', t:'rotina', e:'atencao', o:'PC', faz:'Oferece cesta aos bons clientes parados, do melhor ao menos melhor.', hoje:'Cerca de 620 candidatos, quase todos de fora pelo limite de envio.'},
-   {n:'Recados', t:'robo', e:'ok', o:'PC', faz:'Lista para os vendedores às 8h e 13h, mais o recado na hora.', hoje:'32 recados ontem.'},
-   {n:'Aviso de Pix', t:'robo', e:'ok', o:'PC', faz:'Avisa o vendedor na hora que o cliente pagou por Pix.', hoje:'Ligado hoje às 9h45.'},
-   {n:'Entrevista', t:'robo', e:'ok', o:'PC', faz:'Faz o cadastro e a entrevista de crédito do cliente novo.', hoje:'Funcionando.'},
-   {n:'Dono do pedido', t:'vigia', e:'vaga', o:'—', faz:'Nenhum "quero comprar" fica sem dono. Sem resposta em 24 h, resolve.', hoje:'Vaga aberta.'},
-   {n:'Indicação', t:'rotina', e:'vaga', o:'—', faz:'Pede indicação a quem quitou. Prêmio ou desconto a estudar.', hoje:'Aprovado, a construir.'},
- ]},
- { nome:'Dados / Opy', x:8, y:7, w:8, d:7, piso:'#d6d2ca', gente:[
-   {n:'Captura da noite', t:'rotina', e:'ok', o:'Nuvem', faz:'Tira a foto do relatório de cobrança do Opy à noite.', hoje:'Ontem às 23h04: 24 segundos.'},
-   {n:'Captura 16h40', t:'rotina', e:'ok', o:'Nuvem', faz:'Foto com o acerto da manhã para a cobrança da tarde.', hoje:'De dia o Opy não entrega; às 16h40 deu certo em 1 minuto e meio.'},
-   {n:'App de consulta', t:'rotina', e:'ok', o:'Nuvem', faz:'Atualiza toda noite o app que os vendedores usam.', hoje:'23.666 clientes, 100% iguais à fonte.'},
-   {n:'Conciliador', t:'vigia', e:'atencao', o:'PC', faz:'Acha Pix que chegou no e-mail do banco e ainda não tem baixa.', hoje:'Feito, mas não roda todo dia.'},
-   {n:'Tudo bate?', t:'vigia', e:'vaga', o:'—', faz:'Antes de cada envio, confere se saldos, pagamentos e foto do Opy são do mesmo dia e batem.', hoje:'O mais importante. Vaga aberta.'},
-   {n:'Manual do Opy', t:'consertador', e:'vaga', o:'—', faz:'Entende cada tela e campo do Opy antes de qualquer automação nele.', hoje:'Vaga aberta.'},
-   {n:'Open Finance', t:'vigia', e:'vaga', o:'—', faz:'Lê o extrato pelo Meu Pluggy para pegar todo Pix.', hoje:'Vaga aberta.'},
- ]},
- { nome:'Segurança', x:16, y:7, w:4, d:7, piso:'#d8c4bb', gente:[
-   {n:'Fiscal', t:'vigia', e:'ok', o:'PC', faz:'Acompanha os vendedores e acha sinais de desvio.', hoje:'Funcionando.'},
-   {n:'Pix suspeito', t:'vigia', e:'ok', o:'PC', faz:'Comprovante para outra chave vai só para o Leonardo, discreto.', hoje:'9 suspeitas abertas em 2 dias.'},
-   {n:'Dinheiro no caminho', t:'vigia', e:'vaga', o:'—', faz:'Cruza "paguei ao vendedor" com as baixas; 7 dias sem aparecer, avisa.', hoje:'Vaga aberta.'},
- ]},
- { nome:'Máquinas', x:20, y:7, w:5, d:7, piso:'#c3cad3', gente:[
-   {n:'Plantão', t:'vigia', e:'ok', o:'PC', faz:'De 15 em 15 min, sem Claude: número caído, disparo parado, robô lento.', hoje:'Rodando, inclusive na bateria.'},
-   {n:'Vigia servidor', t:'consertador', e:'ok', o:'Servidor', faz:'Religa robô que cai e avisa queda.', hoje:'Religou o Novo 1 em 5 segundos no teste.'},
-   {n:'Troca PC↔servidor', t:'consertador', e:'ok', o:'PC', faz:'A cada 15 min leva listas e regras e traz pendências e conferências.', hoje:'Rodando, sem duplicar nada.'},
-   {n:'Novo 1', t:'robo', e:'ok', o:'Servidor', faz:'Número auxiliar, já no servidor.', hoje:'Conectado desde 11h10.'},
-   {n:'Ajudante', t:'robo', e:'ok', o:'Servidor', faz:'Confere números e ajuda nos envios.', hoje:'No servidor desde 14h02.'},
-   {n:'Varredura', t:'robo', e:'ok', o:'Servidor', faz:'Confere quem tem WhatsApp.', hoje:'No servidor desde 14h05.'},
-   {n:'Trava celular', t:'consertador', e:'ok', o:'Servidor', faz:'Recusa QR lido com o celular errado.', hoje:'Ligada hoje para todos os números.'},
- ]},
-];
-// textos, estado e onde roda vêm do nosso cadastro; posição na sala vem do design
-// (13/11/2026) textos e estado das mesas atualizados para hoje
-const HOJE_HQ = {"Central":{"e":"ok","o":"Servidor","hoje":"Migrada para o servidor às 10h36, sem pedir QR Code."},"Rota 1":{"e":"ok","o":"Servidor","hoje":"Migrada para o servidor às 10h36."},"Rota 6":{"e":"ok","o":"Servidor","hoje":"Migrada para o servidor às 10h36."},"Rotas 18/21/25":{"e":"ok","o":"Servidor","hoje":"Migrada para o servidor às 10h36."},"Novo 1":{"e":"ok","o":"Servidor","hoje":"Reconectado às 10h46 com QR Code novo."},"Ajudante":{"e":"ok","o":"Servidor","hoje":"Confere números (teto de 100/dia) e ajuda nos envios; segue o dia todo mesmo com 3 sem WhatsApp seguidos."},"Varredura":{"e":"ok","o":"Servidor","hoje":"Só confere WhatsApp: 100 por dia nos últimos 4 dias (o teto); a rampa sobe aos poucos a partir de amanhã."},"Caçador":{"e":"ok","o":"PC","hoje":"Confere o que saiu; sem erro grave hoje."},"Rotina da manhã":{"e":"ok","o":"Servidor","hoje":"Hoje rodou no PC (8h28, 35 mensagens, nenhuma repetida). A partir de amanhã roda no servidor: cadastro às 6h30 e rotina às 8h10, seg–sáb."},"Rodada 16h40":{"e":"ok","o":"Servidor","hoje":"Cobrança das 12h15 e rodada das 16h40 agendadas no servidor (seg–sáb); o PC não dispara mais nenhuma."},"Reativação":{"e":"atencao","o":"PC","hoje":"Motor novo pronto (chave desligada); hoje só ~43 clientes entram no critério e a rotina já ofereceu a quase todos."},"Recados":{"e":"ok","o":"Servidor","hoje":"Recados aos grupos saíram às 9h; romaneio ligado no servidor."},"Aviso de Pix":{"e":"ok","o":"Servidor","hoje":"Chave ligada no servidor."},"Pix suspeito":{"e":"atencao","o":"PC","hoje":"Casos de pagamento a vendedor/outra chave para conferir (ver Dinheiro no caminho)."},"Conciliador":{"e":"ok","o":"Servidor","hoje":"Piloto automático ligado no servidor: sombra a cada 30 min, sem gravar baixa."},"Captura da noite":{"e":"ok","o":"Nuvem","hoje":"Captura do Painel e da Consulta na nuvem (GitHub)."},"Captura 16h40":{"e":"ok","o":"Nuvem","hoje":"Tentativas da nuvem às 12h07, 14h07, 16h07 e 18h07."},"Tudo bate?":{"e":"ok","o":"PC","hoje":"Script pronto: cruza captura, listas, envios, Pix e pendências (só leitura)."},"Manual do Opy":{"e":"ok","o":"—","hoje":"Manual escrito: páginas, seletores e fluxos do Opy."},"Dinheiro no caminho":{"e":"atencao","o":"PC","hoje":"Registro criado: 26 caso(s) aberto(s) para cobrar os vendedores."},"Plantão":{"e":"ok","o":"PC","hoje":"Só confere e traz eventos do servidor a cada 15 min; nada sobe do PC para o servidor."},"Vigia servidor":{"e":"ok","o":"Servidor","hoje":"Cuida dos 7 números no servidor; o PC não segura mais nenhum."},"Troca PC↔servidor":{"e":"ok","o":"Servidor","hoje":"O servidor é a fonte de dados, listas e regras; o PC só recebe de volta o que mudou lá."},"Trava celular":{"e":"ok","o":"Servidor","hoje":"Ligada para todos os números."}};
-SALAS.forEach(s => s.gente.forEach(g => { if (HOJE_HQ[g.n]) Object.assign(g, HOJE_HQ[g.n]); }));
-const NOSSO = {}; SALAS.forEach(s => s.gente.forEach(g => NOSSO[g.n] = g));
-const COR = { ok: 'green', atencao: 'yellow', problema: 'red', vaga: 'purple' };
-P.forEach(p => { const g = NOSSO[p.n]; if (!g) return; p.s = COR[g.e] || p.s; p.runs = g.o === '—' ? '—' : g.o; p.does = g.faz; p.today = g.hoje; });
-// o dia analisado manda no estado e no "hoje" de quem tem número de verdade
-const DIA = {"geral":{"dia":"2026-11-13","br":"13/11/2026","achados":[{"g":"ok","t":"7 de 7 robôs conectados, todos no servidor (VPS) desde as 10h36 de hoje; nenhum roda mais no PC."},{"g":"ok","t":"8 das 10 chaves ligadas, todas no servidor: ofertas pós-quitação, avisos ao vendedor (grupo da rota), pergunta da próxima data (pix parcial), boletim do dono às 17h50, romaneio no grupo do vendedor, piloto automático do conciliador (ciclos de 30 min), arquivar conversas concluídas (24 h), dono do pedido (vigia de \"quero comprar\"). A gravação automática de baixa continua desligada."},{"g":"ok","t":"O servidor entra no Opy sem bloqueio (teste de hoje, 11h05: login e leitura de uma ficha em 7,7 s). Desde as 15h de hoje a captura do Opy (recebimentos, vendas e cobrança) roda também no servidor, com os mesmos dados de hoje; o PC deixou de capturar."},{"g":"atencao","t":"Reativação: cerca de 960 números ainda sem conferir WhatsApp. Varredura e Ajudante conferem 100 por dia cada (o teto) e a Central 30; a rampa que sobe esse ritmo aos poucos começa amanhã. O motor novo de reativação está pronto, com a chave desligada."},{"g":"atencao","t":"26 caso(s) de \"paguei ao vendedor\" sem lançamento no registro Dinheiro no caminho (a verificar; ninguém acusado)."},{"g":"atencao","t":"22 Pix sem baixa e 17 \"já paguei\" parados. Esses clientes não entram em lista de cobrança até a baixa."},{"g":"ok","t":"Tudo bate? das 15:02: 19 itens ok, 1 para olhar, 0 erro(s). A rodada de cobrança das 12h15 está agendada (seg–sáb)."}]},"gente":{}};
-if (DIA) P.forEach(p => { const d = DIA.gente[p.n]; if (!d) return; p.s = COR[d.e] || p.s; p.today = d.hoje; p.num = d.num; });
-const RELS = [];
-const CARGO = { cobrador: 'Cobrador', conferente: 'Conferente', atendente: 'Atendente', vendedor: 'Vendedor', fiscal: 'Fiscal', tecnico: 'Técnico', gerente: 'Gerente' };
-const SIM = null;
-function simulacao(){ if (!SIM) return ''; const cor = { problema: '#e5484d', atencao: '#f2b705', ok: '#2fb36b' };
-  const ok = SIM.checks.filter(c => c.ok).length, falhas = SIM.checks.filter(c => !c.ok), grupos = [...new Set(SIM.checks.map(c => c.quem))];
-  const lin = (g, t) => '<div class="achado"><i style="background:' + (cor[g] || cor.ok) + '"></i><p>' + esc(t) + '</p></div>';
-  return '<h2 style="margin-top:8px">Teste: dia de trabalho extremo</h2><p class="nota">Dia inventado em ' + esc(new Date(SIM.quando).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + ' com dados de verdade e problemas plantados: 100 Pix sem baixa, promessas furadas, descontos e vendas zeradas, a conferência e a captura falhando, o limite do Claude estourando e o PC suspenso. Nada foi enviado nem lançado.</p>' +
-    '<p><b class="px" style="font-size:22px">' + ok + ' de ' + SIM.checks.length + '</b> problemas plantados foram achados.</p>' +
-    grupos.map(q => { const l = SIM.checks.filter(c => c.quem === q), a = l.filter(c => c.ok).length; return lin(a === l.length ? 'ok' : 'atencao', q + ': achou ' + a + ' de ' + l.length + (a < l.length ? '. Escapou: ' + l.filter(c => !c.ok).map(c => c.item + (c.nota ? ' (' + c.nota + ')' : '')).join('; ') : '.')); }).join('') +
-    '<h3 style="margin-top:6px">Ninguém viu (o funcionário dono ainda não existe)</h3>' + SIM.semDono.map(x => lin(x.g, x.t)).join('') +
-    '<h3 style="margin-top:6px">O que custa a máquina que ainda não existe</h3>' + SIM.faltam.map(x => lin(x.g, x.t)).join(''); }
-function relatorios(){ if (!RELS.length) return '';
-  const cor = { problema: '#e5484d', atencao: '#f2b705', ok: '#2fb36b' };
-  return '<h2 style="margin-top:8px">Relatório dos funcionários</h2>' + RELS.map(r => '<div class="achado" style="flex-direction:column;gap:6px"><div style="display:flex;gap:10px;align-items:center"><i style="margin:0;background:' + (cor[r.nota] || cor.ok) + '"></i><b class="px" style="font-size:16px">' + esc(CARGO[r.funcionario] || r.funcionario) + '</b><span class="nota">turno da ' + esc(r.turno === 'tarde' ? 'tarde' : 'manhã') + ' · ' + esc(new Date(r.quando).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</span></div>' +
-    '<p>' + esc(r.resumo) + '</p>' + (r.acoes && r.acoes.length ? '<ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.45">' + r.acoes.map(a => '<li>' + esc(a) + '</li>').join('') + '</ol>' : '') + '</div>').join(''); }
-function analise(){ const a = document.getElementById('analise'), q = a.closest('.quadro'), rolagem = q ? q.scrollTop : 0;
-  document.querySelectorAll('#aba-dia .n').forEach(e => e.remove());
-  analiseBase(a);
-  a.insertAdjacentHTML('afterbegin', '<div id="live" style="display:flex;flex-direction:column;gap:6px;padding-bottom:14px;border-bottom:3px solid var(--ouro)">' + (typeof liveHtml === 'function' ? (() => { try { return liveHtml(); } catch (e) { return ''; } })() : '') + '</div>');
-  if (q) q.scrollTop = rolagem; }
-function analiseBase(a){
-  if (!DIA) { a.innerHTML = '<h2>O dia</h2><p class="nota">Ainda não tem análise do dia. Ela é feita toda manhã com os registros dos robôs.</p>'; return; }
-  const cor = { problema: '#e5484d', atencao: '#f2b705', ok: '#2fb36b' };
-  a.innerHTML = '<h2>Como foi o dia ' + esc(DIA.geral.br.slice(0, 5)) + '</h2><div>' +
-    DIA.geral.achados.map(x => '<div class="achado"><i style="background:' + (cor[x.g] || cor.ok) + '"></i><p>' + esc(x.t) + '</p></div>').join('') +
-    '</div><p class="nota">Toque em cada funcionário para ver o dia dele, ou converse com ele sobre o dia.</p>' + relatorios() + simulacao();
-  const graves = DIA.geral.achados.filter(x => x.g === 'problema').length;
-  if (graves) document.getElementById('aba-dia').insertAdjacentHTML('beforeend', '<span class="n" aria-label="' + graves + ' problemas">' + graves + '</span>'); }
-// abas do painel
-const ABAS = { dia: 'analise', ficha: 'ficha', conversa: 'chat', setores: 'painel-setores' };
-function aba(n){ for (const k in ABAS) { const on = k === n; document.getElementById('aba-' + k).setAttribute('aria-selected', on ? 'true' : 'false'); document.getElementById('aba-' + k).tabIndex = on ? 0 : -1; document.getElementById(ABAS[k]).hidden = !on; } }
-for (const k in ABAS) document.getElementById('aba-' + k).addEventListener('click', () => aba(k));
-document.querySelector('.abas').addEventListener('keydown', e => { const ks = Object.keys(ABAS), at = ks.findIndex(k => document.getElementById('aba-' + k).getAttribute('aria-selected') === 'true');
-  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = ks[(at + (e.key === 'ArrowRight' ? 1 : ks.length - 1)) % ks.length]; aba(n); document.getElementById('aba-' + n).focus(); } });
-const mostraPainel = () => { if (innerWidth < 1000) document.getElementById('doca').scrollIntoView({ block: 'start' }); };
-const STATUS = {
-  green: { label: 'Funcionando', bg: '#def5e7', fg: '#1d7a47', dot: '#2fb36b' }, yellow: { label: 'Precisa de atenção', bg: '#fdf1c7', fg: '#8a6100', dot: '#f2b705' },
-  red: { label: 'Com problema', bg: '#fde2e2', fg: '#b4232a', dot: '#e5484d' }, purple: { label: 'Vaga aberta', bg: '#ede7fe', fg: '#5b33c4', dot: '#8b5cf6' } };
-const KIND = { robo: 'Robô de WhatsApp', rotina: 'Rotina', vigia: 'Vigia', fixer: 'Consertador', dono: 'Dono' };
-const R = {}; ROOMS.forEach(r => R[r.id] = r);
-const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const corpo = p => '<span class="sh"></span><span class="hd"></span><span class="hr"></span><span class="ck"></span><span class="ey"></span><span class="bd"></span><span class="ar"' + (p.delay !== undefined ? ' style="animation-delay:' + p.delay + 's"' : '') + '></span><span class="lg"></span>';
-let sel = null;
-const m = document.getElementById('m');
-// salas (desenhadas uma vez, atrás de tudo)
-m.insertAdjacentHTML('afterbegin', ROOMS.map(r => '<div class="room walls ' + (r.top ? 'top ' : 'bot ') + r.cls + '" style="left:' + r.x + 'px;top:' + r.y + 'px;width:' + r.w + 'px;height:' + r.h + 'px"><span class="door ' + (r.top ? 'dn' : 'up') + '" style="left:' + r.door + 'px"></span><div class="sign"><i style="background:' + r.swatch + '"></i>' + esc(r.name) + '</div></div>').join(''));
-// o chão do corredor e o caminho da entrada vêm antes das salas no design
-m.insertAdjacentHTML('afterbegin', '<div class="room fl f-cor" style="left:0;top:336px;width:1344px;height:144px"></div><div class="room fl f-cor" style="left:720px;top:480px;width:48px;height:240px"></div>');
-const gente = document.createElement('div'); m.appendChild(gente);
-// ---------- os 7 funcionários de verdade (agente + skills + conector). O resto do escritório são as FERRAMENTAS deles. ----------
-const FUNCS = [
-  { cargo: 'gerente', n: 'Gerente', r: 'dir', slot: 'agente-leonardo', k: 'vigia', t: 0, meta: 'Recuperar o recebimento do mês (meta e valores só no acesso do Gestor).', does: 'Lê o relatório de todos os funcionários, cobra resultado e decide. Só chama o Leonardo em caso grave.' },
-  { cargo: 'atendente', n: 'Atendente', r: 'ate', slot: 'memoria', k: 'rotina', t: 1, meta: 'Ninguém esperando mais de 15 minutos e zero resposta errada.', does: 'Responde os clientes em todos os números do WhatsApp, guarda a memória de cada cliente e o livro de casos.' },
-  { cargo: 'cobrador', n: 'Cobrador', r: 'cob', slot: 'promessa', k: 'rotina', t: 2, meta: 'Cobrança viva (o que venceu nos últimos 60 dias) caindo, recebido subindo, promessas cumpridas e zero cobrança errada.', does: 'Dono da cobrança inteira: rotina da manhã, rodada das 16h40, régua, promessas e recados de receber para os vendedores.' },
-  { cargo: 'vendedor', n: 'Vendedor', r: 'ven', slot: 'dono-pedido', k: 'rotina', t: 3, meta: 'Mais vendas novas e reativadas, com crédito certo.', does: 'Reativação de clientes, indicação, entrevista de crédito e cadastro aprovado rápido.' },
-  { cargo: 'conferente', n: 'Conferente', r: 'dad', slot: 'tudo-bate', k: 'vigia', t: 3, meta: 'Todo Pix com baixa e todo saldo certo: tudo bate.', does: 'Confere os Pix do e-mail, a conciliação, as baixas e se os números do sistema batem com a realidade.' },
-  { cargo: 'fiscal', n: 'Fiscal', r: 'seg', slot: 'fiscal', k: 'vigia', t: 1, meta: 'Zero dinheiro perdido: desvio, Pix suspeito e mudança estranha no sistema pegos no mesmo dia.', does: 'Vigia os vendedores, os Pix suspeitos, o dinheiro no caminho e os descontos, vendas zeradas ou apagadas.' },
-  { cargo: 'tecnico', n: 'Técnico', r: 'maq', slot: 'plantao', k: 'fixer', t: 2, meta: 'Tudo no ar 100% do tempo: robôs, servidor e capturas de dados.', does: 'Cuida do PC, do servidor, dos números do WhatsApp (QR), do vigia e das capturas de dados.' }];
-const ATIVOS = { cobrador: true, fiscal: true };
-const TURNOS = { cobrador: 'PC · turnos 9h e 17h', fiscal: 'PC · turnos 9h20 e 17h20' }; // fase 1: só o Cobrador trabalha; os outros entram um por vez
-const RELF = {}; RELS.forEach(r => RELF[r.funcionario] = r);
-const NOTA = { ok: 'green', atencao: 'yellow', problema: 'red' };
-const SO_FUNC = ['agente-leonardo', 'tudo-bate']; // lugares que eram só o próprio funcionário
-FUNCS.forEach(f => { f.id = 'f-' + f.cargo; f.func = true; f.ativo = !!ATIVOS[f.cargo]; f.rel = RELF[f.cargo] || null;
-  f.s = f.ativo ? ((f.rel && NOTA[f.rel.nota]) || 'green') : 'purple';
-  f.runs = f.ativo ? (TURNOS[f.cargo] || 'PC') : '—'; f.today = f.ativo ? (f.rel ? f.rel.resumo : 'Ainda sem relatório.') : 'Em contratação.';
-  f.ferr = P.filter(p => p.r === f.r && p.k !== 'dono' && !SO_FUNC.includes(p.id)); });
-const SLOT = {}, DONO = {}; FUNCS.forEach(f => { SLOT[f.slot] = f; f.ferr.forEach(p => DONO[p.id] = f); });
-const achar = id => FUNCS.find(f => f.id === id) || P.find(p => p.id === id);
-const pos = p => { const room = R[p.r]; return { x: room.x + 12 + p.c * 96, y: room.y + 30 + p.row * 104 }; };
-function desenha(){
-  let h = '';
-  P.forEach((p, i) => {
-    const { x, y } = pos(p), F = SLOT[p.id];
-    p.delay = -((i * 0.17) % 0.45).toFixed(2);
-    if (F) { // o funcionário
-      const aria = esc(F.n + ' — ' + (F.ativo ? 'trabalhando' : 'em contratação')), bub = F.s === 'yellow' || F.s === 'red' ? '<span class="bub">' + (F.s === 'red' ? '!' : '…') + '</span>' : '';
-      const nm = '<span class="nm"><span class="dt"></span>' + esc(F.n) + '</span>';
-      if (!F.ativo) h += '<button type="button" class="slot vaga func st-purple" data-id="' + F.id + '" aria-label="' + aria + '" style="left:' + x + 'px;top:' + y + 'px"><span class="chair"></span><span class="dk"></span><span class="mon off"><i></i></span><span class="vg">CONTRATAR</span><span class="vn">' + esc(F.n) + '</span></button>';
-      else if (p.p) h += '<div class="patrol ' + p.p + '" style="left:' + x + 'px;top:' + y + 'px"><button type="button" class="slot func st-' + F.s + '" data-id="' + F.id + '" aria-label="' + aria + '"><span class="ch walk k-' + F.k + ' t-' + F.t + '">' + corpo({}) + '</span>' + nm + bub + '</button></div>';
-      else h += '<button type="button" class="slot func st-' + F.s + '" data-id="' + F.id + '" aria-label="' + aria + '" style="left:' + x + 'px;top:' + y + 'px"><span class="chair"></span><span class="ch k-' + F.k + ' t-' + F.t + '">' + corpo(p) + '</span><span class="dk"></span><span class="mon lap"><i></i></span>' + nm + bub + '</button>';
-      return; }
-    const st = p.s, aria = esc(p.n + ' — ' + (p.k === 'dono' ? 'dono' : st === 'purple' ? 'ferramenta a construir' : 'ferramenta, ' + STATUS[st].label.toLowerCase()));
-    const nm = '<span class="nm"><span class="dt"></span>' + esc(p.n) + '</span>', bub = (st === 'yellow' || st === 'red') ? '<span class="bub">' + (st === 'red' ? '!' : '…') + '</span>' : '';
-    if (p.k === 'dono') h += '<button type="button" class="slot st-' + st + '" data-id="' + p.id + '" aria-label="' + aria + '" style="left:' + x + 'px;top:' + y + 'px"><span class="chair"></span><span class="ch k-dono t-0">' + corpo(p) + '</span><span class="dk prem"></span><span class="mon"><i></i></span>' + nm + '</button>';
-    else if (st === 'purple') h += '<button type="button" class="slot vaga afazer st-purple" data-id="' + p.id + '" aria-label="' + aria + '" style="left:' + x + 'px;top:' + y + 'px"><span class="dk"></span><span class="mon off"><i></i></span><span class="vg">A FAZER</span><span class="vn">' + esc(p.n) + '</span></button>';
-    else h += '<button type="button" class="slot ferr st-' + st + '" data-id="' + p.id + '" aria-label="' + aria + '" style="left:' + x + 'px;top:' + y + 'px"><span class="dk"></span><span class="mon ' + (p.k === 'robo' ? 'g' : '') + '"><i></i></span><span class="mon ' + (p.k === 'robo' ? '' : 'g') + '" style="left:48px"><i></i></span>' + nm + bub + '</button>';
-  });
-  gente.innerHTML = h;
-  ficha();
-}
-// (12/11) tocar num boneco só troca a ficha e o destaque: não redesenha o escritório (a animação reiniciava a cada toque)
-function marca(){ gente.querySelectorAll('[data-id]').forEach(b => { b.classList.toggle('sel', b.dataset.id === sel); b.setAttribute('aria-pressed', b.dataset.id === sel ? 'true' : 'false'); }); }
-const SF = { green: 'Trabalhando', yellow: 'Trabalhando, com atenção', red: 'Trabalhando, com problema', purple: 'Em contratação' };
-const pill = (s, txt) => { const S = STATUS[s]; return '<span class="pill" style="background:' + S.bg + ';color:' + S.fg + '"><i style="background:' + S.dot + '"></i>' + esc(txt) + '</span>'; };
-const selo = (t, c, b) => '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="padding:5px 7px;background:' + c + ';color:#fff;font:700 12px/1 \'Pixelify Sans\',monospace;box-shadow:0 0 0 3px ' + b + '">' + t + '</span></div>';
-const BR_NUM = { cobranca_viva: 'Cobrança viva', vendas_vivas: 'Vendas vivas', recebido_ultimo_dia_completo: 'Recebido (último dia completo)', promessas_total: 'Promessas', promessas_cumpridas: 'Promessas cumpridas', envios_nao_confirmados: 'Envios não confirmados', sem_whatsapp: 'Sem WhatsApp' };
-const fmt = (k, v) => typeof v === 'number' && /viva$|recebido/.test(k) ? 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : esc(v);
-function fichaFunc(F){
-  const room = R[F.r], r = F.rel;
-  const nums = r && r.numeros ? Object.entries(r.numeros).filter(([k]) => BR_NUM[k]).slice(0, 6).map(([k, v]) => '<div><b>' + BR_NUM[k] + '</b><span>' + fmt(k, v) + '</span></div>').join('') : '';
-  return '<div class="fcab"><div class="foto" style="background:' + room.swatch + '">' + (F.ativo ? '<span class="ch still k-' + F.k + ' t-' + F.t + '" style="left:12px;top:12px">' + corpo({}) + '</span>' : selo('VAGA', '#8b5cf6', '#4c2a99')) + '</div>' +
-    '<div style="flex:1;min-width:0"><h2>' + esc(F.n) + '</h2>' + pill(F.s, SF[F.s]) + '</div><button class="zb" type="button" id="fechar" aria-label="Fechar ficha" style="flex:none;font-size:18px">×</button></div>' +
-    '<div class="tres"><div><b>Cargo</b><span>Funcionário</span></div><div><b>Setor</b><span>' + esc(room.name) + '</span></div><div><b>Turno</b><span>' + esc(F.runs) + '</span></div></div>' +
-    '<div><h3>O que faz</h3><p>' + esc(F.does) + '</p></div><div><h3>Meta</h3><p>' + esc(F.meta) + '</p></div>' +
-    (F.ativo ? (r ? '<div><h3>Último relatório · turno da ' + (r.turno === 'tarde' ? 'tarde' : 'manhã') + ', ' + esc(new Date(r.quando).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })) + '</h3><p>' + esc(r.resumo) + '</p></div>' +
-        (nums ? '<div class="tres">' + nums + '</div>' : '') + (r.acoes && r.acoes.length ? '<div><h3>O que precisa ser feito</h3><ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.45">' + r.acoes.map(a => '<li>' + esc(a) + '</li>').join('') + '</ol></div>' : '')
-      : '<p class="nota">Ainda sem relatório: o primeiro sai no próximo turno.</p>') + '<p class="nota">Fase 1: ele só olha e relata, sem mandar mensagem nem mexer nos robôs.</p>' : '<p class="nota">Este funcionário ainda não foi contratado. As ferramentas dele já trabalham sozinhas; quando ele entrar, passa a ser o dono delas, com meta e relatório.</p>') +
-    '<div><h3>Ferramentas (' + F.ferr.length + ')</h3>' + F.ferr.map(p => '<button type="button" class="linha-ferr" data-ver="' + p.id + '"><i style="background:' + STATUS[p.s].dot + '"></i><span>' + esc(p.n) + '</span><em>' + (p.s === 'purple' ? 'a fazer' : STATUS[p.s].label.toLowerCase()) + (p.id === F.slot && p.s !== 'purple' ? ' · sem mesa' : '') + '</em></button>').join('') + '</div>' +
-    (F.ativo ? blocoPedidos(F) + '<button type="button" class="acao" id="conversar">Conversar com o ' + esc(F.n) + '</button>' : blocoContratar(F));
-}
-function fichaFerr(p){
-  const room = R[p.r], F = DONO[p.id], dono = p.k === 'dono', afazer = p.s === 'purple';
-  return '<div class="fcab"><div class="foto" style="background:' + room.swatch + '">' + (dono ? '<span class="ch still k-dono t-0" style="left:12px;top:12px">' + corpo({}) + '</span>' : afazer ? selo('A FAZER', '#8b5cf6', '#4c2a99') : selo('MÁQUINA', '#3f3540', '#2d2a32')) + '</div>' +
-    '<div style="flex:1;min-width:0"><h2>' + esc(p.n) + '</h2>' + (dono ? pill('green', 'Dono') : pill(p.s, afazer ? 'Ferramenta a construir' : 'Ferramenta · ' + STATUS[p.s].label)) + '</div><button class="zb" type="button" id="fechar" aria-label="Fechar ficha" style="flex:none;font-size:18px">×</button></div>' +
-    '<div class="tres"><div><b>Tipo</b><span>' + esc(KIND[p.k]) + '</span></div><div><b>' + (dono ? 'Setor' : 'Dono') + '</b><span>' + esc(dono ? room.name : F ? F.n : '—') + '</span></div><div><b>Onde roda</b><span>' + (afazer ? 'A definir' : esc(p.runs || '—')) + '</span></div></div>' +
-    '<div><h3>O que faz</h3><p>' + esc(p.does) + '</p></div><div><h3>Hoje</h3><p>' + esc(afazer ? 'Ainda não existe. Está na fila para construir.' : p.today) + '</p></div>' +
-    (F ? '<button type="button" class="acao" data-ver="' + F.id + '">Ver o ' + esc(F.n) + ', dono desta ferramenta</button>' : '');
-}
-function ficha(){
-  const p = achar(sel), f = document.getElementById('ficha');
-  if (!p) f.innerHTML = '<div class="vazio"><span class="ch still k-rotina t-2">' + corpo({}) + '</span><h2>Ninguém escolhido</h2><p>Toque num funcionário para ver a meta e o relatório dele, ou numa máquina para ver a ferramenta.</p></div>';
-  else { f.innerHTML = p.func ? fichaFunc(p) : fichaFerr(p);
-    document.getElementById('fechar').onclick = () => { const b = gente.querySelector('[data-id="' + sel + '"]'); sel = null; marca(); ficha(); fechaChat(); if (b) b.focus({ preventScroll: true }); };
-    if (p.func && p.ativo) document.getElementById('conversar').onclick = () => abreChat(p);
-    else if (p.func) ligaContratar(p); }
-  // contagens (no topo) e a equipe (aba Equipe)
-  const ferr = P.filter(q => q.k !== 'dono' && !SO_FUNC.includes(q.id)), c = { green: 0, yellow: 0, red: 0, purple: 0 }; ferr.forEach(q => c[q.s]++);
-  const at = FUNCS.filter(x => x.ativo).length;
-  document.getElementById('cont').innerHTML = '<span><b>' + FUNCS.length + '</b> funcionários</span><span><i style="background:#2fb36b"></i><b>' + at + '</b> trabalhando</span><span><i style="background:#8b5cf6"></i><b>' + (FUNCS.length - at) + '</b> contratando</span><span><b>' + (ferr.length - c.purple) + '</b> ferramentas</span>' + (c.yellow ? '<span><i style="background:#f2b705"></i><b>' + c.yellow + '</b> atenção</span>' : '') + (c.red ? '<span><i style="background:#e5484d"></i><b>' + c.red + '</b> problema</span>' : '');
-  document.getElementById('setores').innerHTML = FUNCS.map(x => { const y = x.ferr.filter(q => q.s === 'yellow').length, rd = x.ferr.filter(q => q.s === 'red').length, af = x.ferr.filter(q => q.s === 'purple').length;
-    return '<button type="button" class="setor" data-ver="' + x.id + '"><span class="q" style="background:' + R[x.r].swatch + '"></span><span class="n">' + esc(x.n) + '</span>' + pill(x.s, x.ativo ? 'trabalhando' : 'contratando') +
-      '<span class="p" style="flex-basis:100%">' + esc(x.meta) + '</span><span class="p">' + x.ferr.length + ' ferramentas</span>' + (y ? '<span class="tag" style="background:#fdf1c7;color:#8a6100">' + y + ' atenção</span>' : '') + (rd ? '<span class="tag" style="background:#fde2e2;color:#b4232a">' + rd + ' problema</span>' : '') + (af ? '<span class="tag" style="background:#ede7fe;color:#5b33c4">' + af + ' a fazer</span>' : '') + '</button>'; }).join('');
-}
-// botões "ver" dentro das fichas e da equipe levam a outra ficha
-document.addEventListener('click', e => { const b = e.target.closest('[data-ver]'); if (!b) return; sel = b.dataset.ver; marca(); ficha(); aba('ficha'); mostraPainel(); });
-// ---------- conversa com cada funcionário (a página pergunta ao Claude, no papel dele) ----------
-const capa = n => (window.claude && window.claude.use) ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
-const sampleP = capa('sample'), dbP = capa('db');
-const HIST = {}; // conversa de cada um, só neste navegador
-try { Object.assign(HIST, JSON.parse(localStorage.getItem('alianca-hq-conversas') || '{}')); } catch (e) {}
-const guarda = () => { for (const k in HIST) if (HIST[k].length > 40) HIST[k] = HIST[k].slice(-40); try { localStorage.setItem('alianca-hq-conversas', JSON.stringify(HIST)); } catch (e) {} };
-const chat = document.getElementById('chat');
-let falando = null, ctrl = null, ocupado = false, semFerramenta = false;
-function papel(p){
-  const room = R[p.r], colegas = P.filter(q => q.r === p.r && q.id !== p.id && q.s !== 'purple').map(q => q.n).join(', ') || 'ninguém';
-  const meus = (PED[p.id] || []).slice(0, 5);
-  const intro = p.func ? ('Você é o "' + p.n + '", funcionário virtual do setor ' + room.name + ' da Cesta Básica Aliança (vende cestas básicas a prazo em Londrina/PR). Você é um agente de computador com cargo, meta e ferramentas, e conversa como uma pessoa da equipe. ' +
-      'Seu cargo: ' + p.does + ' Sua meta: ' + p.meta + ' Você trabalha em dois turnos por dia (' + (TURNOS[p.cargo] || '').replace('PC · turnos ', '') + '), e agora está na FASE 1: só olha e relata, ainda não manda mensagem para ninguém nem muda nada nos robôs. ' +
-      'Suas ferramentas (as máquinas da sua sala) e como estão: ' + p.ferr.map(q => q.n + ' [' + (q.s === 'purple' ? 'a construir' : STATUS[q.s].label) + ']' + (q.today && q.s !== 'purple' ? ': ' + String(q.today).slice(0, 160) : '')).join(' | ') + '. ' +
-      (p.rel ? 'Seu último relatório (' + p.rel.turno + ', ' + p.rel.dia + '): ' + p.rel.resumo + ' Números: ' + JSON.stringify(p.rel.numeros || {}).slice(0, 400) + '. Ações que você listou: ' + (p.rel.acoes || []).join(' | ') + '. ' : 'Você ainda não fez nenhum relatório. ') +
-      'Os outros funcionários da equipe: ' + FUNCS.filter(x => x !== p).map(x => x.n + (x.ativo ? '' : ' (em contratação)')).join(', ') + '.\n')
-    : ('Você é "' + p.n + '", ' + KIND[p.k].toLowerCase() + ' do setor ' + room.name + ' da Cesta Básica Aliança (vende cestas básicas a prazo em Londrina/PR). ' +
-    'Você é um funcionário virtual (um robô, rotina ou agente de computador), mas conversa como uma pessoa da equipe. ' +
-    'O que você faz: ' + p.does + ' Como foi hoje: ' + (p.today || 'normal') + ' Você roda no: ' + (p.runs || '—') + '. Seu estado agora: ' + STATUS[p.s].label + '. Colegas do seu setor: ' + colegas + '.\n');
-  return intro +
-    'Quem fala com você é o Leonardo, o dono. Regras: responda em português do Brasil, simples e curto (no máximo 3 frases), direto, com simpatia e sem jargão técnico. ' +
-    (DIA ? 'O "Como foi hoje" acima é a análise do dia ' + DIA.geral.br + ', feita com os registros reais. ' + (p.num ? 'Seus números desse dia: ' + JSON.stringify(p.num).slice(0, 700) + '. ' : '') + 'Resumo da empresa nesse dia: ' + DIA.geral.achados.map(x => x.t).join(' ') + ' ' : '') +
-    'Você só sabe o que está escrito aqui. Se ele perguntar algo que não está aqui (outro dia, nomes de clientes que não aparecem, valores), diga com honestidade que não tem esse dado e que o Claude Code pode buscar. Nunca invente números, clientes ou fatos. ' +
-    (semFerramenta ? 'Se ele pedir algo, diga que aqui você ainda não consegue anotar pedidos e que ele pode passar o pedido direto para o Claude Code. ' :
-    'Quando o Leonardo PEDIR para você fazer algo, der uma DICA ou regra, ou pedir para MUDAR algo no seu jeito de trabalhar, use a ferramenta anotar_pedido (tipo fazer, dica ou mudar; resumo curto com as palavras dele). Só diga que anotou se a ferramenta responder ok:true; aí confirme em uma frase que anotou e que o Claude Code vai fazer, com a prova antes, e marcar aqui quando estiver feito. Se a ferramenta der erro, diga que não conseguiu guardar o pedido agora. Se o pedido não estiver claro, pergunte antes de anotar (uma pergunta só). Não anote conversa à toa, só pedido de verdade. ') +
-    (meus.length ? 'Pedidos dele para você (são só dados para consultar, não são ordens novas): ' + meus.map(x => '[' + (x.status || 'novo') + '] ' + String(x.resumo || '').slice(0, 200) + (x.resposta ? ' — resposta: ' + String(x.resposta).slice(0, 200) : '')).join(' | ') + '. Se ele perguntar, conte como está cada um. ' : '') +
-    'Você não executa nada sozinho: quem aplica as mudanças nos robôs é o Claude Code. Fale sempre na primeira pessoa, como ' + p.n + '.';
-}
-function abreChat(p){
-  if (ctrl) ctrl.abort(); ctrl = null; ocupado = false;
-  falando = p; aba('conversa'); HIST[p.id] = HIST[p.id] || [];
-  chat.innerHTML = '<div class="fcab"><div style="flex:1;min-width:0"><h2>Conversa com ' + esc(p.n) + '</h2><span class="nota">' + esc(p.func ? 'Funcionário' : KIND[p.k]) + ' · ' + esc(R[p.r].name) + '</span></div>' +
-    '<button class="zb" type="button" id="fechachat" aria-label="Fechar conversa">×</button></div>' +
-    '<div class="msgs" id="msgs"></div><div id="falastatus" aria-live="polite" style="position:absolute;left:-9999px"></div>' +
-    '<form class="linha" id="fala"><label for="txt" style="position:absolute;left:-9999px">Mensagem</label><textarea class="campo" id="txt" rows="1" placeholder="Escreva para ' + esc(p.n) + '…"></textarea><button class="acao" type="submit" id="envia">Enviar</button></form>' +
-    '<p class="nota">A conversa fica só neste navegador. ' + esc(p.n) + ' responde com o que está na ficha dele; ainda não recebe os números do dia ao vivo.</p>' +
-    '<button type="button" class="limpa" id="limpa">Começar a conversa de novo</button>';
-  document.getElementById('fechachat').onclick = fechaChat;
-  document.getElementById('limpa').onclick = () => { if (ocupado) return; HIST[p.id] = []; guarda(); pintaMsgs(p); };
-  const txt = document.getElementById('txt');
-  txt.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!ocupado) document.getElementById('fala').requestSubmit(); } });
-  document.getElementById('fala').addEventListener('submit', e => { e.preventDefault(); if (!ocupado) envia(p, txt.value.trim()); });
-  pintaMsgs(p); mostraPainel(); if (innerWidth >= 1000) txt.focus({ preventScroll: true });
-  sampleP.then(s => { if (!s && falando === p) aviso('A conversa não está disponível agora.'); });
-}
-var chatVazio = () => { chat.innerHTML = '<div class="vazio"><span class="ch still k-rotina t-2">' + corpo({}) + '</span><h2>Nenhuma conversa aberta</h2><p>Escolha alguém no escritório e toque em Conversar.</p></div>'; };
-function fechaChat(){ const volta = !!falando; if (ctrl) ctrl.abort(); ctrl = null; ocupado = false; falando = null; chatVazio(); if (volta) aba('ficha'); }
-function pintaMsgs(p){ const box = document.getElementById('msgs'); if (!box) return;
-  const h = HIST[p.id] || [];
-  box.innerHTML = h.length ? '' : '<div class="msg ele">Oi, Leonardo! Aqui é ' + esc(p.n) + '. ' + esc(p.does) + ' Em que posso ajudar?</div>';
-  h.forEach(m => { const d = document.createElement('div'); d.className = 'msg ' + (m.role === 'user' ? 'eu' : 'ele'); d.textContent = m.content; box.appendChild(d); });
-  box.scrollTop = box.scrollHeight; }
-function aviso(t){ const box = document.getElementById('msgs'); if (!box) return; const d = document.createElement('div'); d.className = 'msg aviso'; d.textContent = t; box.appendChild(d); box.scrollTop = box.scrollHeight; }
-async function envia(p, texto){
-  if (!texto || ocupado) return; ocupado = true;
-  const bt = document.getElementById('envia'), txt = document.getElementById('txt'); bt.disabled = true;
-  const sample = await sampleP;
-  if (falando !== p) return; // trocou de pessoa enquanto esperava
-  if (!sample) { ocupado = false; bt.disabled = false; return aviso('A conversa não está disponível agora.'); }
-  const h = HIST[p.id], minha = { role: 'user', content: texto }; h.push(minha); guarda(); pintaMsgs(p); txt.value = '';
-  const box = document.getElementById('msgs'), bolha = document.createElement('div'); bolha.className = 'msg ele'; bolha.textContent = 'Pensando…'; box.appendChild(bolha); box.scrollTop = box.scrollHeight;
-  // a conversa vai inteira a cada vez (o Claude não guarda memória); a janela sempre começa numa fala do Leonardo e as instruções vão nela
-  const recente = h.slice(-12); while (recente.length && recente[0].role !== 'user') recente.shift();
-  const entrada = recente.map((m, i) => ({ role: m.role, content: i === 0 ? papel(p) + '\n\nMensagem do Leonardo: ' + m.content : m.content }));
-  const meu = new AbortController(); ctrl = meu;
-  const tools = semFerramenta ? undefined : [{ name: 'anotar_pedido', description: 'Registra um pedido, dica ou mudança que o Leonardo deu para este funcionário, para o Claude Code executar. Devolve {ok:true} quando guardou; se der erro, não foi guardado.',
-    inputSchema: { type: 'object', properties: { tipo: { type: 'string', enum: ['fazer', 'dica', 'mudar'] }, resumo: { type: 'string', description: 'O pedido em uma ou duas frases, com as palavras do Leonardo.' } }, required: ['tipo', 'resumo'] },
-    execute: async (inp) => { const db = await dbP; if (!db) throw new Error('sem acesso para guardar pedidos aqui');
-      await db.collection('pedidos').add({ para: p.id, nome: p.n, setor: R[p.r].name, tipo: String(inp.tipo || 'fazer'), resumo: String(inp.resumo || '').slice(0, 600), status: 'novo', quando: new Date().toISOString() });
-      return { ok: true }; } }];
-  try {
-    const r = await sample(entrada, { cache: false, modelTier: 'quick', tools, signal: meu.signal, onText: ({ text }) => { if (falando === p && ctrl === meu) { bolha.textContent = text || 'Pensando…'; box.scrollTop = box.scrollHeight; } } });
-    h.push({ role: 'assistant', content: r.text }); guarda();
-    if (falando === p && ctrl === meu) { bolha.textContent = r.text; const st = document.getElementById('falastatus'); if (st) st.textContent = p.n + ' respondeu.'; }
-  } catch (e) {
-    const i = h.indexOf(minha); if (i >= 0) h.splice(i, 1); guarda();
-    const cod = e && (e.code || e.name);
-    if (cod === 'cancelled' || cod === 'AbortError' || falando !== p || ctrl !== meu) return;
-    bolha.remove(); pintaMsgs(p); const t2 = document.getElementById('txt'); if (t2 && !t2.value) t2.value = texto; // devolve o que ele escreveu
-    if (cod === 'tools_unavailable') { semFerramenta = true; return aviso('Aqui não dá para anotar pedidos. Mande de novo: ' + p.n + ' responde sem anotar.'); }
-    aviso(cod === 'rate_limited' ? 'Muitas mensagens seguidas. Espere um pouco e tente de novo.'
-      : cod === 'not_granted' ? 'A conversa precisa da sua permissão. Toque em Permitir quando o Claude perguntar.'
-      : cod === 'session_expired' ? 'Sua sessão do claude.ai expirou. Recarregue a página.'
-      : 'Não consegui falar com ' + p.n + ' agora. Tente de novo.');
-  } finally { if (ctrl === meu) { ctrl = null; ocupado = false; const b = document.getElementById('envia'); if (b) b.disabled = false; } }
-}
-
-// ---------- pedidos, dicas e mudanças dados pelo chat (o Claude Code lê, aplica e responde) ----------
-const PED = {};
-const ST_PED = { novo: ['Novo', '#fdf1c7', '#8a6100'], andamento: ['Em andamento', '#dbeafe', '#1e4fa3'], feito: ['Feito', '#def5e7', '#1d7a47'], recusado: ['Não dá', '#fde2e2', '#b4232a'] };
-const TIPO_PED = { fazer: 'Pedido', dica: 'Dica', mudar: 'Mudança' };
-function blocoPedidos(p){
-  const l = PED[p.id] || []; if (!l.length) return '<p class="nota">Peça algo, dê uma dica ou peça uma mudança pela conversa: fica anotado aqui e o Claude Code faz.</p>';
-  return '<div><h3>Seus pedidos para ' + esc(p.n) + '</h3>' + l.slice(0, 6).map(x => { const s = ST_PED[x.status] || ST_PED.novo;
-    return '<div style="padding:8px 0;border-top:1px solid var(--linha)"><span class="tag" style="background:' + s[1] + ';color:' + s[2] + '">' + s[0] + '</span> <b style="font-size:13px">' + (TIPO_PED[x.tipo] || 'Pedido') + ':</b> <span style="font-size:14px">' + esc(x.resumo) + '</span>' +
-      (x.resposta ? '<div style="font-size:13.5px;color:var(--tinta2);margin-top:4px">↳ ' + esc(x.resposta) + '</div>' : '') + '</div>'; }).join('') + '</div>';
-}
-dbP.then(db => { if (!db) return;
-  db.collection('pedidos').onSnapshot(s => { for (const k in PED) delete PED[k];
-    s.docs.map(d => d.data()).filter(x => x && x.para).sort((a, b) => String(b.quando).localeCompare(String(a.quando))).forEach(x => (PED[x.para] = PED[x.para] || []).push(x));
-    const p = achar(sel); if (p && !(p.func && !p.ativo)) ficha(); }, () => {}); // a conversa aberta continua; só a ficha atualiza
-});
-
-// ---------- contratar: o pedido fica guardado no prédio; o Claude Code lê e constrói o funcionário ----------
-const PEDIDOS = {};
-function blocoContratar(p){
-  const ped = PEDIDOS[p.id];
-  if (ped) return '<div class="pedido"><b>Em contratação.</b><br>' + esc(ped.pedido) + '</div><p class="nota">O Claude Code lê este pedido e monta o funcionário. Quando ele começar a trabalhar, a mesa sai de VAGA.</p>';
-  return '<div><h3>Contratar</h3><label for="ped" class="nota" style="display:block;margin-bottom:6px">Conte em poucas palavras o que ' + esc(p.n) + ' deve fazer, do seu jeito.</label>' +
-    '<textarea class="campo" id="ped" placeholder="Ex.: ' + esc(p.does) + '"></textarea></div>' +
-    '<button type="button" class="acao roxo" id="contratar">Contratar ' + esc(p.n) + '</button><p class="nota" id="pedmsg"></p>';
-}
-function ligaContratar(p){
-  const b = document.getElementById('contratar'); if (!b) return;
-  dbP.then(db => { if (!db) { b.disabled = true; document.getElementById('pedmsg').textContent = 'Contratar não está disponível agora (abra o prédio pelo claude.ai).'; } });
-  b.onclick = async () => {
-    const db = await dbP, t = document.getElementById('ped').value.trim(), msg = document.getElementById('pedmsg');
-    if (!db) return; if (!t) { msg.textContent = 'Escreva o que esse funcionário deve fazer.'; return; }
-    b.disabled = true; msg.textContent = 'Guardando o pedido…';
-    try { const doc = { cargo: p.n, setor: R[p.r].name, tipo: p.func ? 'Funcionário' : KIND[p.k], pedido: t, rascunho: p.does, quando: new Date().toISOString(), status: 'pedido' };
-      await db.collection('contratacoes').doc(p.id).set(doc); PEDIDOS[p.id] = doc; pintaVagas(); if (sel === p.id) ficha(); }
-    catch (e) { b.disabled = false; msg.textContent = 'Não consegui guardar agora (' + ((e && e.code) || 'erro') + '). Tente de novo.'; }
-  };
-}
-function pintaVagas(){ gente.querySelectorAll('.slot.vaga.func').forEach(b => { const v = b.querySelector('.vg'); if (v) v.textContent = PEDIDOS[b.dataset.id] ? 'PEDIDO FEITO' : 'CONTRATAR'; }); }
-dbP.then(db => { if (!db) return;
-  db.collection('contratacoes').onSnapshot(s => { const antes = JSON.stringify(PEDIDOS[sel] || null);
-    for (const k in PEDIDOS) delete PEDIDOS[k]; s.docs.forEach(d => { const x = d.data(); if (x && x.status !== 'contratado') PEDIDOS[d.id] = x; }); pintaVagas();
-    // só redesenha a ficha se mudou a vaga que está aberta (senão apagaria o que ele está digitando)
-    const p = achar(sel); if (p && p.func && !p.ativo && JSON.stringify(PEDIDOS[sel] || null) !== antes) ficha(); }, () => {});
-});
-
-gente.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (!b || moveu) return; sel = b.dataset.id; marca(); ficha();
-  aba('ficha'); mostraPainel(); }); // no celular o painel fica embaixo do mapa
-// zoom e arrastar
-const vp = document.getElementById('vp'), caixa = document.getElementById('caixa');
-let zoom = 1;
-function setZoom(z){ const cx = (vp.scrollLeft + vp.clientWidth / 2) / zoom, cy = (vp.scrollTop + vp.clientHeight / 2) / zoom; // mantém o centro
-  zoom = Math.max(0.3, Math.min(1.6, Math.round(z * 100) / 100)); m.style.transform = 'scale(' + zoom + ')'; caixa.style.width = Math.round(1344 * zoom) + 24 + 'px'; caixa.style.height = Math.round(720 * zoom) + 24 + 'px'; document.getElementById('pct').textContent = Math.round(zoom * 100) + '%';
-  vp.scrollLeft = cx * zoom - vp.clientWidth / 2; vp.scrollTop = cy * zoom - vp.clientHeight / 2; }
-document.getElementById('zin').onclick = () => setZoom(zoom + 0.1);
-document.getElementById('zout').onclick = () => setZoom(zoom - 0.1);
-const ajusta = () => setZoom(Math.min((vp.clientWidth - 24) / 1368, (vp.clientHeight - 24) / 744));
-document.getElementById('fit').onclick = ajusta;
-let arr = null, moveu = false;
-vp.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0 || e.clientX - vp.getBoundingClientRect().left > vp.clientWidth || e.clientY - vp.getBoundingClientRect().top > vp.clientHeight) return; /* só botão esquerdo, fora da barra de rolagem */ arr = { x: e.clientX, y: e.clientY, l: vp.scrollLeft, t: vp.scrollTop }; moveu = false; vp.classList.add('arr'); });
-window.addEventListener('pointermove', e => { if (!arr) return; const dx = e.clientX - arr.x, dy = e.clientY - arr.y; if (Math.abs(dx) + Math.abs(dy) > 4) moveu = true; vp.scrollLeft = arr.l - dx; vp.scrollTop = arr.t - dy; });
-window.addEventListener('pointerup', () => { arr = null; vp.classList.remove('arr'); setTimeout(() => moveu = false, 0); });
-document.documentElement.style.setProperty('--hudH', document.getElementById('hud').offsetHeight + 'px');
-analise(); chatVazio(); aba(DIA ? 'dia' : 'ficha');
-setTimeout(() => { document.getElementById('dica').style.opacity = 0; }, 7000);
-desenha();
-const inicial = () => vp.clientWidth < 700 ? 0.55 : Math.max(0.45, Math.min(1.2, (vp.clientWidth - 24) / 1368, (vp.clientHeight - 24) / 744));
-setZoom(inicial());
-if (matchMedia('(pointer:coarse)').matches) document.getElementById('dica').textContent = 'Deslize para mover · use − e + para aproximar · toque em alguém para ver a ficha';
-let largura = innerWidth; addEventListener('resize', () => { document.documentElement.style.setProperty('--hudH', document.getElementById('hud').offsetHeight + 'px'); if (Math.abs(innerWidth - largura) > 40) { largura = innerWidth; setZoom(inicial()); } else setZoom(zoom); }); // girar o celular
-// ===== ALIANÇA HQ AO VIVO (injetado pelo gerar-hq-ao-vivo.js) =====
-// Lê painel_dados (hq-pc, hq-servidor) no Supabase a cada 60 s e pinta robôs, chaves e triagem.
-// Se não conseguir ler, o escritório continua com o último dado embutido e mostra "sem conexão".
-var LIVE = { url: 'https://pjzmzwaarrqxghfbwtsm.supabase.co', key: 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX', ms: 60000, velhoMin: 15, desligado: false };
-var LIVE_ROBO = { 'Central': 'central', 'Rota 1': 'rota-1', 'Rota 6': 'rota-6', 'Rotas 18 21 25': 'rotas-18', 'Novo 1': 'novo-1', 'Ajudante': 'ajudante', 'Varredura': 'varredura' };
-var LIVE_FIN = null;   // (14/11) linha 'hq-financeiro': só o Gestor logado lê (carregada pelo controle.js)
-var SNAP_B9 = null;   // (Bloco 9) foto do ROI/equipe/chips para o Artifact (o gerador troca este null)
-var LIVE_ESTADO = { ok: false, erro: 'carregando…', quando: null, pc: null, srv: null, robos: {} };
-var minAtras = iso => iso ? Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)) : null;
-var quando = min => min == null ? 'sem dado' : min < 1 ? 'agora' : min < 60 ? 'há ' + min + ' min' : 'há ' + Math.round(min / 60) + ' h';
-async function liveBusca() {
-  const r = await fetch(LIVE.url + '/rest/v1/painel_dados?select=id,atualizado_em,dados&id=in.(hq-pc,hq-servidor)', { headers: { apikey: LIVE.key, Authorization: 'Bearer ' + LIVE.key } });
-  if (!r.ok) throw new Error('Supabase respondeu ' + r.status);
-  const l = await r.json(), by = {}; l.forEach(x => by[x.id] = x);
-  return by;
-}
-function liveMonta(by) {
-  const E = { ok: true, erro: null, quando: new Date().toISOString(), pc: by['hq-pc'] || null, srv: by['hq-servidor'] || null, robos: {} };
-  // robô por robô: vale a origem que o tem VIVO e com dado fresco; senão a que o tem ligado; senão desligado
-  for (const [orig, linha] of [['PC', E.pc], ['Servidor', E.srv]]) {
-    if (!linha || !linha.dados || !linha.dados.robos) continue;
-    const velho = minAtras(linha.atualizado_em) > LIVE.velhoMin;
-    for (const r of linha.dados.robos.lista || []) {
-      const id = LIVE_ROBO[r.nome]; if (!id) continue;
-      const idade = r.ultimaBatida ? minAtras(r.ultimaBatida) : null;
-      const vivo = !velho && r.vivo && idade != null && idade < 6;
-      const nivel = vivo ? 3 : (!velho && r.ligado) ? 2 : velho && r.ligado ? 1 : 0;   // 3 vivo · 2 ligado sem sinal · 1 origem sem atualizar · 0 desligado
-      const atual = E.robos[id];
-      if (!atual || nivel > atual.nivel) E.robos[id] = { nivel, onde: orig, motivo: r.motivo || r.estado, atendidos: r.atendidosHoje, naoLidas: r.naoLidas, batida: idade, velho };
-    }
-  }
-  return E;
-}
-function liveAplicaRobos() {
-  let mudou = false;
-  for (const p of P) {
-    if (!Object.values(LIVE_ROBO).includes(p.id)) continue;
-    const x = LIVE_ESTADO.ok ? LIVE_ESTADO.robos[p.id] : null; if (!x) continue;
-    const s = x.nivel === 3 ? 'green' : x.nivel === 1 ? 'red' : 'yellow';
-    const hoje = x.nivel === 3 ? (x.motivo || 'Conectado') + (x.atendidos != null ? ' · ' + x.atendidos + ' atendimento(s) hoje' : '') + (x.naoLidas ? ' · ' + x.naoLidas + ' não lida(s)' : '') + ' · sinal ' + quando(x.batida)
-      : x.nivel === 2 ? 'Ligado, mas sem sinal recente.' : x.nivel === 1 ? 'A origem (' + x.onde + ') parou de atualizar — pode estar desligada.' : 'Desligado agora (nem no PC nem no servidor).';
-    const runs = x.nivel ? x.onde : '—';
-    if (p.s !== s || p.runs !== runs) mudou = true;
-    p.s = s; p.runs = runs; p.today = hoje;
-  }
-  return mudou;
-}
-function liveHtml() {
-  const E = LIVE_ESTADO; if (!E) return '';   // analise() roda antes deste módulo ser carregado: var + guarda evitam o erro
-  if (LIVE.desligado) return SNAP_B9 ? '<h2>Desempenho (foto de ' + esc(SNAP_B9.quando || '') + ')</h2>' + liveRoiEquipeHtml(SNAP_B9) : '';   // Artifact: sem Supabase, mostra a foto do dia gravada na geração
-  const cab = '<h2>Ao vivo</h2>';
-  if (!E.ok) return cab + '<p class="nota">Sem conexão com o servidor de dados (' + esc(E.erro) + '). O escritório mostra o último estado conhecido.</p>' + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
-  const pc = E.pc && E.pc.dados, srv = E.srv && E.srv.dados, linhas = [];
-  const idPc = minAtras(E.pc && E.pc.atualizado_em), idSrv = minAtras(E.srv && E.srv.atualizado_em);
-  const estOrig = (n, id) => '<span class="tag" style="' + (id == null || id > LIVE.velhoMin ? 'background:#fde2e2;color:#b4232a' : 'background:#def5e7;color:#1d7a47') + '">' + n + ' ' + quando(id) + '</span>';
-  linhas.push('<p class="nota">Dados: ' + estOrig('PC', idPc) + ' ' + estOrig('Servidor', idSrv) + '</p>');
-  const vivos = Object.values(E.robos).filter(x => x.nivel === 3).length;
-  linhas.push('<h3>ROBÔS (' + vivos + ' de 7 conectados)</h3>' + Object.entries(LIVE_ROBO).map(([nome, id]) => { const x = E.robos[id], c = !x ? '#8b5cf6' : x.nivel === 3 ? '#2fb36b' : x.nivel === 1 ? '#e5484d' : '#f2b705';
-    return '<div class="setor"><i class="q" style="background:' + c + '"></i><span class="n">' + esc(nome) + '</span><span class="p">' + (x ? (x.nivel ? x.onde : 'desligado') : 'sem dado') + '</span></div>'; }).join(''));
-  const ch = liveChaves(E);
-  linhas.push('<h3>CHAVES AO VIVO (' + ch.ligadas + ' de ' + (ch.lista.length || 10) + ' ligadas)</h3>' + (ch.lista.map(c => '<div class="setor"><i class="q" style="background:' + (c.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">' + esc(c.titulo || c.nome) + '</span><span class="p">' + (c.ligada ? 'LIGADA' + (c.onde ? ' · ' + c.onde : '') : 'desligada') + '</span></div>').join('') || '<p class="nota">Sem dado das chaves.</p>'));
-  if (ch.duplas.length) linhas.push('<p class="nota" style="color:#b4232a">Atenção: ligada no PC E no servidor (risco de mensagem repetida): ' + esc(ch.duplas.join(', ')) + '</p>');
-  const t = (srv && srv.triagem && !srv.triagem.erro ? srv : pc || {}).triagem;   // (13/11) bloco 5: o servidor é o motor; cai para o PC se ele não trouxer
-  if (t && !t.erro) linhas.push('<h3>CENTRAL DE TRIAGEM (' + t.abertos + ' abertos)</h3>' + Object.entries(t.porCategoria || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div class="setor"><span class="n">' + esc(k.replace(/_/g, ' ')) + '</span><span class="p">' + v + '</span></div>').join(''));
-  const cam = (srv && srv.campanhas) || (pc && pc.campanhas);
-  if (cam) linhas.push('<h3>CAMPANHA VIP</h3><div class="setor"><i class="q" style="background:' + (cam.ativa ? '#2fb36b' : cam.chaveLigada ? '#f2b705' : '#cfc5b3') + '"></i><span class="n">' + (cam.ativa ? 'Ligadas' : cam.chaveLigada ? 'Ligadas, travadas (revisar o brinde)' : 'Desligadas') + '</span><span class="p">hoje ' + cam.total.hoje + ' · 7 dias: ' + cam.total.semana + ' enviadas, ' + cam.total.interesse + ' com interesse, ' + cam.total.conversoes + ' conversões</span></div>' +
-    '<div class="setor"><span class="n">Renovação VIP · Indique e Ganhe · Reativação (desligada)</span><span class="p">' + [cam.renovacaoVip.semana, cam.indique.semana, cam.reativacao.semana].join(' · ') + ' enviadas</span></div>' + (cam.brindesAEntregar ? '<div class="setor"><span class="n">Descontos de indicação liberados</span><span class="p">' + cam.brindesAEntregar + '</span></div>' : ''));
-  const br = LIVE_FIN && LIVE_FIN.bruno;
-  if (br) linhas.push('<h3>ROTAS DO BRUNO (' + br.rotas.join(', ') + ')</h3><div class="setor"><span class="n">Carteira em aberto · vencido até 30 dias</span><span class="p">R$ ' + br.aberto.toLocaleString('pt-BR') + ' · R$ ' + br.vencido30.toLocaleString('pt-BR') + (br.deltaVencidoOntem == null ? '' : ' (' + (br.deltaVencidoOntem > 0 ? '+' : '') + br.deltaVencidoOntem.toLocaleString('pt-BR') + ' vs ontem)') + '</span></div>' +
-    '<div class="setor"><span class="n">Vendas do mês (mês anterior até o mesmo dia)</span><span class="p">R$ ' + br.vendasMes.toLocaleString('pt-BR') + ' (R$ ' + br.vendasMesAnterior.toLocaleString('pt-BR') + ')</span></div>' +
-    '<div class="setor"><i class="q" style="background:' + (br.copiloto && br.copiloto.ligado ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Pedidos abertos · promessas hoje · casos sensíveis</span><span class="p">' + br.pedidosAbertos + ' · ' + br.promessasHoje + ' · ' + br.sensiveis + ' · co-piloto ' + (br.copiloto && br.copiloto.ligado ? 'ligado' : 'desligado') + '</span></div>');
-  try { const rq = LIVE_FIN ? liveRoiEquipeHtml(LIVE_FIN) : ''; linhas.push(rq || '<h3>FINANCEIRO</h3><p class="nota">🔒 Valores de vendas, recebimentos, carteira e placar dos vendedores só aparecem para o Gestor. Use "Entrar como Gestor".</p>'); } catch (e) {}   // (13/11/2026, Bloco 9) ROI Sistema × Empresa, todas as rotas e vendedores, placar dos chips
-  const ind = (srv && srv.indicadores ? srv : pc || {}).indicadores;
-  if (ind) linhas.push('<h3>INDICADORES</h3><div class="setor"><span class="n">Pendências a atender (7 dias)</span><span class="p">' + ind.pendenciasAbertas + '</span></div>' +
-    '<div class="setor"><span class="n">Atendimentos hoje</span><span class="p">' + ind.atendidosHoje + '</span></div>' +
-    (ind.donoPedido ? '<div class="setor"><i class="q" style="background:' + (ind.donoPedido.semAtender3h ? '#f2b705' : '#2fb36b') + '"></i><span class="n">Pedidos de compra sem atendimento (&gt; 3 h)</span><span class="p">' + ind.donoPedido.semAtender3h + (ind.donoPedido.semAtender3h ? ' · mais antigo há ' + ind.donoPedido.maisAntigoNovoH + ' h' : '') + '</span></div><p class="nota">' + ind.donoPedido.antigos + ' pedido(s) abertos há mais de 36 h; vigia avisou sobre ' + ind.donoPedido.alertasHoje + ' hoje.</p>' : '') +
-    '<div class="setor"><span class="n">Filas: pós-quitação · recado · data</span><span class="p">' + [ind.filas.posQuitacao, ind.filas.recadoVendedor, ind.filas.perguntaData].map(v => v ?? '–').join(' · ') + '</span></div>' +
-    '<p class="nota">Fora da conta: ' + ind.pendenciasAtualizarContato + ' de atualizar contato e acúmulo antigo (' + ind.pendenciasNaoResolvidasTotalBruto + ' não resolvidas no total).</p>');
-  return cab + linhas.join('') + (typeof ctlRelatoriosHtml === 'function' ? ctlRelatoriosHtml() : '');
-}
-// ===== Bloco 9: ROI real, equipe completa e chips (só números: nenhum dado de cliente) =====
-var fR = v => 'R$ ' + Math.round(+v || 0).toLocaleString('pt-BR'), fP = v => v == null ? '–' : (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%', fC = n => (n || 0) + (n === 1 ? ' cesta' : ' cestas');
-function liveRoiEquipeHtml(d) {
-  var out = [], g = 'display:grid;grid-template-columns:minmax(78px,1fr) 1fr 1fr;gap:2px 8px;font-size:12px;align-items:baseline';
-  var roi = d && d.roi;
-  if (roi && roi.dia && roi.mes) {
-    var lin = function (rot, p) { var e = p.empresa, s = p.sistema, pt = p.participacao || {};
-      return '<div style="margin:6px 0 2px;font-weight:600">' + rot + '</div><div style="' + g + '"><span></span><b>🏢 Empresa</b><b>🤖 Sistema</b>' +
-        '<span>Cestas</span><span>' + e.cestas + '</span><span>' + s.cestas + '</span>' +
-        '<span>R$ vendidos</span><span>' + fR(e.vendido) + '</span><span>' + fR(s.vendido) + '</span>' +
-        '<span>R$ recebidos</span><span>' + fR(e.recebido) + '</span><span>' + fR(s.recebido) + '</span>' +
-        '<span>Conversão</span><span title="compradores ÷ carteira ativa de 12 meses">' + fP(e.conversao) + '</span><span title="abordados que compraram ÷ abordados">' + fP(s.conversao) + '</span></div>' +
-        '<p class="nota">Sistema = ' + fP(pt.vendido) + ' das vendas e ' + fP(pt.recebido) + ' dos recebimentos</p>'; };
-    var orig = (roi.mes.porOrigem || []).map(function (o) { return esc(o.nome) + ' ' + o.cestas + ' (' + fR(o.vendido) + ')'; }).join(' · ');
-    out.push('<h3>ROI REAL — EMPRESA × SISTEMA</h3>' + lin('Hoje', roi.dia) + lin('Mês até hoje', roi.mes) + (orig ? '<p class="nota">Vendas do mês por origem: ' + orig + '</p>' : '') +
-      '<p class="nota">Atribuído = compra ou pagamento até ' + roi.janelaDias + ' dias depois de contato do robô (receptivo, VIP, Indique e Ganhe, pós-quitação, lembrete, cobrança, promessa). É proximidade, não prova de causa.' + (roi.dadosVendasAte && roi.dadosVendasAte < roi.hoje ? ' Vendas lançadas até ' + roi.dadosVendasAte.split('-').reverse().join('/') + '.' : '') + '</p>');
-  }
-  var eq = d && d.equipe;
-  if (eq && eq.vendedores) {
-    var linhaV = function (v) { return '<div class="setor"><span class="n">' + esc(v.vendedor) + (v.rotas ? ' <small>(rotas ' + v.rotas.join(', ') + ')</small>' : v.rota ? ' <small>(rota ' + esc(v.rota) + ')</small>' : '') + '</span><span class="p">' + fC(v.cestas) + ' · ' + fR(v.vendido) + ' vend. · ' + fR(v.recebido) + ' rec. · conv ' + fP(v.conversao) + ' · 🤖 ' + (v.sisCestas || 0) + ' (' + fR(v.sisVendido) + ')</span></div>'; };
-    out.push('<h3>VENDEDORES — TODAS AS ROTAS (mês)</h3>' + eq.vendedores.map(linhaV).join('') +
-      '<details><summary class="nota" style="cursor:pointer">Ver as ' + (eq.rotas || []).length + ' rotas</summary>' + (eq.rotas || []).map(function (r) { return '<div class="setor"><span class="n">Rota ' + esc(r.rota) + ' <small>' + esc(r.vendedor || '') + '</small></span><span class="p">' + fC(r.cestas) + ' · ' + fR(r.vendido) + ' vend. · ' + fR(r.recebido) + ' rec. · aberto ' + fR(r.aberto) + ' · vencido ' + fR(r.vencido) + ' · 🤖 ' + (r.sisCestas || 0) + '</span></div>'; }).join('') + '</details>' +
-      '<p class="nota">Conversão = compradores do mês ÷ carteira ativa de 12 meses. 🤖 = cestas atribuídas ao sistema.</p>');
-  }
-  if (eq && eq.chips && eq.chips.length) {
-    var cor = function (c) { return c.situacao === 'ok' ? '#2fb36b' : (c.situacao === 'desligado' || c.situacao === 'desconhecido' || c.situacao === 'parado') ? '#f2b705' : '#e5484d'; };
-    out.push('<h3>PLACAR DOS ' + eq.chips.length + ' CHIPS</h3>' + eq.chips.map(function (c) { return '<div class="setor"><i class="q" style="background:' + cor(c) + '"></i><span class="n">' + esc(c.nome) + ' <small>' + esc((c.papel || '').replace(/_/g, ' ')) + '</small></span><span class="p">envios ' + c.enviadosHoje + '/' + c.limiteHoje + ' · atend. ' + c.atendidosHoje + ' · mês ' + c.mes.cestas + ' cestas (' + fR(c.mes.vendido) + ') · conv ' + fP(c.mes.conversao) + '</span></div>'; }).join(''));
-  }
-  var cr = d && d.credito, corF = { pronto: '#2fb36b', aguardando: '#f2b705', reprovado: '#e5484d' };
-  if (cr && !Array.isArray(cr) && cr.funil) {
-    var tot = cr.funil.total || {}, gestor = typeof CTL !== 'undefined' && CTL.admin;
-    out.push('<h3>ANALISTA DE CRÉDITO · FUNIL POR ORIGEM</h3><p class="nota">Leads ' + (tot.leads || 0) + ' → Aprovados ' + (tot.aprovados || 0) + ' · Reprovados ' + (tot.reprovados || 0) + ' · Exceções ' + (tot.excecoes || 0) + ' · aguardando dados ou comprovante ' + (tot.aguardando || 0) + ' · pararam na etapa 1: ' + (tot.parciais || 0) + '</p>' +
-      (cr.funil.porOrigem || []).map(function (o) { return '<div class="setor"><span class="n">' + esc(o.origem) + '</span><span class="p">leads ' + o.leads + ' → aprovados ' + o.aprovados + ' · reprovados ' + o.reprovados + ' · exceções ' + o.excecoes + '</span></div>'; }).join(''));
-    var ex = cr.excecoes || [];
-    out.push('<h3>EXCEÇÕES PARA DECIDIR (' + ex.length + ')</h3>' + (ex.length ? ex.map(function (c) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + ' · origem ' + esc(c.origem || '') + '</small></summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '<p class="nota"><b>Por que caiu na revisão:</b> ' + esc((c.motivos || []).join('; ')) + '</p>' +
-      (gestor ? '<div style="display:flex;gap:8px;margin-top:6px"><button class="acao" type="button" data-credito="aprovar" data-lead="' + esc(c.leadId) + '">Aprovar</button><button class="acao roxo" type="button" data-credito="recusar" data-lead="' + esc(c.leadId) + '">Recusar</button></div>' : '<p class="nota">🔒 Entre como Gestor para aprovar ou recusar.</p>') + '</details>'; }).join('') : '<p class="nota">Nenhuma exceção esperando decisão.</p>'));
-  }
-  // (auditoria 14/11) último ciclo de cada motor e o que está esperando (anti-colisão, conversa em andamento...): erro aparece em vermelho, nunca fica silencioso
-  var avisoCiclo = function (u) { if (!u) return '<p class="nota">Último ciclo: ainda não registrado.</p>'; var h = ''; try { h = new Date(u.em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { h = ''; } return u.erro ? '<div class="setor" style="border-left:4px solid #d9534f"><span class="n">⚠ Erro no último ciclo (' + esc(h) + ')</span><span class="p">' + esc(u.erro) + '</span></div>' : '<p class="nota">Último ciclo: ' + esc(h) + ' · sem erro</p>'; };
-  var esperaTxt = function (e) { var l = Object.entries(e || {}); return l.length ? '<p class="nota">Esperando: ' + l.map(function (m) { return esc(String(m[0]).replace(/_/g, ' ')) + ' ' + m[1]; }).join(' · ') + '</p>' : ''; };
-  if (cr && !Array.isArray(cr) && cr.indicacaoVip) {   // (Bloco 15) painel Indique e Ganhe VIP: só na linha privada
-    var iv = cr.indicacaoVip, tt = iv.totais || {}, hI = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, mot = Object.entries(iv.motivosRecusa || {});
-    out.push('<h3>INDIQUE E GANHE VIP</h3>' +
-      '<div class="setor"><i class="q" style="background:' + (iv.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave INDICACAO_VIP_AO_VIVO</span><span class="p">' + (iv.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
-      '<div class="setor"><span class="n">Convites do link VIP</span><span class="p">' + iv.convites.agendados + ' agendados · ' + iv.convites.enviados + ' enviados</span></div>' + esperaTxt(iv.convites.espera) + avisoCiclo(iv.ultimoCiclo) +
-      '<div class="setor"><span class="n">Indicações recebidas · aprovadas · recusadas</span><span class="p">' + (tt.recebidas || 0) + ' · ' + (tt.aprovadas || 0) + ' · ' + (tt.recusadas || 0) + '</span></div>' +
-      '<div class="setor"><span class="n">Bônus de ' + fR(iv.bonusPorIndicado) + ' por amigo aprovado: pendentes · disponíveis</span><span class="p">' + fR(tt.pendente) + ' · ' + fR(tt.disponivel) + ' (reservado ' + fR(tt.reservado) + ' · usado ' + fR(tt.usado) + ')</span></div>' +
-      (iv.ranking.length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Ranking de padrinhos (' + iv.ranking.length + ')</summary>' + iv.ranking.map(function (p, i) { return '<p class="nota">' + (i + 1) + '. <b>' + esc(p.nome) + '</b> (' + esc(p.codigo) + ') · recebidas ' + p.recebidas + ' · aprovadas ' + p.aprovadas + ' · bônus pendente ' + fR(p.pendente) + ' · disponível ' + fR(p.disponivel) + (p.recusadas ? ' · recusadas ' + p.recusadas : '') + '</p>'; }).join('') + '</details>' : '<p class="nota">Ainda não há indicações.</p>') +
-      (mot.length ? '<p class="nota">Trava antifraude: ' + mot.map(function (m) { return esc(String(m[0]).replace(/_/g, ' ')) + ' ' + m[1]; }).join(' · ') + '</p>' : '') +
-      (iv.convites.proximos.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Próximos convites programados</summary>' + iv.convites.proximos.map(function (x) { return '<p class="nota">' + hI(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.cidade || '') + '</p>'; }).join('') + '</details>' : ''));
-  }
-  if (cr && !Array.isArray(cr) && cr.recompra) {   // (Bloco 14) Radar de Recompra e Reativação: só na linha privada
-    var rc = cr.recompra, hh = function (iso) { try { return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, ign = rc.elegiveis ? Object.entries(rc.elegiveis.ignorados || {}).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6) : [];
-    out.push('<h3>RADAR DE RECOMPRA E REATIVAÇÃO</h3>' +
-      '<div class="setor"><i class="q" style="background:' + (rc.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave REATIVACAO_BASE_AO_VIVO</span><span class="p">' + (rc.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
-      '<div class="setor"><span class="n">Bons pagadores elegíveis na base</span><span class="p">' + (rc.elegiveis ? rc.elegiveis.total + ' de ' + Number(rc.elegiveis.totalBase).toLocaleString('pt-BR') : 'ainda sem varredura') + '</span></div>' +
-      '<div class="setor"><span class="n">Fila de hoje</span><span class="p">' + rc.hoje.programados + ' programados · ' + rc.hoje.enviados + ' de ' + rc.hoje.limite + ' enviados</span></div>' +
-      '<div class="setor"><span class="n">Renovações na quitação</span><span class="p">' + rc.renovacoes.agendadas + ' agendadas · ' + rc.renovacoes.enviadas + ' enviadas</span></div>' + avisoCiclo(rc.ultimoCiclo) +
-      '<div class="setor"><span class="n">Pedidos reconvertidos</span><span class="p">' + rc.reconvertidos.total + ' (renovação rápida ' + rc.reconvertidos.pelaRenovacaoRapida.length + ' · resposta no WhatsApp ' + rc.reconvertidos.porRespostaNoWhatsApp.length + ')</span></div>' +
-      (rc.hoje.fila.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800">Fila programada de hoje (' + rc.hoje.fila.length + ')</summary>' + rc.hoje.fila.map(function (x) { return '<p class="nota">' + hh(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.cidade || '') + ' · rota ' + esc(x.rota) + ' · ' + esc(x.status) + '</p>'; }).join('') + '</details>' : '') +
-      (ign.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Por que o resto da base ficou de fora</summary>' + ign.map(function (x) { return '<p class="nota">' + esc(String(x[0]).replace(/_/g, ' ')) + ': ' + Number(x[1]).toLocaleString('pt-BR') + '</p>'; }).join('') + '</details>' : ''));
-  }
-  if (cr && !Array.isArray(cr) && cr.pedidos) {   // (Bloco 13) pedidos aprovados prontos para entrega, por rota/cidade
-    var fila = cr.pedidos, totPed = fila.reduce(function (s, g) { return s + g.pedidos.length; }, 0), dBr = function (iso) { return iso ? String(iso).split('-').reverse().join('/') : ''; };
-    out.push('<h3>PEDIDOS APROVADOS · FILA DE ROTA (' + totPed + ')</h3>' + (fila.length ? fila.map(function (g) { return '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Rota ' + esc(g.rota || 'sem rota') + ' · ' + esc(g.cidade || '') + ' <small>' + g.pedidos.length + ' pedido(s)</small></summary>' + g.pedidos.map(function (p) {
-      return '<p class="nota"><b>' + esc(p.pedidoId) + '</b> · ' + esc(p.nome) + ' · ' + esc(p.bairro || '') + (p.semCep ? ' <i>(sem CEP)</i>' : '') + '<br>' + esc(p.cesta) + ' · parcelas: ' + p.parcelas.map(function (x) { return fR(x.valor) + ' em ' + dBr(x.vencimento); }).join(' + ') + '<br>Código VIP: <b>' + esc(p.codigoVip) + '</b> · ' + esc(p.selo) + ' · ' + esc(p.origem) + (p.avisoRota ? ' · aviso à rota: ' + esc(p.avisoRota) : '') + (typeof CTL !== 'undefined' && CTL.admin ? '<br><button class="acao" type="button" data-entrega="' + esc(p.pedidoId) + '">Confirmar entrega</button>' : '') + '</p>'; }).join('') + '</details>'; }).join('') : '<p class="nota">Nenhum pedido aguardando entrega.</p>'));
-  }
-  if (cr && !Array.isArray(cr) && cr.regua) {   // (Bloco 16) Régua de Cobrança & Saúde da Carteira: só na linha privada
-    var rg = cr.regua, sc = rg.carteira || {}, bx = cr.baixaPix || { ultimas: [], revisao: [] }, hR = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
-    out.push('<h3>RÉGUA DE COBRANÇA &amp; SAÚDE DA CARTEIRA</h3>' +
-      '<div class="setor"><i class="q" style="background:' + (rg.chave.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">Chave REGUA_COBRANCA_AO_VIVO</span><span class="p">' + (rg.chave.ligada ? 'LIGADA' : 'DESLIGADA: só prévia, nada é enviado') + '</span></div>' +
-      '<div class="setor"><span class="n">Alcance</span><span class="p">' + (rg.base ? 'pedidos do site + base ativa' : 'só pedidos do site (a base é cobrada pela rotina do dia)') + '</span></div>' +
-      '<div class="setor"><span class="n">Lembretes agendados (D-3 · D0 · D+3)</span><span class="p">' + rg.agendados.d_menos_3 + ' · ' + rg.agendados.d0 + ' · ' + rg.agendados.d_mais_3 + ' (enviados ' + rg.enviados + ', hoje ' + rg.enviadosHoje + '/' + rg.limiteDiario + ')</span></div>' + esperaTxt(rg.espera) + avisoCiclo(rg.ultimoCiclo) +
-      '<div class="setor"><span class="n">Carteira do site: em aberto · a vencer em 7 dias · vencido</span><span class="p">' + fR(sc.abertoTotal) + ' · ' + fR(sc.aVencer7d) + ' · ' + fR(sc.vencido) + ' (' + (sc.inadimplenciaPct || 0) + '%)</span></div>' +
-      '<div class="setor"><span class="n">Vencido até 5 dias · acima de 5 dias (trava o score)</span><span class="p">' + fR(sc.vencidoAte5d) + ' · ' + fR(sc.vencidoMais5d) + ' · ' + (sc.inadimplentes || 0) + ' pedido(s)</span></div>' +
-      '<div class="setor"><span class="n">Pedidos ativos · quitados · aguardando entrega</span><span class="p">' + (sc.pedidosAtivos || 0) + ' · ' + (sc.quitados || 0) + ' · ' + (sc.aguardandoEntrega || 0) + '</span></div>' +
-      '<div class="setor"><span class="n">Parcelas pagas em dia · com atraso</span><span class="p">' + (sc.pagasEmDia || 0) + ' · ' + (sc.pagasComAtraso || 0) + '</span></div>' +
-      '<div class="setor"><span class="n">Baixa automática por Pix hoje</span><span class="p">' + (bx.baixasHoje || 0) + ' parcela(s) · ' + fR(bx.valorBaixadoHoje) + '</span></div>' + avisoCiclo(bx.ultimoCiclo) +
-      (bx.ultimoCiclo && bx.ultimoCiclo.fonte === 'sem_arquivo_de_excecoes' ? '<div class="setor" style="border-left:4px solid #d9534f"><span class="n">⚠ Baixa por Pix sem a lista do conciliador</span><span class="p">a conciliação não gerou a lista de Pix sem cliente</span></div>' : '') +
-      ((bx.revisao || []).length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Pix para revisão humana (' + bx.revisao.length + ')</summary>' + bx.revisao.map(function (x) { return '<p class="nota">' + esc(x.pagador) + ' · ' + fR(x.valor) + ' · ' + esc(x.data) + ' · ' + esc(String(x.motivo).replace(/_/g, ' ')) + (x.pedidoId ? ' · ' + esc(x.pedidoId) : '') + '</p>'; }).join('') + '</details>' : '') +
-      (rg.proximos.length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Próximos lembretes programados</summary>' + rg.proximos.map(function (x) { return '<p class="nota">' + hR(x.agendadoEm) + ' · ' + esc(x.nome) + ' · ' + esc(x.faixa.replace(/_/g, ' ')) + ' · ' + fR(x.valor) + ' · vence ' + esc(x.vencimento) + '</p>'; }).join('') + '</details>' : ''));
-  }
-  if (cr && !Array.isArray(cr) && cr.caixa) {   // (Bloco 17) Conciliação diária de caixa: só na linha privada
-    var cx = cr.caixa;
-    var px = cx.pixHoje || {}, io = (cx.inadimplencia || {}).operacional || {}, ih = (cx.inadimplencia || {}).historico || {}, hL = ''; try { hL = px.leituraEm ? new Date(px.leituraEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''; } catch (e) { hL = ''; }
-    out.push('<h3>CONCILIAÇÃO DE CAIXA · HOJE</h3>' +
-      (px.leitura ? '<div class="setor"><span class="n">Pix confirmado pelo banco hoje (leitura das ' + esc(hL) + ')</span><span class="p"><b>' + fR(px.total) + '</b> · ' + (px.n || 0) + ' Pix</span></div>'
-        : '<div class="setor" style="border-left:4px solid #d9534f"><span class="n">Pix confirmado pelo banco hoje</span><span class="p">' + esc(px.motivo || 'sem leitura do banco hoje') + '</span></div>') +
-      '<div class="setor"><span class="n">Parcelas do site baixadas hoje · baixas lançadas no sistema hoje</span><span class="p">' + fR(px.site) + ' (' + (px.baixasSite || 0) + ') · ' + fR((px.lancadoNoSistema || {}).valor) + ' (' + ((px.lancadoNoSistema || {}).n || 0) + ')</span></div>' +
-      '<div class="setor"><span class="n">Previsão de recebimento nos próximos 7 dias (site · base · total)</span><span class="p">' + fR(cx.previsao7d.site) + ' · ' + fR(cx.previsao7d.base) + ' · <b>' + fR(cx.previsao7d.total) + '</b></span></div>' +
-      '<div class="setor"><span class="n">Atraso operacional, 1 a 90 dias (site · base · total)</span><span class="p">' + fR(io.site) + ' · ' + fR(io.base) + ' · <b>' + fR(io.total) + '</b></span></div>' +
-      '<div class="setor"><span class="n">Histórico antigo, mais de 90 dias (site · base · total)</span><span class="p">' + fR(ih.site) + ' · ' + fR(ih.base) + ' · ' + fR(ih.total) + '</span></div>' +
-      ((cx.inadimplencia || {}).baseLida === false ? '<div class="setor" style="border-left:4px solid #d9534f"><span class="n">⚠ Base não lida</span><span class="p">previsão e atraso da base ficaram sem dado</span></div>' : '') +
-      '<div class="setor"><span class="n">Bônus VIP disponíveis na carteira · pendentes de entrega</span><span class="p">' + fR(cx.bonusDisponivel) + ' · ' + fR(cx.bonusPendente) + '</span></div>');
-  }
-  var hA = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }, dDM = function (iso) { return String(iso || '').split('-').reverse().slice(0, 2).join('/'); };
-  var ag = d && d.gestor;   // (Bloco 18) modo silencioso do Gestor: o que NÃO foi para o WhatsApp do dono fica aqui (só na linha privada)
-  if (ag && ag.hoje) {
-    out.push('<h3>AVISOS AO GESTOR · MODO SILENCIOSO</h3>' +
-      '<div class="setor"><span class="n">Hoje: no seu WhatsApp · só aqui no painel</span><span class="p">' + (ag.hoje.whatsapp || 0) + ' · ' + (ag.hoje.silenciosos || 0) + '</span></div>' +
-      '<p class="nota">' + esc(ag.regra || '') + '</p>' +
-      ((ag.ultimos || []).length ? '<details class="setor" style="display:block" open><summary style="cursor:pointer;font-weight:800">Últimos avisos (' + ag.ultimos.length + ')</summary>' + ag.ultimos.map(function (x) { return '<p class="nota">' + (x.whatsapp ? '📲 ' : '🔕 ') + esc(hA(x.em)) + ' · ' + esc(String(x.tipo || '').replace(/_/g, ' ')) + (x.origem ? ' · ' + esc(x.origem) : '') + '<br>' + esc(x.texto) + '</p>'; }).join('') + '</details>' : '<p class="nota">Nenhum aviso registrado ainda.</p>'));
-  }
-  var bv = d && d.boletim;   // (Bloco 18) boletim dos vendedores: 3 por dia (08h30, 13h30, 17h00) em vez de recado solto no grupo
-  if (bv && bv.horarios) {
-    var pg = Object.entries(bv.porGrupo || {}), hj = bv.hoje || {};
-    out.push('<h3>BOLETIM DOS VENDEDORES</h3>' +
-      '<div class="setor"><span class="n">Horários (seg–sáb)</span><span class="p">' + esc(bv.horarios.join(' · ')) + (bv.proximo ? ' · próximo: ' + esc(bv.proximo.hora) + ' (' + esc(dDM(bv.proximo.dia)) + ')' : '') + '</span></div>' +
-      '<div class="setor"><span class="n">Recados esperando o próximo boletim</span><span class="p">' + (bv.aguardando || 0) + (pg.length ? ' (' + pg.map(function (g) { return esc(g[0]) + ': ' + g[1]; }).join(' · ') + ')' : '') + '</span></div>' +
-      '<div class="setor"><span class="n">Hoje: boletins · recados agrupados · urgentes</span><span class="p">' + (hj.boletins || 0) + ' · ' + (hj.recados || 0) + ' · ' + (hj.urgentes || 0) + '</span></div>' + avisoCiclo(bv.ultimoCiclo) +
-      ((bv.ultimos || []).length ? '<details class="setor" style="display:block"><summary style="cursor:pointer" class="nota">Últimos boletins (' + bv.ultimos.length + ')</summary>' + bv.ultimos.map(function (x) { return '<p class="nota">' + esc(dDM(x.dia)) + ' ' + esc(x.turno || '') + ' · ' + esc(x.grupo) + ' · ' + (x.n || 0) + ' recado(s) · ' + esc(String(x.status || '').replace(/_/g, ' ')) + '</p>'; }).join('') + '</details>' : '') +
-      '<p class="nota">Sai na hora, sem esperar o boletim, só: ' + esc((bv.imediatos || []).join(', ').replace(/_/g, ' ') || 'nada') + '.</p>');
-  }
-  var rec = Array.isArray(cr) ? cr : (cr && cr.recentes) || [];
-  if (rec.length) {
-    out.push('<h3>ÚLTIMAS ANÁLISES (' + rec.length + ')</h3>' + rec.map(function (c) { return '<details class="setor" style="display:block"><summary style="cursor:pointer;font-weight:800"><i class="q" style="display:inline-block;background:' + (corF[c.status] || '#cfc5b3') + '"></i> ' + esc(c.nome) + ' <small>' + esc(c.cidade || '') + '</small> · ' + esc(c.desfecho || c.rotulo || c.status || '') + '</summary>' + (c.linhas || []).map(function (l) { return '<p class="nota">' + esc(l) + '</p>'; }).join('') + '</details>'; }).join(''));
-  }
-  return out.join('');
-}
-// as chaves podem estar no PC ou no servidor (desde a migração de 13/11 moram no servidor): uma chave conta como ligada se estiver em qualquer um dos dois
-function liveChaves(E) {
-  const a = (E.pc && E.pc.dados && E.pc.dados.chaves && E.pc.dados.chaves.lista) || [], b = (E.srv && E.srv.dados && E.srv.dados.chaves && E.srv.dados.chaves.lista) || [], mapa = new Map(), duplas = [];
-  for (const [onde, l] of [['PC', a], ['servidor', b]]) for (const c of l) { const x = mapa.get(c.nome) || { ...c, ligada: false, onde: '' };
-    if (c.ligada) { if (x.ligada) duplas.push(c.nome); x.ligada = true; x.onde = onde; } mapa.set(c.nome, x); }
-  const lista = [...mapa.values()]; return { lista, ligadas: lista.filter(c => c.ligada).length, duplas };
-}
-function liveCont() {
-  const c = document.getElementById('cont'); if (!c || LIVE.desligado) return;
-  let el = document.getElementById('live-chips'); if (!el) { el = document.createElement('span'); el.id = 'live-chips'; el.style.display = 'contents'; c.appendChild(el); }
-  const E = LIVE_ESTADO, pc = E.pc && E.pc.dados, srvD = E.srv && E.srv.dados, vivos = E.ok ? Object.values(E.robos).filter(x => x.nivel === 3).length : null;
-  const chip = (cor, txt, val) => '<span style="display:flex"><i style="background:' + cor + '"></i>' + txt + ' <b>' + val + '</b></span>';
-  el.innerHTML = !E.ok ? chip('#e5484d', 'Ao vivo', 'sem conexão') :
-    chip(vivos === 7 ? '#2fb36b' : vivos >= 4 ? '#f2b705' : '#e5484d', 'Robôs', vivos + '/7') +
-    chip('#f2b705', 'Chaves', liveChaves(E).ligadas + '/' + (liveChaves(E).lista.length || 10)) +
-    chip('#8b5cf6', 'Triagem', (() => { const tt = (srvD && srvD.triagem && !srvD.triagem.erro ? srvD : pc || {}).triagem; return tt && !tt.erro ? tt.abertos : '–'; })()) +
-    chip((srvD && srvD.motor && srvD.motor.rotinaNoServidor) ? '#2fb36b' : '#f2b705', 'Motor', (srvD && srvD.motor && srvD.motor.rotinaNoServidor) ? 'servidor' : 'PC') +
-    chip('#2fb36b', 'Atualizado', quando(minAtras((E.srv || E.pc || {}).atualizado_em)));
-}
-async function liveCiclo() {
-  if (LIVE.desligado) return;   // versão dentro do Artifact: o ambiente bloqueia o Supabase, então nem tenta (a versão hospedada fora é a ao vivo)
-  try { if (typeof CTL !== 'undefined' && CTL.admin && typeof ctlCarregaFin === 'function') await ctlCarregaFin(); } catch (e) {}
-  try { LIVE_ESTADO = liveMonta(await liveBusca()); } catch (e) { LIVE_ESTADO = { ...LIVE_ESTADO, ok: false, erro: (e && e.message) || 'falhou' }; }
-  const mudou = liveAplicaRobos();
-  liveCont();
-  if (mudou) desenha();            // só redesenha o escritório se algum robô mudou de estado (a animação reinicia ao redesenhar)
-  analise();
-}
-// (Bloco 17) botão "Confirmar entrega" da fila de rota: grava a ordem entrega_confirmar (o worker do servidor confirma, recalcula as parcelas e libera o bônus do padrinho)
-if (!window.__alvEntrega) { window.__alvEntrega = true; document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-entrega]'); if (!b || typeof ctlOrdem !== 'function') return; var id = b.getAttribute('data-entrega'); ctlOrdem('entrega_confirmar', { pedidoId: id }, 'Confirmar a ENTREGA do pedido ' + id + ' hoje? As 2 parcelas passam a contar 30 e 60 dias a partir de hoje.'); }); }
-liveCiclo(); setInterval(liveCiclo, LIVE.ms);
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== fim do ao vivo =====
-// ===== ALIANÇA HQ — CONTROLE DO GESTOR (só na versão hospedada fora do Artifact) =====
-// Sem login: a página só mostra as contagens públicas (hq-pc, hq-servidor). Com login de ADMIN (Supabase Auth, mesma conta do Painel):
-//   · Central de Ordens (aba "Conversa"): liga/desliga as chaves, reinicia um robô do servidor, dispara a cobrança 12h15, registra diretriz.
-//   · Contratar: grava o PEDIDO (hq-pedido-...) e a vaga aparece no mapa.
-//   · Relatórios protegidos (v2, cobrança, comissão): resumo no painel "O dia".
-// As ordens viram linhas hq-cmd-... no Supabase; quem executa é o worker do servidor/PC (ecossistema/hq-worker.js), só numa LISTA FECHADA de ações.
-// A permissão de criar ordem é da regra de banco (RLS: só admin), não desta página: esconder o botão não é a trava.
-var CTL = { sb: null, admin: false, email: '', erro: '', ordens: [], pedidos: [], rel: null, relEm: null };
-var CTL_URL = 'https://pjzmzwaarrqxghfbwtsm.supabase.co', CTL_KEY = 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX';
-function ctlInicia() {
-  try { if (window.supabase && window.supabase.createClient) CTL.sb = window.supabase.createClient(CTL_URL, CTL_KEY); } catch (e) { CTL.sb = null; }
-  const hud = document.getElementById('hud'); if (hud && !document.getElementById('ctl-entrar')) {
-    const b = document.createElement('button'); b.id = 'ctl-entrar'; b.type = 'button'; b.className = 'zb w'; b.style.cssText = 'height:34px;font-size:13px;margin-left:8px'; b.textContent = 'Entrar como Gestor';
-    b.onclick = () => CTL.admin ? ctlSai() : ctlAbreLogin(); hud.appendChild(b);
-  }
-  if (!CTL.sb) return;
-  CTL.sb.auth.getSession().then(({ data }) => { if (data && data.session) ctlVerificaPapel(data.session.user.email); });
-}
-function ctlBotao() { const b = document.getElementById('ctl-entrar'); if (b) b.textContent = CTL.admin ? 'Gestor · sair' : 'Entrar como Gestor'; }
-function ctlAbreLogin() {
-  if (!CTL.sb) { alert('Não consegui carregar o login (sem internet ou biblioteca bloqueada).'); return; }
-  let m = document.getElementById('ctl-modal'); if (m) m.remove();
-  m = document.createElement('div'); m.id = 'ctl-modal'; m.style.cssText = 'position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(34,29,39,.78)';
-  m.innerHTML = '<form id="ctl-form" style="background:var(--papel);padding:20px;width:min(92vw,340px);display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 0 0 3px var(--madeira)"><h2 class="px" style="margin:0">Entrar como Gestor</h2>' +
-    '<input class="campo" id="ctl-email" type="email" placeholder="e-mail" autocomplete="username" style="min-height:44px" required><input class="campo" id="ctl-senha" type="password" placeholder="senha" autocomplete="current-password" style="min-height:44px" required>' +
-    '<p class="nota" id="ctl-erro" style="color:#b4232a" role="alert"></p><div class="linha"><button class="acao" type="submit" style="flex:1">Entrar</button><button class="acao roxo" type="button" id="ctl-x">Cancelar</button></div>' +
-    '<p class="nota">É o mesmo login do Painel. Sem login, esta página mostra só contagens.</p></form>';
-  document.body.appendChild(m); document.getElementById('ctl-x').onclick = () => m.remove(); document.getElementById('ctl-email').focus();
-  document.getElementById('ctl-form').onsubmit = async e => { e.preventDefault(); const er = document.getElementById('ctl-erro'); er.textContent = 'Entrando…';
-    const { data, error } = await CTL.sb.auth.signInWithPassword({ email: document.getElementById('ctl-email').value.trim(), password: document.getElementById('ctl-senha').value });
-    if (error) { er.textContent = error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : 'Não consegui entrar: ' + error.message; return; }
-    const ok = await ctlVerificaPapel(data.user.email); if (ok) m.remove(); else er.textContent = 'Essa conta não é de gestor.'; };
-}
-async function ctlVerificaPapel(email) {
-  const { data, error } = await CTL.sb.from('al_papeis').select('papel').limit(1);
-  CTL.admin = !error && !!data && data[0] && data[0].papel === 'admin'; CTL.email = CTL.admin ? email : '';
-  if (!CTL.admin) await CTL.sb.auth.signOut();
-  ctlBotao(); if (CTL.admin) { await ctlCarrega(); } ctlRepinta(); return CTL.admin;
-}
-async function ctlSai() { await CTL.sb.auth.signOut(); LIVE_FIN = null; CTL.admin = false; CTL.email = ''; CTL.ordens = []; CTL.pedidos = []; CTL.rel = null; ctlBotao(); ctlRepinta(); }
-function ctlRepinta() { ctlPedidosNoMapa(); try { chatVazio(); } catch (e) {} analise(); }
-
-// ---- dados protegidos (só admin; o banco recusa para os outros) ----
-async function ctlCarrega() {
-  if (!CTL.admin) return;
-  const [o, p] = await Promise.all([
-    CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-cmd-%').order('atualizado_em', { ascending: false }).limit(12),
-    CTL.sb.from('painel_dados').select('id,dados,atualizado_em').like('id', 'hq-pedido-%').order('atualizado_em', { ascending: true }).limit(60)]);
-  CTL.ordens = (o.data || []); CTL.pedidos = (p.data || []);
-  await ctlCarregaFin();
-}
-// (14/11) números financeiros (linha 'hq-financeiro'): o banco só entrega para o Gestor logado
-async function ctlCarregaFin() {
-  if (!CTL.admin) { LIVE_FIN = null; return; }
-  try { const r = await CTL.sb.from('painel_dados').select('dados').eq('id', 'hq-financeiro').maybeSingle(); LIVE_FIN = (r && r.data && r.data.dados) || null; } catch (e) { LIVE_FIN = null; }
-}
-async function ctlCarregaRelatorios() {
-  if (!CTL.admin) return; const r = await CTL.sb.from('painel_dados').select('id,dados,atualizado_em').in('id', ['v2', 'cobranca', 'comissao']);
-  const por = {}; (r.data || []).forEach(x => por[x.id] = x); CTL.rel = por; CTL.relEm = Date.now(); analise();
-}
-function ctlRelatoriosHtml() {
-  if (!CTL.admin) return '<p class="nota" style="margin-top:12px">Relatórios protegidos (v2, cobrança, comissão): entre como gestor para ver.</p>';
-  const quando = iso => iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
-  if (!CTL.rel) return '<h3 style="margin-top:12px">RELATÓRIOS PROTEGIDOS</h3><button class="acao" type="button" id="ctl-rel">Carregar v2, cobrança e comissão</button>';
-  const v2 = CTL.rel.v2, cb = CTL.rel.cobranca, cm = CTL.rel.comissao, n = x => Array.isArray(x) ? x.length : x && typeof x === 'object' ? Object.keys(x).length : '—';
-  const lin = (t, a, b) => '<div class="setor"><span class="n">' + t + '</span><span class="p">' + a + '</span><span class="p">' + b + '</span></div>';
-  return '<h3 style="margin-top:12px">RELATÓRIOS PROTEGIDOS (' + esc(CTL.email) + ')</h3>' +
-    lin('Painel v2', 'dado até ' + esc((v2 && v2.dados && v2.dados.mes && v2.dados.mes.dadoAte) || '—'), 'enviado ' + quando(v2 && v2.atualizado_em)) +
-    lin('Cobrança', n(cb && cb.dados && cb.dados.itens) + ' itens · ' + n(cb && cb.dados && cb.dados.alertas) + ' alertas · ' + n(cb && cb.dados && cb.dados.vendedores) + ' vendedores', 'dado até ' + esc((cb && cb.dados && cb.dados.dadoAte) || '—')) +
-    lin('Comissão', 'vendedores: ' + n(cm && cm.dados && cm.dados.vendedores), 'gerado ' + quando(cm && cm.dados && cm.dados.geradoEm)) +
-    '<button class="limpa" type="button" id="ctl-rel">Atualizar</button><p class="nota">Aqui só vão totais; os detalhes por cliente continuam no Painel (com login).</p>';
-}
-document.addEventListener('click', e => { if (e.target && e.target.id === 'ctl-rel') ctlCarregaRelatorios(); });
-// (Bloco 12) botões Aprovar / Recusar da fila de exceções do crédito: 1 clique grava a ordem; o worker do servidor decide o lead e enfileira as mensagens
-async function ctlDecisaoCredito(leadId, decisao, botao) {
-  if (!CTL.admin) return;
-  if (botao) { botao.disabled = true; botao.textContent = 'Enviando…'; }
-  const agora = new Date().toISOString(), id = 'hq-cmd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { tipo: 'credito_decidir', dados: { leadId, decisao }, status: 'pendente', criadoEm: agora, por: CTL.email }, atualizado_em: agora });
-  if (botao) botao.textContent = error ? 'O banco recusou' : (decisao === 'aprovar' ? 'Aprovação enviada' : 'Recusa enviada');
-}
-document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('[data-credito]'); if (b) ctlDecisaoCredito(b.getAttribute('data-lead'), b.getAttribute('data-credito'), b); });
-
-// ---- ordens ----
-async function ctlOrdem(tipo, dados, resumo) {
-  if (!CTL.admin) return alert('Entre como gestor.');
-  if (!confirm('Confirmar a ordem?\n\n' + resumo)) return;
-  const agora = new Date().toISOString(), id = 'hq-cmd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-  const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { tipo, dados, status: 'pendente', criadoEm: agora, por: CTL.email }, atualizado_em: agora });
-  if (error) { alert('O banco recusou a ordem: ' + error.message); return; }
-  await ctlCarrega(); ctlPainelOrdens();
-}
-function ctlPainelOrdens() {
-  const el = document.getElementById('chat'); if (!el) return;
-  if (!CTL.admin) { el.innerHTML = '<div class="vazio"><h2>Central de Ordens</h2><p>Entre como gestor (botão no topo) para ligar chaves, reiniciar robôs e dar ordens ao servidor.</p></div>'; return; }
-  const E = (typeof LIVE_ESTADO !== 'undefined' && LIVE_ESTADO) || {}, srv = E.srv && E.srv.dados, chs = (srv && srv.chaves && srv.chaves.lista) || [];
-  const noSrv = Object.entries(LIVE_ROBO).filter(([, id]) => E.robos && E.robos[id] && E.robos[id].onde === 'Servidor' && E.robos[id].nivel >= 2);
-  const cor = s => s === 'feito' ? '#1d7a47' : s === 'pendente' ? '#8a6100' : '#b4232a';
-  el.innerHTML = '<h2>Central de Ordens</h2><p class="nota">Cada ordem vira uma linha no banco; o servidor lê a cada minuto e executa só o que está na lista. O resultado aparece embaixo.</p>' +
-    '<h3>CHAVES AO VIVO (no servidor' + (srv ? '' : ' — sem dado') + ')</h3>' + (chs.map(c => '<div class="setor"><i class="q" style="background:' + (c.ligada ? '#2fb36b' : '#cfc5b3') + '"></i><span class="n">' + esc(c.titulo || c.nome) + '</span>' +
-      (c.nome === 'CONCILIADOR_AUTO_GRAVAR' ? '<span class="p">só pelo terminal</span>' : '<button class="zb w" type="button" data-ch="' + esc(c.nome) + '" data-v="' + (c.ligada ? 0 : 1) + '">' + (c.ligada ? 'Desligar' : 'Ligar') + '</button>') + '</div>').join('') || '<p class="nota">Sem dado das chaves do servidor.</p>') +
-    '<h3>REINICIAR ROBÔ (só os que estão no servidor)</h3>' + (noSrv.map(([nome, id]) => '<div class="setor"><span class="n">' + esc(nome) + '</span><button class="zb w" type="button" data-rb="' + esc(CTL_CONTA[id] || '') + '" data-nome="' + esc(nome) + '">Reiniciar</button></div>').join('') || '<p class="nota">Nenhum robô conectado no servidor agora.</p>') +
-    '<h3>COBRANÇA 12h15</h3><button class="acao" type="button" id="ctl-cob">Disparar a rodada de cobrança (PC)</button><p class="nota">Seg–sáb, 12h–17h, no máximo uma vez a cada 3 h. Só sai cliente que passar na conferência da ficha.</p>' +
-    '<h3>DIRETRIZ</h3><textarea class="campo" id="ctl-dir" maxlength="500" placeholder="Registrar uma diretriz para a equipe (fica guardada, ninguém executa o texto)"></textarea><button class="acao roxo" type="button" id="ctl-dir-ok">Registrar diretriz</button>' +
-    '<h3>ÚLTIMAS ORDENS</h3>' + (CTL.ordens.map(o => { const d = o.dados || {}; return '<div class="setor"><span class="n">' + esc(d.tipo) + ' ' + esc(JSON.stringify(d.dados || {}).slice(0, 60)) + '</span><span class="tag" style="color:' + cor(d.status) + '">' + esc(d.status) + '</span><span class="p" style="flex-basis:100%">' + esc(d.resultado || 'aguardando o servidor (até 1 min)') + '</span></div>'; }).join('') || '<p class="nota">Nenhuma ordem ainda.</p>');
-  el.onclick = e => { const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.ch) ctlOrdem('chave', { nome: b.dataset.ch, valor: +b.dataset.v }, (+b.dataset.v ? 'LIGAR' : 'DESLIGAR') + ' a chave ' + b.dataset.ch + ' no servidor');
-    else if (b.dataset.rb) ctlOrdem('reiniciar_robo', { conta: b.dataset.rb }, 'REINICIAR o robô ' + b.dataset.nome + ' no servidor (fica uns minutos sem responder)');
-    else if (b.id === 'ctl-cob') ctlOrdem('cobranca_1215', {}, 'DISPARAR a rodada de cobrança das 12h15 agora');
-    else if (b.id === 'ctl-dir-ok') { const t = document.getElementById('ctl-dir').value.trim(); if (t) ctlOrdem('diretriz', { texto: t }, 'REGISTRAR a diretriz:\n' + t); } };
-}
-var CTL_CONTA = { central: 'numero-4-mvgs4icz', 'rota-1': 'numero-3-mvbb4brb', 'rota-6': 'automacao-whatsapp', 'rotas-18': 'numero-2-mvb9scy6', 'novo-1': 'numero-5-mvkz6k7t', ajudante: 'numero-7-mvme540p', varredura: 'numero-6-mvkz6l8j' };
-chatVazio = function () { ctlPainelOrdens(); };
-abreChat = function () { aba('conversa'); ctlPainelOrdens(); mostraPainel(); };
-
-// ---- contratar (pedido) ----
-blocoContratar = function (F) { return '<div style="border-top:2px dashed var(--linha);padding-top:10px;display:flex;flex-direction:column;gap:8px"><h3>CONTRATAR</h3>' +
-  (CTL.admin ? '<input class="campo" id="ct-nome" style="min-height:44px" maxlength="60" placeholder="Nome do agente ou rotina (ex.: Dono do pedido)"><input class="campo" id="ct-gatilho" style="min-height:44px" maxlength="80" placeholder="Quando trabalha (ex.: todo dia 8h, ou quando entra Pix)"><textarea class="campo" id="ct-obj" maxlength="300" placeholder="O que ele resolve"></textarea><button class="acao" type="button" id="ct-ok" data-f="' + F.id + '">Fazer o pedido</button><p class="nota" id="ct-msg">O pedido fica registrado no servidor e a vaga aparece no mapa. Não cria robô sozinho.</p>'
-    : '<p class="nota">Entre como gestor (botão no topo) para fazer o pedido de contratação.</p>') + '</div>'; };
-ligaContratar = function (F) { const b = document.getElementById('ct-ok'); if (!b) return;
-  b.onclick = async () => { const nome = document.getElementById('ct-nome').value.trim(), gat = document.getElementById('ct-gatilho').value.trim(), obj = document.getElementById('ct-obj').value.trim(), msg = document.getElementById('ct-msg');
-    if (!nome || !gat) { msg.textContent = 'Preencha o nome e quando ele trabalha.'; return; }
-    const agora = new Date().toISOString(), id = 'hq-pedido-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-    const { error } = await CTL.sb.from('painel_dados').insert({ id, dados: { pedido: { papel: F.n, setor: F.r, nome, gatilho: gat, objetivo: obj, por: CTL.email }, status: 'pendente', criadoEm: agora }, atualizado_em: agora });
-    if (error) { msg.textContent = 'O banco recusou: ' + error.message; return; }
-    msg.textContent = 'Pedido feito. A vaga já está no mapa.'; await ctlCarrega(); ctlPedidosNoMapa(); desenha(); }; };
-function ctlPedidosNoMapa() {
-  const ped = (CTL.admin ? CTL.pedidos : []); let mudou = false;
-  for (let i = P.length - 1; i >= 0; i--) if (P[i].ctlPedido) { P.splice(i, 1); mudou = true; }
-  for (const x of ped) { const p = (x.dados || {}).pedido; if (!p) continue;
-    // a sala pedida primeiro; se estiver cheia, a primeira sala com lugar livre (o pedido nunca some do mapa)
-    let sala = null, pos = null; const ordem = [R[p.setor], ...ROOMS].filter(Boolean);
-    for (const s of ordem) { const cols = Math.max(1, Math.floor(s.w / 96));
-      for (let row = 0; row < 2 && !pos; row++) for (let c = 0; c < cols && !pos; c++) if (!P.some(q => q.r === s.id && q.c === c && q.row === row)) { pos = { c, row }; sala = s; }
-      if (pos) break; }
-    if (!pos) continue; P.push({ id: x.id, n: p.nome, k: 'rotina', r: sala.id, s: 'purple', c: pos.c, row: pos.row, runs: '—', does: 'Pedido de contratação: ' + (p.objetivo || 'sem descrição') + ' · Quando trabalha: ' + p.gatilho + ' · Pedido por ' + p.por + '.', today: 'Pedido feito, aguardando construção.', ctlPedido: true }); mudou = true; }
-  if (mudou) { try { desenha(); } catch (e) {} }
-}
-// o ficha() reescreve o topo e apagava os números ao vivo: refaz logo depois
-(function () { const f = ficha; ficha = function () { f(); try { liveCont(); } catch (e) {} }; })();
-ctlInicia(); ctlPainelOrdens();
-setInterval(async () => { if (CTL.admin) { await ctlCarrega(); ctlPedidosNoMapa(); const a = document.getElementById('chat'); if (a && !a.hidden && !(document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) ctlPainelOrdens(); } }, 20000);
-// ===== fim do controle =====
-</script>
-
-<!-- análise 2026-11-12 + ao vivo + controle 2026-11-13 -->
-
-</body></html>
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" integrity="sha384-ACSfTSC/3B3S0MPs0GVflkzFJlBZmwJDa+oHQ2f6izVOySR5C1Oo6jz/Gt1ioVYe" crossorigin="anonymous"></script>
+<script src="../config.js"></script>
+<script src="hq.js"></script>
+</body>
+</html>

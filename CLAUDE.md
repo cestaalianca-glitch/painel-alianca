@@ -10,7 +10,7 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 | **Cobrança Diária** | `cobranca/` | linha `cobranca` (ecossistema: `scripts/cobranca_diaria_v2.js`) |
 | **Carregamento e Trocas** | `carregamento/` | tabelas do carregamento no Supabase |
 | **Central Aliança** (porta de entrada) | `central/index.html` | — |
-| **Aliança HQ** | `hq/index.html` (**gerado**, não editar à mão), `hq/office.css` | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
+| **Aliança HQ** (layout novo, padrão Tabler 1.7.5 pela CDN, tema claro) | `hq/index.html` (estrutura, com a marcação da documentação do Tabler), `hq/hq.css` (só o que o Tabler não traz), `hq/hq.js` (leitura e tela): escritos à mão, sem dado nenhum. Detalhes em `NOVO-LAYOUT.md` | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
 | Login | `login-gate.js`, `config.js` (chaves públicas) | Supabase Auth |
 | Visual comum | `estilo-alianca.css` (design system: cor sempre por token) | — |
 | Esteiras e governança | `.github/workflows/pages.yml`, `.github/workflows/saude.yml`, `.github/ci/` | regras em `.github/ci/governanca.json` e `permitidos.json` |
@@ -19,7 +19,7 @@ Fora daqui: o site de vendas do cliente fica no repositório `site-cesta-alianca
 
 ## Economia de tokens (vale para toda sessão)
 - Não reler o repositório: o mapa acima diz o arquivo. Abra só ele.
-- `hq/index.html` tem cerca de mil linhas e é **gerado**: nunca ler inteiro. Para achar um trecho: `grep -n "texto" hq/index.html` e ler só a faixa. A fonte são os módulos de `ecossistema/hq/` no repositório do ecossistema.
+- HQ (layout novo): a tela inteira está em `hq/hq.js` (cerca de 600 linhas, com linhas longas). Não ler inteiro: `grep -n "texto" hq/hq.js` e ler só a faixa. O que cada dado significa está nos módulos de `ecossistema/` do repositório do ecossistema (lá ficam o contrato da linha `hq-financeiro` e o worker das ordens).
 - Para saber o que mudou: `git log --oneline -10`, depois `git diff main...HEAD --stat` e só então o diff do arquivo que interessa.
 - Uma tarefa, uma branch curta (`feat/...` ou `fix/...`) saída do `main` atualizado. Depois do merge, a limpeza semanal apaga a branch.
 - Estado do repositório em um comando (branches, esteiras, páginas no ar): `node .github/ci/saude-repo.js`.
@@ -45,5 +45,8 @@ Fora daqui: o site de vendas do cliente fica no repositório `site-cesta-alianca
 6. Exceção: correção urgente de dado sensível que vazou entra direto no `main`, num commit pequeno.
 
 ## De onde vem a página do HQ
-- `hq/index.html` é gerada no repositório do ecossistema (pasta `Painel Alianca`). Para atualizar o módulo ao vivo e copiar a página para cá, rodar lá: `node ecossistema/hq/atualizar-modulo.js --pages`. A limpeza da linha pública (`ecossistema/hq/linha-publica.js`) tira valores em reais do texto fixo.
+- **No `main` de antes do layout novo (o escritório)**: `hq/index.html` era gerada no repositório do ecossistema (pasta `Painel Alianca`), com `node ecossistema/hq/atualizar-modulo.js --pages`. A limpeza da linha pública (`ecossistema/hq/linha-publica.js`) tira valores em reais do texto fixo.
+- **Layout novo (branch `feat/novo-layout-hq`)**: a página é escrita à mão aqui mesmo (`hq/index.html`, `hq/hq.css` e `hq/hq.js`) e não guarda dado nenhum. Ela lê as linhas `hq-pc` e `hq-servidor` sem login e a `hq-financeiro` com o login do Gestor. Os detalhes estão no `NOVO-LAYOUT.md`.
+  - Depois que essa branch entrar no `main`, **não rodar mais o comando `--pages`**: ele copia a página antiga por cima da nova.
+  - Texto fixo da página nunca leva valor em reais, nome, telefone ou pedido: a trava barra. Valor só aparece montado na tela, com o dado que vem do banco depois do login.
 - Nunca criar arquivo `.bak-*` dentro deste repositório. Backup de página fica no repositório do ecossistema, que ignora `.bak`.
