@@ -1,4 +1,5 @@
-/* ALIANÇA HQ — painel de comando no padrão Tabler, tema claro (16/11/2026, branch feat/novo-layout-hq).
+/* ALIANÇA HQ — painel de comando no padrão Tabler 1.7.5, tema claro (16/11/2026, branch feat/novo-layout-hq).
+   Marcação e componentes são os do Tabler (docs.tabler.io): cartões, tabelas, selos, chaves, painel lateral (offcanvas), modal e aviso (toast).
    SEM LOGIN: lê só as linhas de contagem (hq-pc e hq-servidor) e mostra o estado de cada funcionário digital. Nada de valor, fila ou nome.
    COM LOGIN DO GESTOR (Supabase Auth + papel admin): lê a linha privada hq-financeiro e libera pendências, números, filas e chaves.
    Nenhum dado fica neste arquivo: tudo vem do banco, e quem decide o que cada um lê é a regra do banco (RLS), não esta página.
@@ -81,6 +82,12 @@ const inteiro = v => Math.round(+v || 0).toLocaleString('pt-BR');
 const reais = v => (num(+v) == null ? '–' : 'R$ ' + inteiro(v));   // espaço que não quebra: o valor nunca se separa do R$
 const pct = v => (num(v) == null ? '–' : (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%');
 const poe = (el, html) => { if (el && el.__html !== html) { el.innerHTML = html; el.__html = html; } };
+
+/* Componentes do Tabler (o script dele expõe "tabler", com Modal, Offcanvas e Toast). Se a CDN falhar, um dublê mínimo mantém a tela usável. */
+const pecas = () => window.tabler || window.bootstrap || {};
+const modal = el => (pecas().Modal ? pecas().Modal.getOrCreateInstance(el) : { show() { el.style.display = 'block'; el.classList.add('show'); }, hide() { el.classList.remove('show'); el.style.display = ''; el.dispatchEvent(new Event('hidden.bs.modal')); } });
+const painel = () => { const el = $('gaveta'); return pecas().Offcanvas ? pecas().Offcanvas.getOrCreateInstance(el) : { show() { el.classList.add('show'); }, hide() { el.classList.remove('show'); el.dispatchEvent(new Event('hidden.bs.offcanvas')); } }; };
+const SETA = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" class="icon icon-sm text-secondary"><path d="M9 6l6 6l-6 6" /></svg>';   // ícone chevron-right do Tabler Icons
 
 const partesFuso = new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' });
 function noFuso(d = new Date()) {   // dia, minuto do dia e dia da semana no horário de Londrina
@@ -290,8 +297,9 @@ function pinta() {
   const c = contexto(), p = pendencias(c);
   resolveEsperas(c);
   const b = $('botao-entrar'); b.textContent = E.g.admin ? 'Sair' : E.g.conferindo ? 'Conferindo' : 'Entrar'; b.disabled = E.g.conferindo; b.className = E.g.admin ? 'btn' : 'btn btn-primary';
+  $('lado').className = c.admin ? 'col-lg-7' : 'col-12';   // sem login não há pendências ao lado: a equipe ocupa a largura toda
   pintaSinal(c, p); pintaPendencias(c, p); pintaIndicadores(c); pintaEquipe(c); pintaEsteira(c); pintaControles(c); pintaRodape(c);
-  if (E.gaveta && $('gaveta').open) pintaGaveta(c);
+  if (E.gaveta) pintaGaveta(c);
 }
 function pintaSinal(c, p) {
   let cor = 'green', txt = 'Online', pisca = true;
@@ -315,7 +323,7 @@ function pintaPendencias(c, p) {
     (avisos ? `<div class="card-footer py-2"><button type="button" class="btn btn-link p-0" data-abre="avisos">${conta(avisos, 'aviso', 'avisos')} hoje</button></div>` : '') + '</div>');
 }
 function kpi(rotulo, valor, sub, abre, cor = '') {
-  return `<div class="col-6 col-md-4 col-xl-2"><button type="button" class="card card-sm card-link kpi" data-abre="${abre}"><span class="card-body"><span class="subheader">${esc(rotulo)}</span><span class="kpi-valor">${valor}</span><span class="kpi-sub ${cor ? 'text-' + cor : 'text-secondary'}">${sub ? esc(sub) : '&nbsp;'}</span></span></button></div>`;
+  return `<div class="col-6 col-md-4"><button type="button" class="card card-sm card-link kpi" data-abre="${abre}"><span class="card-body"><span class="subheader">${esc(rotulo)}</span><span class="kpi-valor">${valor}</span><span class="kpi-sub ${cor ? 'text-' + cor : 'text-secondary'}">${sub ? esc(sub) : '&nbsp;'}</span></span></button></div>`;
 }
 function pintaIndicadores(c) {   // o dia (Pix, vendido, recebido) e a semana (a receber, atraso), mais o mês da equipe digital
   const el = $('pulso'); el.hidden = !c.admin; if (!c.admin) { poe(el, ''); return; }
@@ -362,7 +370,7 @@ function etapas(c) {
 function pintaEsteira(c) {
   const el = $('esteira'); el.hidden = !c.admin || !c.fin; if (el.hidden) { poe(el, ''); return; }
   poe(el, '<div class="card"><div class="card-header"><h3 class="card-title">Esteira do site</h3></div><div class="table-responsive"><table class="table table-vcenter card-table"><tbody>' +
-    etapas(c).map(e => `<tr class="linha-abre" data-abre="${e.id}" tabindex="0" aria-haspopup="dialog"><td>${esc(e.nome)}${e.alerta ? ' <span class="badge bg-yellow-lt">decidir</span>' : ''}</td><td class="text-end">${e.n == null ? '–' : `<span class="fw-medium">${inteiro(e.n)}</span> <span class="text-secondary">${esc(plural(e.n, e.un[0], e.un[1]))}</span>`}</td><td class="w-1 seta" aria-hidden="true">›</td></tr>`).join('') +
+    etapas(c).map(e => `<tr class="linha-abre" data-abre="${e.id}" tabindex="0" aria-haspopup="dialog"><td>${esc(e.nome)}${e.alerta ? ' <span class="badge bg-yellow-lt">decidir</span>' : ''}</td><td class="text-end">${e.n == null ? '–' : `<span class="fw-medium">${inteiro(e.n)}</span> <span class="text-secondary">${esc(plural(e.n, e.un[0], e.un[1]))}</span>`}</td><td class="w-1">${SETA}</td></tr>`).join('') +
     '</tbody></table></div></div>');
 }
 function ordemHtml(o) {
@@ -375,7 +383,7 @@ function pintaControles(c) {
   if (document.activeElement && document.activeElement.id === 'diretriz') return;   // não apaga o que o Gestor está digitando
   const donas = new Set(EQUIPE.flatMap(f => [f.chave, ...f.outras]).filter(Boolean)), soltas = [...c.chaves.values()].filter(k => !donas.has(k.nome));
   const aberto = !!(el.querySelector('details') || {}).open;   // não fecha o bloco na cara do Gestor a cada leitura
-  poe(el, `<details class="card"${aberto ? ' open' : ''}><summary class="card-header"><h3 class="card-title">Ordens e controles</h3><div class="card-actions seta" aria-hidden="true">›</div></summary>` +
+  poe(el, `<details class="card"${aberto ? ' open' : ''}><summary class="card-header"><h3 class="card-title">Ordens e controles</h3><div class="card-actions">${SETA}</div></summary>` +
     (E.ordens.length ? `<div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr><th>Hora</th><th>Ordem</th><th class="text-end">Estado</th></tr></thead><tbody>${E.ordens.map(ordemHtml).join('')}</tbody></table></div>` : '<div class="card-body text-secondary">Nenhuma ordem ainda.</div>') +
     (soltas.length ? `<div class="card-body"><div class="subheader mb-1">Outras chaves</div>${soltas.map(k => linhaChave(k.nome, c)).join('')}</div>` : '') +
     '<div class="card-body"><label class="form-label" for="diretriz">Diretriz para a equipe</label><textarea class="form-control" id="diretriz" rows="2" maxlength="500"></textarea><button type="button" class="btn mt-2" data-diretriz>Registrar</button></div></details>');
@@ -516,28 +524,32 @@ function pintaGaveta(c = contexto()) {
   if (corpo.contains(document.activeElement) && /TEXTAREA|INPUT/.test(document.activeElement.tagName) && document.activeElement.type !== 'checkbox') return;
   let cabeca, html;
   if (f) { const s = situacao(f, c), e = erroCiclo(f, c);
-    cabeca = `<h5 class="modal-title" id="gaveta-titulo">${esc(f.cargo)}</h5><div class="mt-1">${selo(s.cod, s.txt)}</div>`;
+    cabeca = `<h2 class="offcanvas-title" id="gaveta-titulo">${esc(f.cargo)}</h2><div class="mt-1">${selo(s.cod, s.txt)}</div>`;
     html = !c.admin ? vazio('Disponível só para o Gestor.') : (GAVETAS[id] ? GAVETAS[id].call({ f }, c) : '');
     if (e && c.admin && !CICLO_DE[id]) html = erroHtml(e) + html;
   } else {
-    cabeca = `<h5 class="modal-title" id="gaveta-titulo">${esc(TITULOS[id] || frase(humano(id)))}</h5>`;
+    cabeca = `<h2 class="offcanvas-title" id="gaveta-titulo">${esc(TITULOS[id] || frase(humano(id)))}</h2>`;
     html = c.admin && GAVETAS[id] ? GAVETAS[id].call({}, c) : vazio('Disponível só para o Gestor.'); }
   const rolagem = corpo.scrollTop; poe($('gaveta-cabeca'), cabeca); poe(corpo, html); corpo.scrollTop = rolagem;
 }
-function abreGaveta(id) { if (!E.g.admin) return; E.gaveta = id; $('gaveta-corpo').__html = null; pintaGaveta(); const d = $('gaveta'); if (!d.open) { d.showModal(); $('gaveta-corpo').scrollTop = 0; } }
-function fecha(d) { if (d && d.open) d.close(); }
+function abreGaveta(id) { if (!E.g.admin) return; const outra = E.gaveta !== id; E.gaveta = id; $('gaveta-corpo').__html = null; pintaGaveta(); if (outra) $('gaveta-corpo').scrollTop = 0; painel().show(); }
 function limpaGaveta() { E.gaveta = null; for (const id of ['gaveta-cabeca', 'gaveta-corpo']) { const el = $(id); el.innerHTML = ''; el.__html = ''; } }   // fechou ou saiu: nada do detalhe fica guardado na página
 
 /* ---------------- ações do Gestor ---------------- */
 let avisoRelogio = null;
-function avisa(texto, tipo = '') { const el = $('aviso'); el.textContent = texto; el.className = 'aviso' + (tipo ? ' ' + tipo : ''); el.hidden = false; clearTimeout(avisoRelogio); avisoRelogio = setTimeout(() => { el.hidden = true; }, 6000); }
+function avisa(texto, tipo = '') {   // aviso do Tabler (toast): some sozinho em 6 segundos
+  const el = $('aviso'); $('aviso-texto').textContent = texto; el.classList.toggle('border-danger', tipo === 'erro');
+  if (pecas().Toast) { pecas().Toast.getOrCreateInstance(el, { delay: 6000 }).show(); return; }
+  el.classList.add('show'); clearTimeout(avisoRelogio); avisoRelogio = setTimeout(() => el.classList.remove('show'), 6000);
+}
 function confirma({ titulo, texto, botao, vermelho = false }) {   // chave e ordens de risco passam por aqui: nada sai com um toque só
   return new Promise(resolve => {
-    const d = $('confirma'), sim = $('confirma-sim'), nao = $('confirma-nao');
-    $('confirma-titulo').textContent = titulo; $('confirma-texto').textContent = texto; sim.textContent = botao; sim.className = 'btn ' + (vermelho ? 'btn-danger' : 'btn-primary');
-    const fim = v => { sim.onclick = nao.onclick = d.onclose = null; fecha(d); resolve(v); };
-    sim.onclick = () => fim(true); nao.onclick = () => fim(false); d.onclose = () => resolve(false);
-    d.showModal(); nao.focus();
+    const el = $('confirma'), m = modal(el), sim = $('confirma-sim'); let resposta = false;
+    $('confirma-titulo').textContent = titulo; $('confirma-texto').textContent = texto; sim.textContent = botao;
+    sim.className = 'btn w-100 ' + (vermelho ? 'btn-danger' : 'btn-primary'); $('confirma-faixa').className = 'modal-status ' + (vermelho ? 'bg-danger' : 'bg-primary');
+    sim.onclick = () => { resposta = true; m.hide(); };
+    el.addEventListener('hidden.bs.modal', () => { sim.onclick = null; resolve(resposta); }, { once: true });   // fechar por Cancelar, pelo X, pelo Esc ou tocando fora conta como "não"
+    m.show();
   });
 }
 async function gravaOrdem(tipo, dados) {   // mesmo contrato do worker: linha hq-cmd-..., status pendente, executada no servidor numa lista fechada
@@ -600,7 +612,7 @@ async function entrar(email, senha) {
 async function sair() {
   cancelaAgendadas();   // o que estava nos 5 segundos de desfazer não sai
   try { if (E.g.sb) await E.g.sb.auth.signOut(); } catch (e) { /* segue: o estado local é limpo de qualquer jeito */ }
-  E.g.admin = false; E.g.email = ''; E.fin = null; E.finEm = null; E.ordens = []; E.espera = {}; E.enviadas = {}; fecha($('gaveta')); limpaGaveta(); pinta();
+  E.g.admin = false; E.g.email = ''; E.fin = null; E.finEm = null; E.ordens = []; E.espera = {}; E.enviadas = {}; painel().hide(); limpaGaveta(); pinta();
 }
 
 /* ---------------- eventos ---------------- */
@@ -608,8 +620,6 @@ document.addEventListener('click', async ev => {
   const alvo = ev.target.closest ? ev.target : ev.target.parentElement; if (!alvo) return;
   const b = sel => alvo.closest(sel);
   let x;
-  if (ev.target.tagName === 'DIALOG') { const r = ev.target.getBoundingClientRect(); if (ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom) fecha(ev.target); return; }   // só o toque FORA da folha fecha
-  if ((x = b('[data-fecha]'))) { fecha(x.closest('dialog')); return; }
   if ((x = b('[data-chave]'))) { ev.preventDefault(); if (!x.disabled) alternaChave(x.dataset.chave, x.dataset.ligar === '1'); return; }   // a chave não vira sozinha: só quando o servidor confirma
   if ((x = b('[data-desfaz]'))) { desfaz(x.dataset.desfaz); return; }
   if ((x = b('[data-credito]'))) { const d = x.dataset.credito; agendaOrdem('credito:' + x.dataset.lead, 'credito_decidir', { leadId: x.dataset.lead, decisao: d }, d === 'aprovar' ? 'Aprovando' : 'Recusando', d === 'aprovar' ? 'Aprovação enviada' : 'Recusa enviada'); return; }
@@ -624,15 +634,16 @@ document.addEventListener('click', async ev => {
 document.addEventListener('keydown', ev => {   // linha de tabela que abre a gaveta também responde ao teclado
   if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('tr[data-abre]')) { ev.preventDefault(); abreGaveta(ev.target.dataset.abre); }
 });
-$('botao-entrar').addEventListener('click', () => { if (E.g.admin) sair(); else { $('login-erro').textContent = ''; $('login').showModal(); $('login-email').focus(); } });
+$('botao-entrar').addEventListener('click', () => { if (E.g.admin) sair(); else { $('login-erro').textContent = ''; modal($('login')).show(); } });
+$('login').addEventListener('shown.bs.modal', () => $('login-email').focus());
 $('login-form').addEventListener('submit', async ev => {
   ev.preventDefault(); const erro = $('login-erro'), ok = $('login-ok'), email = $('login-email').value.trim(), senha = $('login-senha').value;
   if (!email || !senha) { erro.textContent = 'Preencha o e-mail e a senha.'; return; }
   ok.disabled = true; erro.textContent = 'Entrando';
-  try { await entrar(email, senha); $('login-senha').value = ''; erro.textContent = ''; fecha($('login')); await ciclo(); } catch (e) { erro.textContent = (e && e.message) || 'Não consegui entrar.'; }
+  try { await entrar(email, senha); $('login-senha').value = ''; erro.textContent = ''; modal($('login')).hide(); await ciclo(); } catch (e) { erro.textContent = (e && e.message) || 'Não consegui entrar.'; }
   ok.disabled = false;
 });
-$('gaveta').addEventListener('close', limpaGaveta);
+$('gaveta').addEventListener('hidden.bs.offcanvas', limpaGaveta);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { for (const k of Object.keys(E.agendadas)) executaAgendada(k); }   // saiu da tela com um toque ainda nos 5 segundos: a ordem sai agora
   else roda();

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-bs-theme="light">
+<html lang="pt-BR" data-bs-theme="light" data-bs-theme-base="slate">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,8 +8,10 @@
 <meta name="theme-color" content="#ffffff">
 <title>Aliança HQ</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1b40'/%3E%3Ccircle cx='12.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3Ccircle cx='19.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3C/svg%3E">
-<!-- Visual: Tabler 1.0.0 (github.com/tabler/tabler, licença MIT), tema claro. Versão fixa e com trava de integridade. -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css" integrity="sha384-fkzLEr+R1vlsMqNHsxTOSmtcmf0+LuY6VkpET9w9/SVpXLQQXzUsSuF91EOMmk+n" crossorigin="anonymous">
+<!-- Visual: Tabler 1.7.5 (github.com/tabler/tabler, licença MIT), tema claro fixo. Cada trava de integridade vale só para esta versão:
+     ao trocar de versão, copiar de novo as três linhas da documentação (docs.tabler.io), não mudar só o número. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css" integrity="sha384-BY4EnLpEeqBnDZno/u4SjmwHqbv1/U9as69Q0Jk/zeaDJ8iV10NK7FP+6fFEGW4i" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler-themes.min.css" integrity="sha384-8ynacb8IixxaphA1N8dVVP2cnDKTD2tJJ6GHjaGoR37CPjmC6gT0xqNNXxX5tA1t" crossorigin="anonymous">
 <link rel="stylesheet" href="hq.css">
 </head>
 <body>
@@ -20,86 +22,106 @@
 <div class="page">
   <header class="navbar navbar-expand-md d-print-none">
     <div class="container-xl">
-      <div class="navbar-brand pe-0 pe-md-3">
-        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0d1b40"/><circle cx="12.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/><circle cx="19.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/></svg>
+      <h1 class="navbar-brand navbar-brand-autodark pe-0 pe-md-3">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#0d1b40"/><circle cx="12.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/><circle cx="19.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/></svg>
         <span class="ms-2">Aliança HQ</span>
-      </div>
+      </h1>
       <div class="navbar-nav flex-row align-items-center order-md-last">
-        <span id="sinal" class="me-3" aria-live="polite"><span class="status status-secondary"><span class="status-dot"></span>Lendo</span></span>
+        <span id="sinal" class="me-3" aria-live="polite"><span class="status status-secondary"><span class="status-dot"></span> Lendo</span></span>
         <button type="button" class="btn btn-primary" id="botao-entrar">Entrar</button>
       </div>
     </div>
   </header>
 
   <div class="page-wrapper">
-    <div class="page-body">
+    <main class="page-body">
       <div class="container-xl">
+        <!-- No celular: pendências, indicadores e equipe, um embaixo do outro. No computador: pendências à esquerda, indicadores e equipe à direita. -->
         <div class="row row-cards">
-          <div class="col-12" id="radar" hidden></div>
-          <div class="col-12" id="pulso" hidden></div>
-          <div class="col-12" id="equipe"></div>
-          <div class="col-12" id="esteira" hidden></div>
-          <div class="col-12" id="controles" hidden></div>
+          <div class="col-lg-5" id="radar" hidden></div>
+          <div class="col-12" id="lado">
+            <div class="row row-cards">
+              <div class="col-12" id="pulso" hidden></div>
+              <div class="col-12" id="equipe"></div>
+            </div>
+          </div>
+          <div class="col-lg-5" id="esteira" hidden></div>
+          <div class="col-lg-7" id="controles" hidden></div>
         </div>
       </div>
-    </div>
+    </main>
     <footer class="footer footer-transparent d-print-none">
       <div class="container-xl" id="rodape"></div>
     </footer>
   </div>
 </div>
 
-<dialog class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div id="gaveta-cabeca"></div>
-      <button type="button" class="btn-close" data-fecha aria-label="Fechar"></button>
-    </div>
-    <div class="modal-body" id="gaveta-corpo" tabindex="-1" autofocus></div>
+<!-- detalhe de um funcionário, de um indicador ou de uma etapa -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="gaveta" aria-labelledby="gaveta-titulo">
+  <div class="offcanvas-header">
+    <div id="gaveta-cabeca"></div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
   </div>
-</dialog>
+  <div class="offcanvas-body" id="gaveta-corpo"></div>
+</div>
 
-<dialog class="folha" id="login" aria-labelledby="login-titulo">
-  <form class="modal-content" id="login-form" novalidate>
-    <div class="modal-header">
-      <h5 class="modal-title" id="login-titulo">Entrar como Gestor</h5>
-      <button type="button" class="btn-close" data-fecha aria-label="Fechar"></button>
-    </div>
-    <div class="modal-body">
-      <div class="mb-3">
-        <label class="form-label" for="login-email">E-mail</label>
-        <input class="form-control" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+<div class="modal" id="login" tabindex="-1" aria-labelledby="login-titulo">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <form class="modal-content" id="login-form" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title" id="login-titulo">Entrar como Gestor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <div>
-        <label class="form-label" for="login-senha">Senha</label>
-        <input class="form-control" id="login-senha" type="password" autocomplete="current-password" required>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="login-email">E-mail</label>
+          <input class="form-control" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div>
+          <label class="form-label" for="login-senha">Senha</label>
+          <input class="form-control" id="login-senha" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="text-danger mt-2" id="login-erro" role="alert"></div>
       </div>
-      <div class="text-danger mt-2" id="login-erro" role="alert"></div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn me-auto" data-fecha>Cancelar</button>
-      <button type="submit" class="btn btn-primary" id="login-ok">Entrar</button>
-    </div>
-  </form>
-</dialog>
+      <div class="modal-footer">
+        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="login-ok">Entrar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-<dialog class="folha" id="confirma" aria-labelledby="confirma-titulo">
-  <div class="modal-content">
-    <div class="modal-body">
-      <div class="modal-title" id="confirma-titulo"></div>
-      <div class="text-secondary" id="confirma-texto"></div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn me-auto" id="confirma-nao">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="confirma-sim"></button>
+<!-- pergunta antes de ligar ou pausar uma chave e antes das ordens de risco -->
+<div class="modal" id="confirma" tabindex="-1" aria-labelledby="confirma-titulo">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <div class="modal-status bg-primary" id="confirma-faixa"></div>
+      <div class="modal-body py-4">
+        <h3 id="confirma-titulo"></h3>
+        <div class="text-secondary" id="confirma-texto"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col"><button type="button" class="btn w-100" data-bs-dismiss="modal">Cancelar</button></div>
+            <div class="col"><button type="button" class="btn btn-primary w-100" id="confirma-sim"></button></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</dialog>
+</div>
 
-<div class="aviso" id="aviso" role="status" hidden></div>
+<div class="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3">
+  <div class="toast" id="aviso" role="status" aria-live="polite" aria-atomic="true">
+    <div class="toast-body" id="aviso-texto"></div>
+  </div>
+</div>
 
 <noscript><div class="container-xl py-3">Esta página precisa de JavaScript para ler o estado da equipe.</div></noscript>
 
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" integrity="sha384-ACSfTSC/3B3S0MPs0GVflkzFJlBZmwJDa+oHQ2f6izVOySR5C1Oo6jz/Gt1ioVYe" crossorigin="anonymous"></script>
 <script src="../config.js"></script>
 <script src="hq.js"></script>
 </body>

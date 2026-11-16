@@ -1,38 +1,66 @@
-/* ALIANÇA HQ — camada fina sobre o Tabler 1.0 (tema claro), 16/11/2026.
-   O visual vem do Tabler (cartões, tabelas, selos, chaves). Aqui fica só o que ele não traz: as folhas de diálogo, a gaveta de detalhe,
-   o aviso flutuante e os ajustes de número e de celular. Sem tema escuro. */
+/* ALIANÇA HQ — camada fina sobre o Tabler 1.7.5 (tema claro fixo), 16/11/2026.
+   O visual e os componentes vêm do Tabler (cartões, tabelas, selos, chaves, painel lateral, modal, aviso).
+   Aqui fica só o que ele não traz: as duas cores pedidas pelo Gestor, o número alinhado, a linha de dado da gaveta,
+   a barra do "desfazer" e o aperto de espaço no celular. Sem tema escuro. */
 
-:root {
+:root, [data-bs-theme=light] {
   color-scheme: only light;
-  --tblr-body-bg: #f6f8fb;
-  --tblr-border-color: #e6e7e9;
-  --tblr-card-border-color: #e6e7e9;
+  --tblr-body-bg: #f6f8fb;                     /* fundo da página */
+  --tblr-border-color: #e6e7e9;                /* borda fina dos cartões e das linhas */
+  --tblr-border-color-translucent: #e6e7e9;
 }
 
-.num, .kpi-valor, .card-table td.text-end, .lin > :last-child { font-variant-numeric: tabular-nums; }
+/* O Tabler 1.7 precisa de navegador recente (Chrome 123, Safari 17.5 ou mais novos). Em navegador antigo, avisa em vez de aparecer quebrado em silêncio. */
+@supports not (color: light-dark(#000, #fff)) {
+  body::before { content: "Este painel precisa de um navegador atualizado (Chrome 123, Safari 17.5 ou mais novos)."; display: block; padding: .75rem 1rem; background: #fff3cd; color: #664d03; font: 600 14px/1.4 system-ui, sans-serif; text-align: center; }
+}
+
 [hidden] { display: none !important; }
+.kpi-valor, .card-table td.text-end, .table td.text-end, .lin > :last-child { font-variant-numeric: tabular-nums; }
 
-/* barra do topo */
+/* barra do topo: marca, estado e botão na mesma linha, também no celular */
 .navbar > .container-xl { flex-wrap: nowrap; }
-.navbar-brand { margin-right: auto; font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.navbar-brand { margin-right: auto; white-space: nowrap; }
 .navbar .status { white-space: nowrap; }
-.navbar .btn { min-width: 4rem; }
-@media (max-width: 359.98px) { .navbar-brand span { display: none; } }
 
-/* indicadores (KPIs): cartão compacto do Tabler, clicável */
+/* indicadores: cartão compacto do Tabler, inteiro clicável */
 .kpi { display: block; width: 100%; padding: 0; text-align: left; font: inherit; color: inherit; }
 .kpi .card-body, .kpi .subheader, .kpi-valor, .kpi-sub { display: block; }
 .kpi-valor { margin-top: .25rem; font-size: 1.25rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
 .kpi-sub { margin-top: .125rem; font-size: .75rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* tabelas */
-.card-table th, .card-table td { vertical-align: middle; }
+/* tabelas: linha que abre o detalhe e chave dentro da célula */
 .linha-abre { cursor: pointer; }
 .linha-abre:focus-visible { outline: 2px solid var(--tblr-primary); outline-offset: -2px; }
-.card-table .form-switch { display: inline-block; margin: 0; padding-left: 0; min-height: 0; vertical-align: middle; }
-.card-table .form-switch .form-check-input { float: none; margin: 0; cursor: pointer; }
+td > .form-switch, .lin .form-switch { display: inline-block; margin: 0; padding-left: 0; min-height: 0; vertical-align: middle; }
+td > .form-switch .form-check-input, .lin .form-switch .form-check-input { float: none; margin: 0; cursor: pointer; }
 .form-switch .form-check-input:disabled { cursor: wait; }
-.seta { color: var(--tblr-secondary); }
+
+/* pendências: 1 toque, com alguns segundos para desfazer */
+.desfaz { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding-bottom: .25rem; }
+.desfaz-barra { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--tblr-primary); animation: desfaz-corre 5s linear forwards; }
+@keyframes desfaz-corre { to { width: 0; } }
+
+/* bloco que abre (ordens e controles) */
+details.card > summary { list-style: none; cursor: pointer; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary .icon { transition: transform .15s; }
+details.card[open] > summary .icon { transform: rotate(90deg); }
+
+/* gaveta: linha de dado (rótulo à esquerda, número à direita) e listas com hora */
+.lin { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .4rem 0; border-bottom: 1px solid var(--tblr-border-color); }
+.lin > :first-child { color: var(--tblr-secondary); min-width: 0; }
+.lin > :last-child { font-weight: 500; text-align: right; white-space: nowrap; }
+.lin.ctl > :first-child { color: inherit; font-weight: 500; }
+.secao { margin-bottom: 1.25rem; }
+.secao > .subheader { display: flex; align-items: center; justify-content: space-between; margin-bottom: .25rem; }
+.lista { margin: 0; padding: 0; list-style: none; }
+.lista li { display: flex; gap: .75rem; padding: .4rem 0; border-bottom: 1px solid var(--tblr-border-color); }
+.lista time, .lista i { flex: none; min-width: 3rem; color: var(--tblr-secondary); font-style: normal; font-variant-numeric: tabular-nums; }
+.lista small { display: block; color: var(--tblr-secondary); }
+#confirma-texto { white-space: pre-line; }
+#gaveta .offcanvas-header { align-items: flex-start; }
+
 /* celular: mais conteúdo por tela (pendências, indicadores e equipe sem rolar muito) */
 @media (max-width: 575.98px) {
   .container-xl { padding-left: .5rem; padding-right: .5rem; }
@@ -43,59 +71,5 @@
   .list-group-item { padding: .5rem .75rem; }
   .card-table th, .card-table td { padding: .5rem .625rem; }
   .kpi .card-body { padding: .625rem .75rem; }
-  .navbar { min-height: 3rem; }
+  #gaveta.offcanvas-end { width: 100%; }
 }
-
-/* pendências: 1 toque, com alguns segundos para desfazer */
-.desfaz { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding-bottom: .25rem; }
-.desfaz-barra { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--tblr-primary); animation: desfaz-corre 5s linear forwards; }
-@keyframes desfaz-corre { to { width: 0; } }
-
-/* blocos que abrem (controles) */
-details.card > summary { list-style: none; cursor: pointer; }
-details.card > summary::-webkit-details-marker { display: none; }
-details.card > summary .seta { transition: transform .15s; }
-details.card[open] > summary .seta { transform: rotate(90deg); }
-
-/* linhas de dado da gaveta: rótulo à esquerda, número à direita */
-.lin { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .4rem 0; border-bottom: 1px solid var(--tblr-border-color); }
-.lin > :first-child { color: var(--tblr-secondary); min-width: 0; }
-.lin > :last-child { font-weight: 500; text-align: right; white-space: nowrap; }
-.lin.ctl > :first-child { color: inherit; font-weight: 500; }
-.lin-obs { padding: .25rem 0 .4rem; color: var(--tblr-secondary); font-size: .75rem; }
-.secao { margin-bottom: 1.25rem; }
-.secao > .subheader { display: flex; align-items: center; justify-content: space-between; margin-bottom: .25rem; }
-.lista { margin: 0; padding: 0; list-style: none; }
-.lista li { display: flex; gap: .75rem; padding: .4rem 0; border-bottom: 1px solid var(--tblr-border-color); }
-.lista time, .lista i { flex: none; min-width: 3rem; color: var(--tblr-secondary); font-style: normal; font-variant-numeric: tabular-nums; }
-.lista small { display: block; color: var(--tblr-secondary); }
-
-/* diálogos nativos (<dialog>) com a casca de modal do Tabler. No Tabler as variáveis do modal nascem em ".modal"; aqui nascem no <dialog>. */
-dialog {
-  --tblr-modal-padding: 1rem; --tblr-modal-bg: var(--tblr-bg-surface, #fff); --tblr-modal-color: var(--tblr-body-color);
-  --tblr-modal-border-color: var(--tblr-border-color); --tblr-modal-border-width: 1px; --tblr-modal-border-radius: 6px; --tblr-modal-inner-border-radius: 5px;
-  --tblr-modal-box-shadow: 0 .5rem 1.5rem rgba(24, 36, 51, .16);
-  --tblr-modal-header-padding-x: 1rem; --tblr-modal-header-padding-y: 1rem; --tblr-modal-header-padding: 1rem;
-  --tblr-modal-header-border-color: var(--tblr-border-color); --tblr-modal-header-border-width: 1px; --tblr-modal-title-line-height: 1.4285714286;
-  --tblr-modal-footer-gap: .75rem; --tblr-modal-footer-bg: #f6f8fb; --tblr-modal-footer-border-color: var(--tblr-border-color); --tblr-modal-footer-border-width: 1px;
-  border: 0; padding: 0; background: transparent; color: inherit; max-width: none; max-height: none;
-}
-dialog::backdrop { background: rgba(24, 36, 51, .24); }
-.folha { width: min(26rem, calc(100vw - 1.5rem)); }
-.folha .modal-header { padding-left: 1rem; }
-.folha .modal-title { margin-bottom: .5rem; font-size: 1rem; font-weight: 600; }
-.folha .modal-header .modal-title { margin-bottom: 0; }
-#confirma-texto { white-space: pre-line; }
-.gaveta { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(30rem, 100vw); height: 100vh; height: 100dvh; }
-.gaveta .modal-content { height: 100%; max-height: none; border-width: 0 0 0 1px; border-radius: 0; }
-.gaveta .modal-header { flex: none; align-items: flex-start; padding: .75rem 3.5rem .75rem 1rem; }
-.gaveta .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; outline: 0; }
-.gaveta .modal-title { font-size: 1rem; font-weight: 600; line-height: 1.3; }
-@media (max-width: 575.98px) {
-  .gaveta { inset: auto 0 0 0; width: 100vw; height: 88vh; height: 88dvh; }
-  .gaveta .modal-content { border-width: 1px 0 0; border-radius: .5rem .5rem 0 0; }
-}
-
-/* aviso flutuante */
-.aviso { position: fixed; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 2000; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 1.5rem); padding: .625rem 1rem; border: 1px solid var(--tblr-border-color); border-left: 4px solid var(--tblr-green); border-radius: 4px; background: #fff; box-shadow: 0 .5rem 1.5rem rgba(24, 36, 51, .16); }
-.aviso.erro { border-left-color: var(--tblr-red); }

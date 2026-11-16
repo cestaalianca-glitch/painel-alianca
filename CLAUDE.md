@@ -10,7 +10,7 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 | **Cobrança Diária** | `cobranca/` | linha `cobranca` (ecossistema: `scripts/cobranca_diaria_v2.js`) |
 | **Carregamento e Trocas** | `carregamento/` | tabelas do carregamento no Supabase |
 | **Central Aliança** (porta de entrada) | `central/index.html` | — |
-| **Aliança HQ** (layout novo) | `hq/index.html` (estrutura), `hq/hq.css` (visual), `hq/hq.js` (leitura e tela): escritos à mão, sem dado nenhum | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
+| **Aliança HQ** (layout novo, padrão Tabler 1.7.5 pela CDN, tema claro) | `hq/index.html` (estrutura, com a marcação da documentação do Tabler), `hq/hq.css` (só o que o Tabler não traz), `hq/hq.js` (leitura e tela): escritos à mão, sem dado nenhum. Detalhes em `NOVO-LAYOUT.md` | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
 | Login | `login-gate.js`, `config.js` (chaves públicas) | Supabase Auth |
 | Visual comum | `estilo-alianca.css` (design system: cor sempre por token) | — |
 | Esteiras e governança | `.github/workflows/pages.yml`, `.github/workflows/saude.yml`, `.github/ci/` | regras em `.github/ci/governanca.json` e `permitidos.json` |
