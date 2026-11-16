@@ -1,52 +1,79 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light" data-bs-theme-base="slate">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0d1b40">
+<meta name="theme-color" content="#ffffff">
 <title>Resultados — Aliança</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d1b40'/%3E%3Crect x='7' y='17' width='4' height='8' fill='%23f2b705'/%3E%3Crect x='14' y='11' width='4' height='14' fill='%23f2b705'/%3E%3Crect x='21' y='6' width='4' height='19' fill='%23f2b705'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1b40'/%3E%3Crect x='7' y='17' width='4' height='8' fill='%23f2b705'/%3E%3Crect x='14' y='11' width='4' height='14' fill='%23f2b705'/%3E%3Crect x='21' y='6' width='4' height='19' fill='%23f2b705'/%3E%3C/svg%3E">
+<!-- Visual: Tabler 1.7.5 (github.com/tabler/tabler, licença MIT), tema claro fixo. Cada trava de integridade vale só para esta versão:
+     ao trocar de versão, copiar de novo as três linhas da documentação (docs.tabler.io), não mudar só o número. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler.min.css" integrity="sha384-BY4EnLpEeqBnDZno/u4SjmwHqbv1/U9as69Q0Jk/zeaDJ8iV10NK7FP+6fFEGW4i" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/css/tabler-themes.min.css" integrity="sha384-8ynacb8IixxaphA1N8dVVP2cnDKTD2tJJ6GHjaGoR37CPjmC6gT0xqNNXxX5tA1t" crossorigin="anonymous">
 <link rel="stylesheet" href="resultados.css">
 </head>
 <body>
 
 <!-- PAINEL DE RESULTADOS: esta página não guarda dado nenhum. Tudo chega do banco depois do login do Gestor (linhas hq-financeiro e v2).
-     Sem login ela mostra só o convite para entrar. -->
+     Sem login ela mostra só o botão de entrar. -->
 
-<header class="topo">
-  <div class="topo-dentro">
-    <div class="marca"><i aria-hidden="true"></i>Resultados</div>
-    <div class="topo-acoes">
-      <button type="button" class="botao-topo" id="botao-atualizar" hidden>Atualizar</button>
-      <button type="button" class="botao-topo" id="botao-entrar">Entrar</button>
+<div class="page">
+  <header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+      <h1 class="navbar-brand navbar-brand-autodark pe-0 pe-md-3">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#0d1b40"/><rect x="7" y="17" width="4" height="8" fill="#f2b705"/><rect x="14" y="11" width="4" height="14" fill="#f2b705"/><rect x="21" y="6" width="4" height="19" fill="#f2b705"/></svg>
+        <span class="ms-2">Resultados</span>
+      </h1>
+      <div class="navbar-nav flex-row align-items-center order-md-last">
+        <button type="button" class="btn me-2" id="botao-atualizar" hidden>Atualizar</button>
+        <button type="button" class="btn btn-primary" id="botao-entrar">Entrar</button>
+      </div>
     </div>
+  </header>
+
+  <div class="page-wrapper">
+    <main class="page-body">
+      <div class="container-xl" id="tela" aria-live="polite">
+        <div class="empty"><p class="empty-title">Conferindo o acesso</p></div>
+      </div>
+    </main>
+    <footer class="footer footer-transparent d-print-none">
+      <div class="container-xl" id="rodape"></div>
+    </footer>
   </div>
-</header>
+</div>
 
-<main id="tela" aria-live="polite">
-  <section class="porta">
-    <h1>Um instante</h1>
-    <p>Conferindo o seu acesso…</p>
-  </section>
-</main>
+<div class="modal" id="login" tabindex="-1" aria-labelledby="login-titulo">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <form class="modal-content" id="login-form" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title" id="login-titulo">Entrar como Gestor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="login-email">E-mail</label>
+          <input class="form-control" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+        </div>
+        <div>
+          <label class="form-label" for="login-senha">Senha</label>
+          <input class="form-control" id="login-senha" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="text-danger mt-2" id="login-erro" role="alert"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="login-ok">Entrar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-<dialog class="folha" id="login" aria-labelledby="login-titulo">
-  <form id="login-form" novalidate>
-    <h2 id="login-titulo">Entrar como Gestor</h2>
-    <p class="folha-texto">É o mesmo login do Painel.</p>
-    <label>E-mail<input id="login-email" type="email" autocomplete="username" inputmode="email" required></label>
-    <label>Senha<input id="login-senha" type="password" autocomplete="current-password" required></label>
-    <p class="folha-erro" id="login-erro" role="alert"></p>
-    <div class="folha-botoes">
-      <button type="button" class="botao secundario" id="login-cancela">Cancelar</button>
-      <button type="submit" class="botao" id="login-ok">Entrar</button>
-    </div>
-  </form>
-</dialog>
+<noscript><div class="container-xl py-3">Esta página precisa de JavaScript para ler os resultados.</div></noscript>
 
-<noscript><p class="sem-js">Esta página precisa de JavaScript para ler os resultados.</p></noscript>
-
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.7.5/dist/js/tabler.min.js" integrity="sha384-ACSfTSC/3B3S0MPs0GVflkzFJlBZmwJDa+oHQ2f6izVOySR5C1Oo6jz/Gt1ioVYe" crossorigin="anonymous"></script>
 <script src="config.js"></script>
 <script src="resultados.js"></script>
 </body>
