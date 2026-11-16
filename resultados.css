@@ -1,0 +1,38 @@
+/* PAINEL DE RESULTADOS — camada fina sobre o Tabler 1.7.5 (tema claro fixo), 16/11/2026.
+   O visual e os componentes vêm do Tabler (cartões, tabelas, barras, selos, modal). Aqui fica só o que ele não traz:
+   as duas cores pedidas pelo Gestor, o número alinhado e o aperto de espaço no celular. Sem tema escuro. */
+
+:root, [data-bs-theme=light] {
+  color-scheme: only light;
+  --tblr-body-bg: #f6f8fb;                     /* fundo da página */
+  --tblr-border-color: #e6e7e9;                /* borda fina dos cartões e das linhas */
+  --tblr-border-color-translucent: #e6e7e9;
+}
+
+/* O Tabler 1.7 precisa de navegador recente (Chrome 123, Safari 17.5 ou mais novos). Em navegador antigo, avisa em vez de aparecer quebrado em silêncio. */
+@supports not (color: light-dark(#000, #fff)) {
+  body::before { content: "Este painel precisa de um navegador atualizado (Chrome 123, Safari 17.5 ou mais novos)."; display: block; padding: .75rem 1rem; background: #fff3cd; color: #664d03; font: 600 14px/1.4 system-ui, sans-serif; text-align: center; }
+}
+
+[hidden] { display: none !important; }
+.valor, .table td.text-end, .table th.text-end, .datagrid-content { font-variant-numeric: tabular-nums; }
+
+/* barra do topo: marca e botões na mesma linha, também no celular */
+.navbar > .container-xl { flex-wrap: nowrap; }
+.navbar-brand { margin-right: auto; white-space: nowrap; }
+
+/* indicadores do topo */
+.valor { margin-top: .25rem; font-size: 1.25rem; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.sub { margin-top: .125rem; font-size: .75rem; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* celular: mais conteúdo por tela */
+@media (max-width: 575.98px) {
+  .container-xl { padding-left: .5rem; padding-right: .5rem; }
+  .page-header { margin-top: .75rem; }
+  .page-body { margin-top: .5rem; margin-bottom: .5rem; }
+  .row-cards { --tblr-gutter-x: .5rem; --tblr-gutter-y: .5rem; }
+  .card-header { min-height: 0; padding: .625rem .75rem; }
+  .card-footer { padding: .5rem .75rem; }
+  .card-sm > .card-body { padding: .625rem .75rem; }
+  .card-table th, .card-table td { padding: .5rem .625rem; }
+}
