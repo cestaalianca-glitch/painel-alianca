@@ -6,7 +6,7 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 
 | Tela ou assunto | Arquivos | De onde vem o dado |
 |---|---|---|
-| **Painel de Resultados** (executivo novo: o mês, funil, abordagens, ranking e retorno; só para o Gestor) | `index.html` (estrutura), `resultados.css` (visual), `resultados.js` (leitura e tela); detalhes no `RESULTADOS.md` | linha `hq-financeiro` (ROI, rotas, vendedores, motores), só as rotas da linha `v2` (pontualidade) e só as campanhas da linha `hq-servidor` |
+| **Painel de Resultados** (executivo novo, padrão Tabler 1.7.5 pela CDN, tema claro: vendas por canal, resposta e conversão por fluxo, recuperação de atrasados e comparativo mensal; só para o Gestor) | `index.html` (estrutura, com a marcação da documentação do Tabler), `resultados.css` (só o que o Tabler não traz), `resultados.js` (leitura e tela); detalhes no `RESULTADOS.md` | linha `hq-financeiro` (ROI do mês, atraso e fluxos), um recorte da linha `v2` (série mensal, ritmo, ano e idade do dinheiro) e só as campanhas da linha `hq-servidor` |
 | **Painel completo** (o painel de antes: abas O mês, Clientes, Histórico) | `painel-completo.html`, `carregar.js` (login e busca), `mes.js`, `clientes.js`, `historico.js`, `extras.js` (resumo por vendedor), `atualizar.js` (botão Atualizar agora), `painel.css` | linha `v2` de `painel_dados`, calculada no repositório do ecossistema (`scripts/painel_v2_*.js`) |
 | **Cobrança Diária** | `cobranca/` | linha `cobranca` (ecossistema: `scripts/cobranca_diaria_v2.js`) |
 | **Carregamento e Trocas** | `carregamento/` | tabelas do carregamento no Supabase |
