@@ -1,73 +1,104 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="only light">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0d1b40">
+<meta name="theme-color" content="#ffffff">
 <title>Aliança HQ</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d1b40'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23f2b705'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1b40'/%3E%3Ccircle cx='12.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3Ccircle cx='19.5' cy='16' r='6' fill='none' stroke='%23f2b705' stroke-width='2.5'/%3E%3C/svg%3E">
+<!-- Visual: Tabler 1.0.0 (github.com/tabler/tabler, licença MIT), tema claro. Versão fixa e com trava de integridade. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css" integrity="sha384-fkzLEr+R1vlsMqNHsxTOSmtcmf0+LuY6VkpET9w9/SVpXLQQXzUsSuF91EOMmk+n" crossorigin="anonymous">
 <link rel="stylesheet" href="hq.css">
 </head>
 <body>
 
-<!-- LINHA PÚBLICA: esta página não guarda dado nenhum. Sem login ela mostra só se a equipe digital está online ou em pausa
+<!-- LINHA PÚBLICA: esta página não guarda dado nenhum. Sem login ela mostra só o estado de cada funcionário digital
      (contagens das linhas hq-pc e hq-servidor). Valores, filas e nomes só chegam do banco depois do login do Gestor. -->
 
-<div class="mastro">
-  <header class="topo">
-    <div class="marca"><i aria-hidden="true"></i>Aliança HQ</div>
-    <button type="button" class="botao-topo" id="botao-entrar">Entrar</button>
+<div class="page">
+  <header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+      <div class="navbar-brand pe-0 pe-md-3">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0d1b40"/><circle cx="12.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/><circle cx="19.5" cy="16" r="6" fill="none" stroke="#f2b705" stroke-width="2.5"/></svg>
+        <span class="ms-2">Aliança HQ</span>
+      </div>
+      <div class="navbar-nav flex-row align-items-center order-md-last">
+        <span id="sinal" class="me-3" aria-live="polite"><span class="status status-secondary"><span class="status-dot"></span>Lendo</span></span>
+        <button type="button" class="btn btn-primary" id="botao-entrar">Entrar</button>
+      </div>
+    </div>
   </header>
 
-  <section class="radar" id="radar" aria-live="polite" aria-label="Radar de decisão">
-    <p class="radar-linha"><span class="ping" aria-hidden="true"></span><span>Lendo a operação…</span></p>
-    <h1>Um instante</h1>
-  </section>
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row row-cards">
+          <div class="col-12" id="radar" hidden></div>
+          <div class="col-12" id="pulso" hidden></div>
+          <div class="col-12" id="equipe"></div>
+          <div class="col-12" id="esteira" hidden></div>
+          <div class="col-12" id="controles" hidden></div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer footer-transparent d-print-none">
+      <div class="container-xl" id="rodape"></div>
+    </footer>
+  </div>
 </div>
 
-<main>
-  <section class="bloco" id="pulso" hidden></section>
-  <section class="bloco" id="equipe" aria-label="Equipe digital"></section>
-  <section class="bloco" id="esteira" hidden></section>
-  <section class="bloco" id="controles" hidden></section>
-  <footer class="rodape" id="rodape"></footer>
-</main>
-
 <dialog class="gaveta" id="gaveta" aria-labelledby="gaveta-titulo">
-  <div class="gaveta-topo">
-    <div id="gaveta-cabeca"></div>
-    <button type="button" class="fechar" data-fecha aria-label="Fechar">Fechar</button>
+  <div class="modal-content">
+    <div class="modal-header">
+      <div id="gaveta-cabeca"></div>
+      <button type="button" class="btn-close" data-fecha aria-label="Fechar"></button>
+    </div>
+    <div class="modal-body" id="gaveta-corpo" tabindex="-1" autofocus></div>
   </div>
-  <div class="gaveta-corpo" id="gaveta-corpo"></div>
 </dialog>
 
 <dialog class="folha" id="login" aria-labelledby="login-titulo">
-  <form id="login-form" novalidate>
-    <h2 id="login-titulo">Entrar como Gestor</h2>
-    <p class="folha-texto">É o mesmo login do Painel. Sem ele, esta página mostra só se a equipe está online.</p>
-    <label>E-mail<input id="login-email" type="email" autocomplete="username" inputmode="email" required></label>
-    <label>Senha<input id="login-senha" type="password" autocomplete="current-password" required></label>
-    <p class="folha-erro" id="login-erro" role="alert"></p>
-    <div class="folha-botoes">
-      <button type="button" class="botao secundario" data-fecha>Cancelar</button>
-      <button type="submit" class="botao" id="login-ok">Entrar</button>
+  <form class="modal-content" id="login-form" novalidate>
+    <div class="modal-header">
+      <h5 class="modal-title" id="login-titulo">Entrar como Gestor</h5>
+      <button type="button" class="btn-close" data-fecha aria-label="Fechar"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label" for="login-email">E-mail</label>
+        <input class="form-control" id="login-email" type="email" autocomplete="username" inputmode="email" required>
+      </div>
+      <div>
+        <label class="form-label" for="login-senha">Senha</label>
+        <input class="form-control" id="login-senha" type="password" autocomplete="current-password" required>
+      </div>
+      <div class="text-danger mt-2" id="login-erro" role="alert"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn me-auto" data-fecha>Cancelar</button>
+      <button type="submit" class="btn btn-primary" id="login-ok">Entrar</button>
     </div>
   </form>
 </dialog>
 
 <dialog class="folha" id="confirma" aria-labelledby="confirma-titulo">
-  <h2 id="confirma-titulo"></h2>
-  <p class="folha-texto" id="confirma-texto"></p>
-  <div class="folha-botoes">
-    <button type="button" class="botao secundario" id="confirma-nao">Cancelar</button>
-    <button type="button" class="botao" id="confirma-sim"></button>
+  <div class="modal-content">
+    <div class="modal-body">
+      <div class="modal-title" id="confirma-titulo"></div>
+      <div class="text-secondary" id="confirma-texto"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn me-auto" id="confirma-nao">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="confirma-sim"></button>
+    </div>
   </div>
 </dialog>
 
-<div class="aviso-flutuante" id="aviso" role="status" hidden></div>
+<div class="aviso" id="aviso" role="status" hidden></div>
 
-<noscript><p class="sem-js">Esta página precisa de JavaScript para ler o estado da equipe.</p></noscript>
+<noscript><div class="container-xl py-3">Esta página precisa de JavaScript para ler o estado da equipe.</div></noscript>
 
 <script src="../config.js"></script>
 <script src="hq.js"></script>
