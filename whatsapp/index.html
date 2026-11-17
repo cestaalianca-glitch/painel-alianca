@@ -172,6 +172,18 @@ button.kpi:active{background:var(--line-2)}
 .btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
 .sheet p{margin:0;font-size:15px;color:var(--ink-2)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));z-index:12;background:var(--ink);color:#fff;border-radius:999px;padding:10px 18px;font-size:14px;font-weight:500;white-space:nowrap}
+/* etapa 3: interruptores */
+.sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px 0 16px;min-height:56px;border-bottom:1px solid var(--line-2)}
+.sw-row:last-child{border-bottom:0}
+.sw-row span{font-size:15px;font-weight:500}
+.sw{width:60px;height:48px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.sw i{width:48px;height:28px;border-radius:14px;background:#cbd5e1;position:relative;display:block;transition:background .15s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.sw[aria-checked="true"] i{background:#16a34a}.sw[aria-checked="true"] i::after{left:23px}
+.sw[aria-disabled="true"] i{opacity:.45}
+.lockrow{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-3)}
+.chip-row .t1 .pill{height:20px;font-size:11px}
+@media (prefers-reduced-motion:reduce){.sw i,.sw i::after{transition:none}}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -198,6 +210,7 @@ var IC={
   chev:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg>',
   down:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6l6-6"/></svg>',
   x:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>',
+  lock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11h14v10h-14z"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/></svg>',
   pix:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 9l-9 9l-9-9z"/></svg>',
   list:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M5 6v.01"/><path d="M5 12v.01"/><path d="M5 18v.01"/></svg>',
   ask:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><path d="M12 17h.01"/></svg>',
@@ -335,12 +348,21 @@ function vEnvios(){
     }
   });
   if(outros) h+='<div class="ord"><span class="num" style="background:#94a3b8">·</span><span class="nm">Outros</span><span class="val">'+outros+'</span></div>';
-  h+='</div></section><section class="sec"><div class="sec-h"><h2>Chips</h2></div><div class="card">';
+  var adm=PAPEL==='admin', trava='<span class="lockrow">'+IC.lock+'Só Leonardo</span>';
+  h+='</div></section><section class="sec"><div class="sec-h"><h2>Chips</h2>'+(adm?'<span class="time">Envio</span>':trava)+'</div><div class="card">';
   chips().filter(function(c){return !S.num||c.nome===S.num;}).forEach(function(c){
-    var st=ST[c.st]||ST.ok, cor=st[1]==='bad'||st[1]==='mute'?'#94a3b8':st[1]==='warn'?'#d4a011':'#22a447';
-    h+='<div class="chip-row"><span class="dot '+st[1]+'"></span><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><span class="bar"><span style="width:'+(c.teto?Math.min(100,c.env/c.teto*100):0)+'%;background:'+cor+'"></span></span></div><span class="q">'+c.env+' <small>/ '+c.teto+'</small></span><span class="stc">'+pill(st[0],st[1])+'</span></div>';
+    var st=ST[c.st]||ST.ok, cor=st[1]==='bad'||st[1]==='mute'?'#94a3b8':st[1]==='warn'?'#d4a011':'#22a447', on=ligadoEnvio(c);
+    h+='<div class="chip-row"><span class="dot '+st[1]+'"></span><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span>'+pill(st[0],st[1])+'</div><span class="bar"><span style="width:'+(c.teto?Math.min(100,c.env/c.teto*100):0)+'%;background:'+cor+'"></span></span></div><span class="q">'+c.env+' <small>/ '+c.teto+'</small></span>'+
+      (c.conta?'<button class="sw" role="switch" aria-checked="'+on+'" aria-disabled="'+!adm+'" aria-label="Envio do '+esc(c.nome)+'" data-act="sw-chip" data-id="'+esc(c.conta)+'" data-nome="'+esc(c.nome)+'"><i></i></button>':'')+'</div>';
   });
-  return h+'</div></section>';
+  h+='</div></section>';
+  var K=(D&&D.chaves)||[];
+  if(K.length){
+    h+='<section class="sec"><div class="sec-h"><h2>Automáticos</h2>'+(adm?'<span class="time">'+K.filter(ligadaChave).length+' de '+K.length+' ligados</span>':trava)+'</div><div class="card">';
+    K.forEach(function(k){var on=ligadaChave(k);h+='<div class="sw-row"><span>'+esc(k.rotulo)+'</span><button class="sw" role="switch" aria-checked="'+on+'" aria-disabled="'+!adm+'" aria-label="'+esc(k.rotulo)+'" data-act="sw-chave" data-id="'+esc(k.nome)+'" data-nome="'+esc(k.rotulo)+'"><i></i></button></div>';});
+    h+='</div></section>';
+  }
+  return h;
 }
 
 /* ---------- PERGUNTAR (IA no servidor) ---------- */
@@ -378,12 +400,21 @@ async function ordem(tipo,dados){
   if(r.error) throw new Error(r.error.message);
   return id;
 }
+/* (etapa 3) interruptores: só o Leonardo (papel admin); a tela mostra o novo estado na hora e volta atrás se o servidor recusar */
+S.swLocal={};
+function ligadaChave(k){return S.swLocal['k:'+k.nome]!==undefined?S.swLocal['k:'+k.nome]:!!k.ligada;}
+function ligadoEnvio(c){return S.swLocal['c:'+c.conta]!==undefined?S.swLocal['c:'+c.conta]:!!c.envio;}
+async function trocarSw(chaveLocal,tipo,dados,ligar,rotulo){
+  S.swLocal[chaveLocal]=ligar; S.modal=null; render();
+  try{var id=await ordem(tipo,dados);acompanha(id,function(d){if(d.status!=='feito'){delete S.swLocal[chaveLocal];toast('Não deu: '+(d.resultado||''));}else toast(rotulo+(ligar?' ligado':' desligado'));});}
+  catch(e){delete S.swLocal[chaveLocal];toast('Sem permissão ou sem conexão');}
+}
 function acompanha(id,aoTerminar){PEND[id]=aoTerminar;vigiaOrdens();}
 async function vigiaOrdens(){
   if(vigiaOrdens.on) return; vigiaOrdens.on=true;
   try{
-    for(var volta=0;Object.keys(PEND).length&&volta<80;volta++){
-      await new Promise(function(r){setTimeout(r,3000);});
+    for(var volta=0;Object.keys(PEND).length&&volta<150;volta++){ /* (etapa 3) olha a cada 1 s, por até ~2,5 min */
+      await new Promise(function(r){setTimeout(r,1000);});
       var ids=Object.keys(PEND); var r=await SB.from('painel_dados').select('id,dados').in('id',ids);
       (r.data||[]).forEach(function(o){var d=o.dados||{};if(d.status&&d.status!=='pendente'){var f=PEND[o.id];delete PEND[o.id];try{f(d);}catch(e){}}});
       render();
@@ -404,6 +435,7 @@ async function trocarAssumir(c,assumir){
 async function perguntar(txt){
   if(!txt||S.chat.some(function(m){return m.esperando;})) return;
   var hist=S.chat.filter(function(m){return !m.esperando&&m.content;}).slice(-6).map(function(m){return {role:m.role,content:m.content};});
+  S.chat.forEach(function(x){if(x.nota&&!x.notaFeita)x.nota=null;}); /* mensagem nova descarta a sugestão de anotação que ficou sem resposta */
   S.chat.push({role:'user',content:txt}); var m={role:'assistant',content:'',esperando:true}; S.chat.push(m); S.ask=''; render(); rolaFim();
   try{var id=await ordem('pergunta',{texto:txt,hist:hist});
     acompanha(id,function(d){m.esperando=false;if(d.status==='feito'){m.content=d.resposta||'…';if(d.anotar)m.nota=d.anotar;}else m.content='Não consegui responder agora: '+(d.resultado||'tente de novo');setTimeout(rolaFim,50);});}
@@ -491,6 +523,11 @@ function render(){
   var ak=document.getElementById('ask');
   if(ak){ak.addEventListener('input',function(){S.ask=ak.value;});ak.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();perguntar(ak.value.trim());}});}
   if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)el.setSelectionRange(el.value.length,el.value.length);}
+  /* (etapa 3) rolagem: ao abrir uma conversa ou o chat, e sempre que chega mensagem nova, desce até a última */
+  var cv=S.tab==='conversas'&&S.conv&&((D&&D.convs)||[]).filter(function(x){return x.id===S.conv;})[0];
+  var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
+  if(rol&&rol!==render.rol) requestAnimationFrame(function(){window.scrollTo(0,document.documentElement.scrollHeight);});
+  render.rol=rol;
 }
 
 /* ---------- banco ---------- */
@@ -498,7 +535,10 @@ async function buscar(){
   var r=await SB.from('painel_dados').select('dados,atualizado_em').eq('id','app-whatsapp').maybeSingle();
   if(r.error){ERRO='Não consegui ler os dados';render();return;}
   if(!r.data){ERRO='Sem acesso a este app';D=null;render();return;}
-  ERRO=''; D=r.data.dados; if(!D.geradoEm) D.geradoEm=r.data.atualizado_em; render();
+  ERRO=''; D=r.data.dados; if(!D.geradoEm) D.geradoEm=r.data.atualizado_em;
+  (D.chaves||[]).forEach(function(k){if(S.swLocal['k:'+k.nome]===!!k.ligada)delete S.swLocal['k:'+k.nome];}); /* o servidor já mostra o novo estado */
+  (D.chips||[]).forEach(function(c){if(S.swLocal['c:'+c.conta]===!!c.envio)delete S.swLocal['c:'+c.conta];});
+  render();
 }
 function comecar(email){EM=email;render();buscar();carregarNotas();
   SB.from('al_papeis').select('papel').limit(1).maybeSingle().then( /* a regra do banco só deixa ler a própria linha */function(r){PAPEL=(r.data&&r.data.papel)||'';});clearInterval(TIMER);TIMER=setInterval(function(){if(!document.hidden)buscar();},30000);}
@@ -522,6 +562,14 @@ document.addEventListener('click',function(ev){
     case 'devolver': if(cv) trocarAssumir(cv,false); return;
     case 'ok': var f=S.modal&&S.modal.fazer; S.modal=null; if(f) f(); return;
     case 'cancelar': S.modal=null; break;
+    case 'sw-chave': case 'sw-chip':
+      if(PAPEL!=='admin'){toast('Só o Leonardo liga ou desliga');return;}
+      var nm=el.getAttribute('data-nome'), ehChave=a==='sw-chave', on=el.getAttribute('aria-checked')==='true';
+      S.modal={t:(on?'Desligar ':'Ligar ')+(ehChave?nm:'o envio do '+nm)+'?',
+        p:ehChave?(on?'Para de mandar a partir do próximo ciclo. O já enviado fica.':'Começa a mandar no próximo ciclo, dentro do limite de cada chip.'):(on?'O chip para a lista de hoje; o atendimento continua. O robô do chip reinicia (cerca de 1 min).':'O chip volta à lista de hoje. O robô do chip reinicia (cerca de 1 min).'),
+        ok:on?'Desligar':'Ligar',
+        fazer:function(){ehChave?trocarSw('k:'+id,'chave',{nome:id,valor:on?0:1},!on,nm):trocarSw('c:'+id,'envio_chip',{conta:id,valor:on?0:1},!on,'Envio do '+nm);}};
+      break;
     case 'ia-seg': S.iaSeg=id; if(id==='notas') carregarNotas(); break;
     case 'sug': perguntar(id); return;
     case 'ia-enviar': perguntar((S.ask||'').trim()); return;
@@ -546,7 +594,7 @@ document.addEventListener('click',function(ev){
 /* ---------- início ---------- */
 try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);}catch(e){SB=null;}
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
-window.__appWhats={carregar:function(p,banco){if(banco)SB=banco;EM=EM||'teste';D=p;render();}}; /* só para a prova local com dado e banco inventados */
+window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;render();}}; /* só para a prova local com dado e banco inventados */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
 </script>
