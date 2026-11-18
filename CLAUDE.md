@@ -11,7 +11,7 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 | **Carregamento e Trocas** | `carregamento/` | tabelas do carregamento no Supabase |
 | **Central Aliança** (porta de entrada) | `central/index.html` | — |
 | **Aliança HQ** | `hq/index.html` (**gerado**, não editar à mão), `hq/office.css` | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
-| **App WhatsApp** (celular do Gestor e do pai: Agora, Conversas, Envios, Perguntar; responder, Pix, catálogo, assumir e interruptores (só admin) viram ordens app-cmd-...) | `whatsapp/index.html` (página única, login próprio) | linha privada `app-whatsapp`, montada no servidor dos robôs (`ecossistema/app-whatsapp/`) |
+| **App WhatsApp** (celular do Gestor e do pai: Agora, Conversas, Envios, Perguntar; responder, Pix, catálogo, assumir e interruptores (só admin) viram ordens app-cmd-...; fase 3: pendências de dias anteriores, "Vendedor sem responder", busca por nome, Ontem e Resolvido, que só o admin usa) | `whatsapp/index.html` (página única, login próprio) | linhas privadas `app-whatsapp` e `app-whatsapp-ontem` (lida só no toque em Ontem), montadas no servidor dos robôs (`ecossistema/app-whatsapp/`) |
 | Login | `login-gate.js`, `config.js` (chaves públicas) | Supabase Auth |
 | Visual comum | `estilo-alianca.css` (design system: cor sempre por token) | — |
 | Esteiras e governança | `.github/workflows/pages.yml`, `.github/workflows/saude.yml`, `.github/ci/` | regras em `.github/ci/governanca.json` e `permitidos.json` |
