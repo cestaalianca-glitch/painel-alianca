@@ -186,6 +186,32 @@ button.kpi:active{background:var(--line-2)}
 .lockrow{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--ink-3)}
 .chip-row .t1 .pill{height:20px;font-size:11px}
 @media (prefers-reduced-motion:reduce){.sw i,.sw i::after{transition:none}}
+/* fase 3 (18/11): pendências antigas, vendedor sem responder, busca, Ontem e Resolvido */
+.count.warn{background:var(--warn);color:#fff}
+.ico.warn{background:var(--warn-soft);color:var(--warn)}
+.row .chev{color:var(--ink-3);display:flex}
+.find{display:flex;gap:8px;align-items:center}
+.find label{position:relative;flex:1;min-width:0;display:flex}
+.find label svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+.find input{width:100%;height:44px;border:1px solid var(--line);border-radius:22px;padding:0 14px 0 40px;font-size:15px;background:var(--card);color:var(--ink);-webkit-appearance:none;appearance:none}
+.find input:focus{outline:2px solid var(--pri);outline-offset:1px;border-color:transparent}
+.seg.dia{grid-template-columns:repeat(2,minmax(0,1fr));width:136px;flex-shrink:0}
+.seg.dia button{height:36px;font-size:13px}
+.seg.quatro{grid-template-columns:repeat(4,minmax(0,1fr))}
+.seg.quatro button{font-size:13px;gap:4px;padding:0 2px;white-space:nowrap}
+@media (max-width:370px){.seg.quatro .n{display:none}.seg.quatro button{font-size:12px}.seg.dia{width:116px}}
+.divider{padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line-2);font-size:12px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;scroll-margin-top:72px}
+.found{font-size:13px;color:var(--ink-3);padding:0 4px}
+.why{display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:var(--r)}
+.why .t{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.why .t b{color:var(--bad)}
+.why .s{font-size:13px;color:var(--ink-3)}
+.why .btn{height:48px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.okb{background:var(--ok);border-color:var(--ok);color:#fff}
+#filtros:empty{display:none}
+#lista{display:flex;flex-direction:column;gap:12px}
+.note{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r);background:var(--warn-soft);color:var(--warn);font-size:14px;font-weight:600}
+.dia-tag{font-size:12px;font-weight:600;color:var(--ink-3)}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -216,7 +242,10 @@ var IC={
   pix:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 9l-9 9l-9-9z"/></svg>',
   list:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M5 6v.01"/><path d="M5 12v.01"/><path d="M5 18v.01"/></svg>',
   ask:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6"/><path d="M12 17h.01"/></svg>',
-  hand:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M11 5.5v-2a1.5 1.5 0 1 1 3 0v8.5"/><path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1-6 6h-2a7 6 0 0 1-5-3l-2.7-5.3a1.5 1.5 0 0 1 2.6-1.4l1.1 1.7"/></svg>'
+  hand:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M11 5.5v-2a1.5 1.5 0 1 1 3 0v8.5"/><path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1-6 6h-2a7 6 0 0 1-5-3l-2.7-5.3a1.5 1.5 0 0 1 2.6-1.4l1.1 1.7"/></svg>',
+  search:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3a7 7 0 1 0 0 14a7 7 0 0 0 0-14z"/><path d="M21 21l-6-6"/></svg>',
+  clock:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z"/><path d="M12 7v5l3 3"/></svg>',
+  ok:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>'
 };
 var ST={ok:['Ok','ok'],limite:['No limite','warn'],caiu:['Caiu','bad'],restrito:['Restrito','bad'],desligado:['Desligado','mute']};
 var ORDENS=[{n:1,nome:'Rotina',cls:'c1',cor:'#0b63ce'},{n:2,nome:'Vendas',cls:'c2',cor:'#7c3aed'},{n:3,nome:'Cobrança',cls:'c3',cor:'#d97706'}];
@@ -229,10 +258,15 @@ function pill(t,tone){return '<span class="pill '+tone+'">'+esc(t)+'</span>';}
 function minAtras(iso){var t=Date.parse(iso);return isNaN(t)?null:Math.max(0,Math.round((Date.now()-t)/60000));}
 function tempo(m){return m==null?'':m<60?m+' min':Math.floor(m/60)+' h';}
 function hhmm(iso){var d=new Date(iso);return isNaN(d)?'':String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function ddmm(iso){var d=new Date(iso);return isNaN(d)?'':String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
+function ehHoje(iso){var d=new Date(iso),h=new Date();return !isNaN(d)&&d.toDateString()===h.toDateString();}
+function normaliza(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
 
 var SB=null, D=null, EM=null, ERRO='', TIMER=null, PAPEL='';
+var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem: linha à parte, lida só quando a pessoa toca em Ontem */
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
-  draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{}};
+  draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
+  dia:'hoje',busca:'',resolvLocal:{}};
 var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
 /* (18/11) falhas da tela (sem internet, login vencido) vão junto da próxima ordem que chegar, para o log do servidor;
    sugestão de anotação descartada não volta quando a conversa é recarregada */
@@ -241,12 +275,19 @@ try{FALHAS=JSON.parse(localStorage.getItem('app-falhas')||'[]')||[];DESC=JSON.pa
 
 /* ---------- dados derivados (o pacote vem pronto do servidor) ---------- */
 function chips(){return (D&&D.chips)||[];}
-function convs(){return ((D&&D.convs)||[]).filter(function(c){return !S.num||c.chip===S.num;});}
-function querem(){return convs().filter(function(c){return c.quer;});}
+function doChip(L){return (L||[]).filter(function(c){return !S.num||c.chip===S.num;});}
+function convs(){return doChip(D&&D.convs);} /* as do dia e, desde a fase 3, as antigas (quem espera o Leonardo desde outro dia) */
+function hojeC(){return convs().filter(function(c){return !c.antiga;});}
+/* (fase 3) Resolvido some da tela na hora; se o servidor confirmar e o pacote ainda não mostrar, espera até 20 min (sincronismo e Ontem) */
+function resolvida(c){var t=S.resolvLocal[c.id];return !!t&&Date.now()-t<1200000;}
+function querem(){return hojeC().filter(function(c){return c.quer&&!resolvida(c);});}
+function antigas(){return convs().filter(function(c){return c.antiga&&c.quer&&!resolvida(c);}).sort(function(a,b){return String(b.desde||b.quando).localeCompare(String(a.desde||a.quando));});}
+function esperamVendedor(){return hojeC().filter(function(c){var m=minAtras(c.semResp);return c.vend&&m!=null&&m>=60;}).sort(function(a,b){return String(a.semResp).localeCompare(String(b.semResp));});}
+function ultCli(c){var u=(c.msgs||[]).filter(function(m){return m.de==='cli';}).slice(-1)[0];return u?String(u.t).replace(/\n/g,' '):(c.motivo||'');}
 function sel(){
   var L=chips().filter(function(c){return !S.num||c.nome===S.num;}), t={env:0,teto:0,resp:0};
   L.forEach(function(c){t.env+=c.env;t.teto+=c.teto;t.resp+=c.resp;});
-  var C=convs(); t.conv=C.length; t.res=C.filter(function(c){return !c.quer;}).length; return t;
+  var C=hojeC(); t.conv=C.length; t.res=C.filter(function(c){return !c.quer;}).length; return t;
 }
 function tiposSel(){
   return ((D&&D.tipos)||[]).map(function(t){
@@ -258,8 +299,7 @@ function pendencias(){
   var it=[], caidos=chips().filter(function(c){return (c.st==='caiu'||c.st==='restrito')&&(!S.num||c.nome===S.num);});
   if(caidos.length) it.push({tipo:'falha',titulo:caidos.length>1?caidos.length+' chips fora do ar':'Chip '+caidos[0].nome+(caidos[0].st==='restrito'?' restrito':' caiu'),sub:caidos.map(function(c){return c.nome;}).join(' · '),acao:caidos.some(function(c){return c.st==='caiu';})?'Ler QR':'Restrito'});
   querem().slice().sort(function(a,b){return String(a.quando).localeCompare(String(b.quando));}).forEach(function(c){
-    var u=c.msgs.filter(function(m){return m.de==='cli';}).slice(-1)[0];
-    it.push({tipo:'cliente',id:c.id,nome:c.nome,chip:c.chip,sub:u?u.t:'',min:minAtras(c.quando)});
+    it.push({tipo:'cliente',id:c.id,nome:c.nome,chip:c.chip,sub:ultCli(c),min:minAtras(c.quando)});
   });
   return it;
 }
@@ -282,44 +322,91 @@ function delta(x){if(!x||x.d==null)return '';if(x.u===' pts'&&Math.abs(x.d)===1)
 
 /* ---------- AGORA ---------- */
 function vAgora(){
-  var p=pendencias(), top=p.slice(0,5), resto=p.length-top.length, a=alarme(), h='';
+  var p=pendencias(), top=p.slice(0,5), resto=p.length-top.length, a=alarme(), ant=antigas(), ev=esperamVendedor(), h='';
   if(a>10) h+='<button class="alarm" data-act="ver-querem"><span class="big">'+a+'</span><span class="lbl"><b>Pediram pessoa</b><span>última hora · robô pode estar errando</span></span>'+IC.chev+'</button>';
   h+='<section class="sec"><div class="sec-h"><h2>Precisa de você</h2><span class="count '+(p.length?'bad':'ok')+'">'+p.length+'</span></div><div class="card">';
-  if(!p.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>Tudo em dia</b><span>0 pendências</span></div>';
+  if(!p.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>'+(ant.length?'Nada novo hoje':'Tudo em dia')+'</b>'+(ant.length?'':'<span>0 pendências</span>')+'</div>';
   top.forEach(function(x){
     if(x.tipo==='falha') h+='<div class="row"><div class="ico bad">'+IC.wifi+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(x.titulo)+'</span></div><div class="t2">'+esc(x.sub)+'</div></div><div class="end">'+pill(x.acao,'bad')+'</div></div>';
     else h+='<button class="row" data-act="abrir" data-id="'+esc(x.id)+'"><div class="ico bad">'+esc(ini(x.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(x.nome)+'</span><span class="tag">'+esc(x.chip)+'</span></div><div class="t2">'+esc(x.sub)+'</div></div><div class="end"><span class="time">'+tempo(x.min)+'</span>'+pill('Quer pessoa','bad')+'</div></button>';
   });
   if(resto>0) h+='<button class="more" data-act="ver-querem">Ver mais '+resto+'</button>';
-  h+='</div></section><section class="sec"><div class="sec-h"><h2>Hoje</h2>'+(ontemSemana()&&!S.num?'<span class="time">vs. '+['domingo','segunda','terça','quarta','quinta','sexta','sábado'][new Date(D.dia+'T12:00:00').getDay()]+(new Date(D.dia+'T12:00:00').getDay()%6===0?' passado':' passada')+'</span>':'')+'</div><div class="kpis">';
+  /* (fase 3) quem espera o Leonardo desde outro dia: um atalho com a contagem (antes sumiam da tela) */
+  if(ant.length){var velha=ant[ant.length-1];
+    h+='<button class="row" data-act="ver-antigas"><div class="ico mute">'+IC.clock+'</div><div class="mid"><div class="t1"><span class="nm">'+ant.length+(ant.length>1?' de dias anteriores':' de dia anterior')+'</span></div><div class="t2">A mais antiga é de '+ddmm(velha.desde||velha.quando)+'</div></div><span class="chev">'+IC.chev+'</span></button>';}
+  h+='</div></section>';
+  /* (fase 3) com o vendedor e o cliente sem resposta há mais de 1 h: o vendedor fala fora do chip, mas pode ter esquecido */
+  if(ev.length){
+    h+='<section class="sec"><div class="sec-h"><h2>Vendedor sem responder</h2><span class="count warn">'+ev.length+'</span></div><div class="card">';
+    ev.slice(0,3).forEach(function(c){h+='<button class="row" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico warn">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span><span class="tag">'+esc(c.chip)+'</span></div><div class="t2">'+esc(ultCli(c))+'</div></div><div class="end"><span class="time">'+tempo(minAtras(c.semResp))+'</span>'+pill('Vendedor','warn')+'</div></button>';});
+    if(ev.length>3) h+='<button class="more" data-act="ver-vendedor">Ver mais '+(ev.length-3)+'</button>';
+    h+='</div></section>';
+  }
+  h+='<section class="sec"><div class="sec-h"><h2>Hoje</h2>'+(ontemSemana()&&!S.num?'<span class="time">vs. '+['domingo','segunda','terça','quarta','quinta','sexta','sábado'][new Date(D.dia+'T12:00:00').getDay()]+(new Date(D.dia+'T12:00:00').getDay()%6===0?' passado':' passada')+'</span>':'')+'</div><div class="kpis">';
   kpis().forEach(function(x){h+='<button class="kpi" data-act="kpi" data-id="'+x.id+'"><span class="k">'+x.k+'</span>'+(x.v==null?'<span class="v na">Sem leitura</span>':'<span class="v">'+x.v+'</span>')+delta(x.dl)+'</button>';});
   return h+'</div></section>';
 }
 
 /* ---------- CONVERSAS ---------- */
 function assumida(c){return S.assumeLocal[c.id]!==undefined?S.assumeLocal[c.id]:!!c.assumido;}
-function estado(c){return assumida(c)?['Com você','info']:c.quer?['Quer pessoa','bad']:['Robô','ok'];}
-function vLista(){
-  var T=convs(), Q=querem(), A=T.filter(function(c){return assumida(c);});
-  var L=S.filtro==='querem'?Q:S.filtro==='assumidas'?A:T;
-  var h='<div class="seg" role="group" aria-label="Filtro">';
-  [['todas','Todas',T.length,''],['querem','Você',Q.length,Q.length?'bad':''],['assumidas','Com você',A.length,'']].forEach(function(x){h+='<button aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'">'+x[1]+' <span class="n '+x[3]+'">'+x[2]+'</span></button>';});
-  h+='</div><div class="card">';
-  if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>Nada aqui</b><span>0 conversas</span></div>';
-  L.forEach(function(c){
-    var e=estado(c), u=c.msgs.filter(function(m){return m.de==='cli';}).slice(-1)[0]||c.msgs[c.msgs.length-1]||{t:''};
-    h+='<button class="row" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+e[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span><span class="tag">'+esc(c.chip)+'</span></div><div class="t2">'+esc(String(u.t).replace(/\n/g,' '))+'</div></div><div class="end"><span class="time">'+hhmm(c.quando)+'</span>'+pill(e[0],e[1])+'</div></button>';
-  });
+function estado(c){return assumida(c)?['Com você','info']:c.quer&&!resolvida(c)?['Quer pessoa','bad']:c.vend?['Vendedor','warn']:['Robô','ok'];}
+/* (fase 3) Hoje ou Ontem, busca por nome (procura em todas, sem filtro) e o filtro Vendedor. A busca só redesenha a lista,
+   não a tela inteira: o teclado do celular não fecha a cada letra */
+function listaDia(){return S.dia==='ontem'?doChip(DO&&DO.convs):convs();}
+function linhaConv(c){
+  var e=estado(c), t=ultCli(c)||String(((c.msgs||[]).slice(-1)[0]||{t:''}).t).replace(/\n/g,' ');
+  return '<button class="row" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+e[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span><span class="tag">'+esc(c.chip)+'</span></div><div class="t2">'+esc(t)+'</div></div><div class="end"><span class="time">'+(c.antiga?ddmm(c.desde||c.quando):hhmm(c.quando))+'</span>'+pill(e[0],e[1])+'</div></button>';
+}
+function segFiltro(){
+  if(S.busca.trim()) return '';
+  var T=listaDia().filter(function(c){return !c.antiga;}), nQ=T.filter(function(c){return c.quer&&!resolvida(c);}).length+(S.dia==='ontem'?0:antigas().length);
+  var op=[['todas','Todas',T.length,''],['querem','Você',nQ,nQ?'bad':''],['vendedor','Vendedor',T.filter(function(c){return c.vend;}).length,''],['assumidas','Com você',T.filter(assumida).length,'']];
+  return '<div class="seg quatro" role="group" aria-label="Filtro">'+op.map(function(x){return '<button aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'">'+x[1]+' <span class="n '+x[3]+'">'+x[2]+'</span></button>';}).join('')+'</div>';
+}
+function listaHTML(){
+  if(S.dia==='ontem'&&!DO) return '<div class="card"><div class="empty">'+(DO_ERRO?'<b>'+esc(DO_ERRO)+'</b><button class="btn" data-act="ontem-de-novo">Tentar de novo</button>':'<b>Carregando ontem…</b>')+'</div></div>';
+  var T=listaDia(), q=normaliza(S.busca).split(/\s+/).filter(Boolean), h='', L, A=[];
+  if(q.length){
+    L=T.filter(function(c){var n=normaliza(c.nome);return q.every(function(w){return n.indexOf(w)>=0;});});
+    h+='<div class="found">'+(L.length?L.length+(L.length>1?' encontradas':' encontrada'):'Ninguém com esse nome')+(S.dia==='ontem'?' ontem':' hoje')+'</div>';
+    if(!L.length) return h;
+  } else {
+    var hj=T.filter(function(c){return !c.antiga;});
+    L=S.filtro==='querem'?hj.filter(function(c){return c.quer&&!resolvida(c);}):S.filtro==='vendedor'?hj.filter(function(c){return c.vend;}):S.filtro==='assumidas'?hj.filter(assumida):hj;
+    if(S.filtro==='querem'&&S.dia!=='ontem') A=antigas();
+    if(S.dia==='ontem'&&DO.dia) h+='<div class="found">Ontem, '+ddmm(DO.dia+'T12:00:00')+'</div>';
+  }
+  h+='<div class="card">';
+  if(!L.length&&!A.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>Nada aqui</b><span>0 conversas</span></div>';
+  L.forEach(function(c){h+=linhaConv(c);});
+  if(A.length){h+='<div class="divider" id="div-antigas">Dias anteriores · '+A.length+'</div>';A.forEach(function(c){h+=linhaConv(c);});}
   return h+'</div>';
 }
+function vLista(){
+  var h='<div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Buscar nome" aria-label="Buscar nome" value="'+esc(S.busca)+'"></label>'+
+    '<div class="seg dia" role="group" aria-label="Dia">'+[['hoje','Hoje'],['ontem','Ontem']].map(function(x){return '<button aria-pressed="'+(S.dia===x[0])+'" data-act="dia" data-id="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>';
+  return h+'<div id="filtros">'+segFiltro()+'</div><div id="lista">'+listaHTML()+'</div>';
+}
+function acharConv(id){
+  var a=((S.dia==='ontem'&&DO?DO.convs:D&&D.convs)||[]), b=((S.dia==='ontem'?D&&D.convs:DO&&DO.convs)||[]);
+  return a.filter(function(x){return x.id===id;})[0]||b.filter(function(x){return x.id===id;})[0]||null;
+}
 function vConv(){
-  var c=((D&&D.convs)||[]).filter(function(x){return x.id===S.conv;})[0];
+  var c=acharConv(S.conv);
   if(!c){S.conv=null;return vLista();}
-  var e=estado(c), h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+esc(c.chip)+'</div></div>'+pill(e[0],e[1])+'</div><div class="card"><div class="thread">';
+  var deOntem=!!(DO&&(DO.convs||[]).indexOf(c)>=0);
+  var e=estado(c), h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+esc(c.chip)+(deOntem?' · conversa de ontem':'')+'</div></div>'+pill(e[0],e[1])+'</div><div class="card"><div class="thread">';
+  if(!(c.msgs||[]).length) h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
   c.msgs.forEach(function(m){var cli=m.de==='cli';h+='<div class="msg '+(cli?'in':'out')+'"><span class="meta">'+esc(cli?String(c.nome).split(' ')[0]:'Robô')+' · '+esc(m.h)+'</span><div class="bub">'+esc(m.t)+'</div></div>';});
   (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
     h+='<div class="msg out eu'+(s.st==='erro'||s.st==='expirada'||s.st==='sem_confirmacao'?' falhou':'')+'"><span class="meta">Você · '+esc(st)+'</span><div class="bub">'+esc(s.t)+'</div></div>';});
   h+='</div></div>';
+  /* (fase 3) logo abaixo da última fala (a tela desce até ela): por que o robô pediu uma pessoa, desde quando e o Resolvido
+     (só o Leonardo: o banco e o servidor recusam o pai); e há quanto tempo o cliente espera o vendedor */
+  if(c.quer&&!resolvida(c)){var dq=c.desde||c.quando;
+    h+='<div class="why"><div class="t"><b>Por que:</b> '+esc(c.motivo||'o robô pediu uma pessoa')+'</div><div class="s">Desde '+(ehHoje(dq)?hhmm(dq):ddmm(dq)+' às '+hhmm(dq))+'</div>'+
+      (PAPEL==='admin'?'<button class="btn okb" data-act="resolver">'+IC.ok+'Resolvido</button>':'<span class="lockrow">'+IC.lock+'Só o Leonardo tira da lista</span>')+'</div>';}
+  var mv=minAtras(c.semResp); if(c.vend&&mv!=null&&mv>=60&&!deOntem) h+='<div class="note">'+IC.clock+'Esperando o vendedor há '+tempo(mv)+'</div>';
   var as=assumida(c);
   if(as) h+='<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>';
   var lin=S.draft?S.draft.split('\n').length:0;
@@ -451,6 +538,25 @@ async function trocarAssumir(c,assumir){
   try{var id=await ordem(assumir?'assumir':'devolver',{conv:c.id});acompanha(id,function(d){if(d.status!=='feito'){delete S.assumeLocal[c.id];toast('Não deu: '+(d.resultado||''));}else toast(assumir?'Robô parado 24 h':'Devolvida ao robô');});}
   catch(e){anotaFalha('assumir',e);delete S.assumeLocal[c.id];toast('Não saiu: '+motivoCurto(e));}
 }
+/* (fase 3) Resolvido: some da lista na hora e volta se o servidor recusar. Banco sem a regra 0007: o aviso diz o que falta */
+async function resolver(c){
+  S.resolvLocal[c.id]=Date.now(); S.modal=null; S.conv=null; render();
+  try{var id=await ordem('resolver',{conv:c.id});acompanha(id,function(d){if(d.status!=='feito'){delete S.resolvLocal[c.id];toast('Não deu: '+(d.resultado||''));}else toast('Resolvido');});}
+  catch(e){anotaFalha('resolver',e);delete S.resolvLocal[c.id];toast(/row-level|42501/i.test(String((e&&e.message)||e))?'Não saiu: falta liberar no banco (SQL 0007)':'Não saiu: '+motivoCurto(e));}
+}
+/* a marca local sai quando nenhum pacote (hoje ou ontem) mostra mais a conversa querendo pessoa */
+function limpaResolv(){Object.keys(S.resolvLocal).forEach(function(id){if(!((D&&D.convs)||[]).concat((DO&&DO.convs)||[]).some(function(x){return x.id===id&&x.quer;}))delete S.resolvLocal[id];});}
+/* (fase 3) Ontem: a linha 'app-whatsapp-ontem' muda a cada 10 min no servidor; lida de novo se tiver mais de 10 min */
+async function buscarOntem(forcar){
+  if(DO_LENDO||(DO&&!forcar&&Date.now()-DO_EM<600000)) return;
+  DO_LENDO=true; DO_ERRO=''; render();
+  try{var r=await SB.from('painel_dados').select('dados').eq('id','app-whatsapp-ontem').maybeSingle();
+    if(r.error) throw new Error(r.error.message);
+    if(!r.data) DO_ERRO=PAPEL==='familia'?'Ontem ainda sem acesso: falta liberar no banco':'Ontem ainda não chegou: tente em 10 min';
+    else{DO=r.data.dados;DO_EM=Date.now();limpaResolv();}}
+  catch(e){anotaFalha('ontem',e);DO_ERRO='Não consegui abrir: '+motivoCurto(e);}
+  finally{DO_LENDO=false;render();}
+}
 /* (18/11) a sugestão de anotação fica até a pessoa tocar (antes sumia na mensagem seguinte: 4 das 5 do pai se perderam em 17/11);
    resposta com falha não vai no histórico mandado à IA e ganha "Tentar de novo"; espera longa libera a caixa depois de 45 s */
 function ocupado(){return S.chat.some(function(m){return m.esperando&&!m.demorando;});}
@@ -531,7 +637,7 @@ function vSheetNum(){
   var h='<div class="sh-h"><h3>Número</h3><button class="x" data-act="fechar" aria-label="Fechar">'+IC.x+'</button></div><div class="nlist">';
   h+='<button class="nrow" data-act="pick-num" data-id="" aria-pressed="'+(!S.num)+'"><span class="dot '+pior+'"></span><div class="mid"><div class="t1"><span class="nm">Todos</span></div></div><span class="q">'+t.env+' <small>/ '+t.teto+'</small></span><span class="stc"></span></button>';
   C.forEach(function(c){
-    var st=ST[c.st]||ST.ok, q=((D&&D.convs)||[]).filter(function(x){return x.chip===c.nome&&x.quer;}).length;
+    var st=ST[c.st]||ST.ok, q=((D&&D.convs)||[]).filter(function(x){return x.chip===c.nome&&x.quer&&!x.antiga&&!resolvida(x);}).length;
     h+='<button class="nrow" data-act="pick-num" data-id="'+esc(c.nome)+'" aria-pressed="'+(S.num===c.nome)+'"><span class="dot '+st[1]+'"></span><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span>'+(q?'<span class="count bad">'+q+'</span>':'')+'</div></div><span class="q">'+c.env+' <small>/ '+c.teto+'</small></span><span class="stc">'+pill(st[0],st[1])+'</span></button>';
   });
   h+='</div><button class="btn" data-act="sair">Sair</button>';
@@ -567,9 +673,13 @@ function render(){
   if(ta){ta.addEventListener('input',function(){var antes=S.draft.split('\n').length>4;S.draft=ta.value;if((ta.value.split('\n').length>4)!==antes)render();});}
   var ak=document.getElementById('ask');
   if(ak){ak.addEventListener('input',function(){S.ask=ak.value;});ak.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();perguntar(ak.value.trim());}});}
-  if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)el.setSelectionRange(el.value.length,el.value.length);}
+  /* (fase 3) a busca redesenha só a lista (e os filtros quando ela começa ou termina): o campo não é recriado a cada letra */
+  var bu=document.getElementById('busca');
+  if(bu){bu.addEventListener('input',function(){var tinha=!!S.busca.trim();S.busca=bu.value;if(!!S.busca.trim()!==tinha){var fi=document.getElementById('filtros');if(fi)fi.innerHTML=segFiltro();}var l=document.getElementById('lista');if(l)l.innerHTML=listaHTML();});}
+  if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)try{el.setSelectionRange(el.value.length,el.value.length);}catch(x){}}
+  if(S.rolarAntigas){S.rolarAntigas=false;var dv=document.getElementById('div-antigas');if(dv)requestAnimationFrame(function(){dv.scrollIntoView({block:'start'});});}
   /* (etapa 3) rolagem: ao abrir uma conversa ou o chat, e sempre que chega mensagem nova, desce até a última */
-  var cv=S.tab==='conversas'&&S.conv&&((D&&D.convs)||[]).filter(function(x){return x.id===S.conv;})[0];
+  var cv=S.tab==='conversas'&&S.conv&&acharConv(S.conv);
   var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
   if(rol&&rol!==render.rol) requestAnimationFrame(function(){window.scrollTo(0,document.documentElement.scrollHeight);});
   render.rol=rol;
@@ -583,6 +693,7 @@ async function buscar(){
   ERRO=''; D=r.data.dados; if(!D.geradoEm) D.geradoEm=r.data.atualizado_em;
   (D.chaves||[]).forEach(function(k){if(S.swLocal['k:'+k.nome]===!!k.ligada)delete S.swLocal['k:'+k.nome];}); /* o servidor já mostra o novo estado */
   (D.chips||[]).forEach(function(c){if(S.swLocal['c:'+c.conta]===!!c.envio)delete S.swLocal['c:'+c.conta];});
+  limpaResolv();
   render();
 }
 function comecar(email){EM=email;render();buscar();carregarNotas().then(carregarChat,carregarChat);
@@ -598,8 +709,10 @@ document.addEventListener('click',function(ev){
   var el=ev.target.closest('[data-act]'); if(!el) return;
   var a=el.getAttribute('data-act'), id=el.getAttribute('data-id');
   if((a==='fechar'||a==='cancelar')&&el.classList.contains('scrim')&&ev.target!==el) return;
-  var cv=S.conv&&((D&&D.convs)||[]).filter(function(x){return x.id===S.conv;})[0];
+  var cv=S.conv&&acharConv(S.conv);
   switch(a){
+    case 'resolver': if(!cv) return; if(PAPEL!=='admin'){toast('Só o Leonardo tira da lista');return;}
+      S.modal={t:'Tirar '+String(cv.nome).split(' ')[0]+' da lista?',p:'Sai de Precisa de você e o robô volta a cuidar.',ok:'Resolvido',fazer:function(){resolver(cv);}}; break;
     case 'enviar': if(S.draft.trim()&&cv) mandar('responder',S.draft.trim()); return;
     case 'pix': if(cv) mandar('pix','Pix: chave e titular'); return;
     case 'catalogo': if(cv) mandar('catalogo','Catálogo com os preços'); return;
@@ -622,8 +735,11 @@ document.addEventListener('click',function(ev){
     case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
     case 'ia-repetir': repetir(+id); return;
     case 'tab': S.tab=id; S.conv=null; break;
-    case 'abrir': S.tab='conversas'; S.conv=id; window.scrollTo(0,0); break;
-    case 'ver-querem': S.tab='conversas'; S.conv=null; S.filtro='querem'; break;
+    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; window.scrollTo(0,0); break;
+    case 'ver-querem': case 'ver-antigas': case 'ver-vendedor':
+      S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.filtro=a==='ver-vendedor'?'vendedor':'querem'; S.rolarAntigas=a==='ver-antigas'; window.scrollTo(0,0); break;
+    case 'dia': S.dia=id; S.conv=null; if(id==='ontem') buscarOntem(); break;
+    case 'ontem-de-novo': buscarOntem(true); return;
     case 'filtro': S.filtro=id; break;
     case 'voltar': S.conv=null; break;
     case 'ord': S.ord=S.ord===+id?null:+id; S.tipo=null; break;
@@ -632,7 +748,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;S.sheet=null;S.chat=[];PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
@@ -640,7 +756,7 @@ document.addEventListener('click',function(ev){
 /* ---------- início ---------- */
 try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);}catch(e){SB=null;}
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
-window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações e a conversa da aba Perguntar) */
+window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;DO=null;DO_EM=0;limpaResolv();render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações, a conversa da aba Perguntar e o Ontem) */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
 </script>
