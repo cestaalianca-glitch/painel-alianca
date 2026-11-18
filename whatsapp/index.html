@@ -157,6 +157,8 @@ button.kpi:active{background:var(--line-2)}
 .msg.ai .bub{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
 .msg.me .bub{background:var(--pri);color:#fff;border-bottom-right-radius:4px}
 .bub.wait{color:var(--ink-3)}
+.msg.ai.falhou .bub{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.msg.ai .btn{height:40px;font-size:14px;width:auto;padding:0 16px}
 .intro{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 8px 8px;text-align:center}
 .intro .ck{width:56px;height:56px;border-radius:50%;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center}
 .intro b{font-size:17px}
@@ -231,7 +233,11 @@ function hhmm(iso){var d=new Date(iso);return isNaN(d)?'':String(d.getHours()).p
 var SB=null, D=null, EM=null, ERRO='', TIMER=null, PAPEL='';
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{}};
-var PEND={}; /* ordens esperando o servidor: id -> {tipo, onde} */
+var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
+/* (18/11) falhas da tela (sem internet, login vencido) vão junto da próxima ordem que chegar, para o log do servidor;
+   sugestão de anotação descartada não volta quando a conversa é recarregada */
+var FALHAS=[], DESC=[];
+try{FALHAS=JSON.parse(localStorage.getItem('app-falhas')||'[]')||[];DESC=JSON.parse(localStorage.getItem('app-notas-descartadas')||'[]')||[];}catch(e){FALHAS=[];DESC=[];}
 
 /* ---------- dados derivados (o pacote vem pronto do servidor) ---------- */
 function chips(){return (D&&D.chips)||[];}
@@ -311,8 +317,8 @@ function vConv(){
   if(!c){S.conv=null;return vLista();}
   var e=estado(c), h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+esc(c.chip)+'</div></div>'+pill(e[0],e[1])+'</div><div class="card"><div class="thread">';
   c.msgs.forEach(function(m){var cli=m.de==='cli';h+='<div class="msg '+(cli?'in':'out')+'"><span class="meta">'+esc(cli?String(c.nome).split(' ')[0]:'Robô')+' · '+esc(m.h)+'</span><div class="bub">'+esc(m.t)+'</div></div>';});
-  (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: servidor demorou':'Enviando…';
-    h+='<div class="msg out eu'+(s.st==='erro'||s.st==='expirada'?' falhou':'')+'"><span class="meta">Você · '+esc(st)+'</span><div class="bub">'+esc(s.t)+'</div></div>';});
+  (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
+    h+='<div class="msg out eu'+(s.st==='erro'||s.st==='expirada'||s.st==='sem_confirmacao'?' falhou':'')+'"><span class="meta">Você · '+esc(st)+'</span><div class="bub">'+esc(s.t)+'</div></div>';});
   h+='</div></div>';
   var as=assumida(c);
   if(as) h+='<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>';
@@ -382,22 +388,30 @@ function vIA(){
   }
   S.chat.forEach(function(m,i){
     if(m.role==='user'){h+='<div class="msg out me"><div class="bub">'+esc(m.content)+'</div></div>';return;}
-    h+='<div class="msg in ai"><span class="meta">IA</span><div class="bub'+(m.esperando?' wait':'')+'">'+(m.esperando?'Pensando…':esc(m.content))+'</div></div>';
+    h+='<div class="msg in ai'+(m.falhou?' falhou':'')+'"><span class="meta">IA</span><div class="bub'+(m.esperando?' wait':'')+'">'+(m.esperando?(m.demorando?'Ainda pensando… o servidor está demorando':'Pensando…'):esc(m.content))+'</div>'+
+      (m.falhou&&m.pergunta?'<button class="btn" data-act="ia-repetir" data-id="'+i+'">Tentar de novo</button>':'')+'</div>';
     if(m.nota){var f=m.nota.tipo==='falha';
       h+='<div class="notecard"><div>'+pill(f?'Falha':'Ideia',f?'bad':'info')+'</div><div class="txt">'+esc(m.nota.resumo)+'</div>'+
         (m.notaFeita==='sim'?pill('Anotado','ok'):m.notaFeita==='nao'?pill('Descartado','mute'):'<div class="btns"><button class="btn" data-act="nota-nao" data-id="'+i+'">Descartar</button><button class="btn pri" data-act="nota-sim" data-id="'+i+'">Anotar</button></div>')+'</div>';}
   });
-  var ocup=S.chat.some(function(m){return m.esperando;});
+  var ocup=ocupado();
   h+='</div><div class="askbar"><label for="ask" style="position:absolute;left:-9999px">Pergunta</label><textarea id="ask" rows="1" maxlength="800" placeholder="Pergunte ou conte uma ideia">'+esc(S.ask)+'</textarea><button class="send" data-act="ia-enviar" aria-label="Enviar"'+(ocup?' disabled':'')+'>'+IC.send+'</button></div>';
   return h;
 }
 
 /* ---------- ORDENS (gravadas no banco; o servidor executa numa lista fechada) ---------- */
 function toast(t){S.toast=t;render();clearTimeout(toast.t);toast.t=setTimeout(function(){S.toast='';render();},2200);}
+/* (18/11) motivo curto e verdadeiro da falha (antes era sempre "Sem permissão ou sem conexão") e registro para o log do servidor */
+function motivoCurto(e){var t=String((e&&e.message)||e||'');
+  return /fetch|network|internet|load failed|offline/i.test(t)?'sem internet':/jwt|token|expired|401|sess/i.test(t)?'login vencido: saia e entre de novo':/row-level|permission|42501|403/i.test(t)?'sem permissão':t.slice(0,60)||'erro desconhecido';}
+function anotaFalha(onde,e){FALHAS.push({quando:new Date().toISOString(),onde:onde,motivo:String((e&&e.message)||e||'').slice(0,160)});FALHAS=FALHAS.slice(-10);
+  try{localStorage.setItem('app-falhas',JSON.stringify(FALHAS));}catch(x){}}
 async function ordem(tipo,dados){
   var agora=new Date().toISOString(), id='app-cmd-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
-  var r=await SB.from('painel_dados').insert({id:id,dados:{tipo:tipo,dados:dados,status:'pendente',criadoEm:agora,por:EM},atualizado_em:agora});
+  var d={tipo:tipo,dados:dados,status:'pendente',criadoEm:agora,por:EM}, levar=FALHAS.slice(0,5); if(levar.length) d.falhasTela=levar;
+  var r=await SB.from('painel_dados').insert({id:id,dados:d,atualizado_em:agora});
   if(r.error) throw new Error(r.error.message);
+  if(levar.length){FALHAS=FALHAS.slice(levar.length);try{localStorage.setItem('app-falhas',JSON.stringify(FALHAS));}catch(x){}}
   return id;
 }
 /* (etapa 3) interruptores: só o Leonardo (papel admin); a tela mostra o novo estado na hora e volta atrás se o servidor recusar */
@@ -407,50 +421,81 @@ function ligadoEnvio(c){return S.swLocal['c:'+c.conta]!==undefined?S.swLocal['c:
 async function trocarSw(chaveLocal,tipo,dados,ligar,rotulo){
   S.swLocal[chaveLocal]=ligar; S.modal=null; render();
   try{var id=await ordem(tipo,dados);acompanha(id,function(d){if(d.status!=='feito'){delete S.swLocal[chaveLocal];toast('Não deu: '+(d.resultado||''));}else toast(rotulo+(ligar?' ligado':' desligado'));});}
-  catch(e){delete S.swLocal[chaveLocal];toast('Sem permissão ou sem conexão');}
+  catch(e){anotaFalha('interruptor',e);delete S.swLocal[chaveLocal];toast('Não saiu: '+motivoCurto(e));}
 }
-function acompanha(id,aoTerminar){PEND[id]=aoTerminar;vigiaOrdens();}
+/* (18/11) cada ordem tem o próprio prazo (antes o prazo de ~2,5 min era da fila toda e a resposta que chegava depois sumia).
+   Olha a cada 1 s no primeiro minuto e depois a cada 4 s, por até 10 min; sem resposta nesse tempo: "sem confirmação" */
+function acompanha(id,aoTerminar,limiteSeg){PEND[id]={f:aoTerminar,desde:Date.now(),ate:Date.now()+(limiteSeg||600)*1000};vigiaOrdens();}
 async function vigiaOrdens(){
   if(vigiaOrdens.on) return; vigiaOrdens.on=true;
   try{
-    for(var volta=0;Object.keys(PEND).length&&volta<150;volta++){ /* (etapa 3) olha a cada 1 s, por até ~2,5 min */
-      await new Promise(function(r){setTimeout(r,1000);});
-      var ids=Object.keys(PEND); var r=await SB.from('painel_dados').select('id,dados').in('id',ids);
-      (r.data||[]).forEach(function(o){var d=o.dados||{};if(d.status&&d.status!=='pendente'){var f=PEND[o.id];delete PEND[o.id];try{f(d);}catch(e){}}});
+    while(Object.keys(PEND).length){
+      var novo=Object.keys(PEND).some(function(k){return Date.now()-PEND[k].desde<60000;});
+      await new Promise(function(r){setTimeout(r,novo?1000:4000);});
+      var ids=Object.keys(PEND); if(!ids.length) break;
+      var r; try{r=await SB.from('painel_dados').select('id,dados').in('id',ids);}catch(e){r={};}
+      (r.data||[]).forEach(function(o){var d=o.dados||{},p=PEND[o.id];if(p&&d.status&&d.status!=='pendente'){delete PEND[o.id];try{p.f(d);}catch(e){}}});
+      Object.keys(PEND).forEach(function(k){var p=PEND[k];if(Date.now()>p.ate){delete PEND[k];try{p.f({status:'sem_confirmacao',resultado:'o servidor não confirmou em 10 min'});}catch(e){}}});
+      S.chat.forEach(function(m){if(m.esperando&&m.t0&&Date.now()-m.t0>45000)m.demorando=true;});
       render();
     }
-    Object.keys(PEND).forEach(function(id){var f=PEND[id];delete PEND[id];f({status:'expirada',resultado:'servidor não respondeu'});});
   }finally{vigiaOrdens.on=false;render();}
 }
 async function mandar(tipo,texto){
   var c=S.conv, s={t:texto,st:'enviando'}; (S.saidas[c]=S.saidas[c]||[]).push(s); if(tipo==='responder') S.draft=''; render();
   try{var id=await ordem(tipo,tipo==='responder'?{conv:c,texto:texto}:{conv:c});acompanha(id,function(d){s.st=d.status;s.erro=d.resultado;});}
-  catch(e){s.st='erro';s.erro='sem permissão ou sem conexão';render();}
+  catch(e){anotaFalha('responder',e);s.st='erro';s.erro=motivoCurto(e);render();}
 }
 async function trocarAssumir(c,assumir){
   S.assumeLocal[c.id]=assumir; S.modal=null; render();
   try{var id=await ordem(assumir?'assumir':'devolver',{conv:c.id});acompanha(id,function(d){if(d.status!=='feito'){delete S.assumeLocal[c.id];toast('Não deu: '+(d.resultado||''));}else toast(assumir?'Robô parado 24 h':'Devolvida ao robô');});}
-  catch(e){delete S.assumeLocal[c.id];toast('Sem permissão ou sem conexão');}
+  catch(e){anotaFalha('assumir',e);delete S.assumeLocal[c.id];toast('Não saiu: '+motivoCurto(e));}
+}
+/* (18/11) a sugestão de anotação fica até a pessoa tocar (antes sumia na mensagem seguinte: 4 das 5 do pai se perderam em 17/11);
+   resposta com falha não vai no histórico mandado à IA e ganha "Tentar de novo"; espera longa libera a caixa depois de 45 s */
+function ocupado(){return S.chat.some(function(m){return m.esperando&&!m.demorando;});}
+function acompanhaPergunta(m,id){
+  m.id=id; m.t0=m.t0||Date.now();
+  acompanha(id,function(d){m.esperando=false;m.demorando=false;
+    if(d.status==='feito'){m.content=d.resposta||'…';if(d.anotar&&!notaJaSalva(d.anotar))m.nota=d.anotar;}
+    else{m.falhou=true;m.content=d.status==='sem_confirmacao'?'O servidor não respondeu em 10 min.':'Não consegui responder agora: '+(d.resultado||'tente de novo');}
+    setTimeout(rolaFim,50);});
 }
 async function perguntar(txt){
-  if(!txt||S.chat.some(function(m){return m.esperando;})) return;
-  var hist=S.chat.filter(function(m){return !m.esperando&&m.content;}).slice(-6).map(function(m){return {role:m.role,content:m.content};});
-  S.chat.forEach(function(x){if(x.nota&&!x.notaFeita)x.nota=null;}); /* mensagem nova descarta a sugestão de anotação que ficou sem resposta */
-  S.chat.push({role:'user',content:txt}); var m={role:'assistant',content:'',esperando:true}; S.chat.push(m); S.ask=''; render(); rolaFim();
-  try{var id=await ordem('pergunta',{texto:txt,hist:hist});
-    acompanha(id,function(d){m.esperando=false;if(d.status==='feito'){m.content=d.resposta||'…';if(d.anotar)m.nota=d.anotar;}else m.content='Não consegui responder agora: '+(d.resultado||'tente de novo');setTimeout(rolaFim,50);});}
-  catch(e){m.esperando=false;m.content='Sem permissão ou sem conexão.';render();}
+  if(!txt||ocupado()) return;
+  var hist=S.chat.filter(function(m){return !m.esperando&&!m.falhou&&m.content;}).slice(-6).map(function(m){return {role:m.role,content:m.content};});
+  S.chat.push({role:'user',content:txt}); var m={role:'assistant',content:'',esperando:true,pergunta:txt,t0:Date.now()}; S.chat.push(m); S.ask=''; render(); rolaFim();
+  try{acompanhaPergunta(m,await ordem('pergunta',{texto:txt,hist:hist}));}
+  catch(e){anotaFalha('pergunta',e);m.esperando=false;m.falhou=true;m.content='Não chegou ao servidor ('+motivoCurto(e)+').';render();}
 }
+function repetir(i){var m=S.chat[i];if(!m||!m.falhou||!m.pergunta||ocupado())return;S.chat.splice(i-1,2);perguntar(m.pergunta);}
 function rolaFim(){var t=document.querySelector('.askbar');if(t)t.scrollIntoView({block:'end'});}
 async function carregarNotas(){
   var r=await SB.from('painel_dados').select('dados').like('id','app-nota-%').order('atualizado_em',{ascending:false}).limit(60);
   if(!r.error){S.notas=(r.data||[]).map(function(x){return x.dados;});render();}
 }
+function notaJaSalva(a){return S.notas.some(function(n){return n&&n.resumo===a.resumo;});}
+/* (18/11) a conversa da aba Perguntar volta ao abrir o app: as perguntas da própria pessoa nas últimas 24 h, lidas das ordens
+   (a regra do banco deixa cada um ler as suas); a que ainda está pendente volta a ser acompanhada */
+async function carregarChat(){
+  if(S.chat.length||!EM) return;
+  var r; try{r=await SB.from('painel_dados').select('id,dados').like('id','app-cmd-%').filter('dados->>tipo','eq','pergunta').filter('dados->>por','eq',EM).order('id',{ascending:false}).limit(8);}catch(e){return;}
+  if(!r||r.error||!r.data||S.chat.length) return;
+  var desde=Date.now()-24*3600e3;
+  r.data.filter(function(o){var t=Date.parse((o.dados||{}).criadoEm);return !isNaN(t)&&t>=desde;}).reverse().forEach(function(o){
+    var d=o.dados||{},x=d.dados||{},m={role:'assistant',content:'',pergunta:String(x.texto||''),id:o.id};
+    S.chat.push({role:'user',content:m.pergunta});
+    if(d.status==='feito'){m.content=d.resposta||'…';if(d.anotar&&!notaJaSalva(d.anotar)&&DESC.indexOf(o.id)<0)m.nota=d.anotar;}
+    else if(d.status==='pendente'){m.esperando=true;m.t0=Date.parse(d.criadoEm)||Date.now();acompanhaPergunta(m,o.id);}
+    else{m.falhou=true;m.content='Não consegui responder: '+(d.resultado||d.status);}
+    S.chat.push(m);});
+  render();
+}
 async function salvarNota(i){
   var m=S.chat[i]; if(!m||!m.nota) return; m.notaFeita='sim'; render();
   var agora=new Date().toISOString(), o={tipo:m.nota.tipo,resumo:m.nota.resumo,papel:PAPEL==='familia'?'Pai':'Leonardo',quando:agora,status:'nova',por:EM};
-  var r=await SB.from('painel_dados').insert({id:'app-nota-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),dados:o,atualizado_em:agora});
-  if(r.error){m.notaFeita=null;toast('Não salvou. Tente de novo.');return;}
+  var r; try{r=await SB.from('painel_dados').insert({id:'app-nota-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),dados:o,atualizado_em:agora});}catch(e){r={error:e};}
+  if(r.error){anotaFalha('anotação',r.error);m.notaFeita=null;toast('Não salvou ('+motivoCurto(r.error)+'). Tente de novo.');return;}
   toast('Anotado'); carregarNotas();
 }
 
@@ -540,7 +585,7 @@ async function buscar(){
   (D.chips||[]).forEach(function(c){if(S.swLocal['c:'+c.conta]===!!c.envio)delete S.swLocal['c:'+c.conta];});
   render();
 }
-function comecar(email){EM=email;render();buscar();carregarNotas();
+function comecar(email){EM=email;render();buscar();carregarNotas().then(carregarChat,carregarChat);
   SB.from('al_papeis').select('papel').limit(1).maybeSingle().then( /* a regra do banco só deixa ler a própria linha */function(r){PAPEL=(r.data&&r.data.papel)||'';});clearInterval(TIMER);TIMER=setInterval(function(){if(!document.hidden)buscar();},30000);}
 async function entrar(ev){
   ev.preventDefault(); S.entrando=true; S.loginErro=''; var em=document.getElementById('em').value.trim(), se=document.getElementById('se').value; render();
@@ -574,7 +619,8 @@ document.addEventListener('click',function(ev){
     case 'sug': perguntar(id); return;
     case 'ia-enviar': perguntar((S.ask||'').trim()); return;
     case 'nota-sim': salvarNota(+id); return;
-    case 'nota-nao': if(S.chat[+id]) S.chat[+id].notaFeita='nao'; break;
+    case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
+    case 'ia-repetir': repetir(+id); return;
     case 'tab': S.tab=id; S.conv=null; break;
     case 'abrir': S.tab='conversas'; S.conv=id; window.scrollTo(0,0); break;
     case 'ver-querem': S.tab='conversas'; S.conv=null; S.filtro='querem'; break;
@@ -586,7 +632,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;S.sheet=null;clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;S.sheet=null;S.chat=[];PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
@@ -594,7 +640,7 @@ document.addEventListener('click',function(ev){
 /* ---------- início ---------- */
 try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);}catch(e){SB=null;}
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
-window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;render();}}; /* só para a prova local com dado e banco inventados */
+window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações e a conversa da aba Perguntar) */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
 </script>
