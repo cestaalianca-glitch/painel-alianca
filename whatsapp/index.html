@@ -250,6 +250,8 @@ button.kpi:active{background:var(--line-2)}
 .legenda div{display:flex;gap:10px;align-items:flex-start}.legenda .cdot{margin-top:3px}
 .btn:disabled{opacity:.5}
 .dsep{align-self:center;font-size:12px;font-weight:600;color:var(--ink-3);background:var(--line-2);padding:3px 10px;border-radius:999px}
+.why.neutro{border-left-color:var(--ink-3)}.why.neutro .t b{color:var(--ink)}
+.quem.alerta{color:var(--ink);font-weight:700}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -286,6 +288,7 @@ var IC={
   ok:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>',
   ok14:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>',
   x14:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>',
+  alerta14:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9l-8.1 14a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3l-8.1-14a2 2 0 0 0-3.4 0z"/></svg>',
   flag:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-17h11l-2 4l2 4h-11"/></svg>',
   phone:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5-2.5l5 2v4a2 2 0 0 1-2 2a16 16 0 0 1-15-15a2 2 0 0 1 2-2"/></svg>',
   mic:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>',
@@ -399,25 +402,28 @@ function vAgora(){
 
 /* ---------- CONVERSAS ---------- */
 function assumida(c){return S.assumeLocal[c.id]!==undefined?S.assumeLocal[c.id]:!!c.assumido;}
-/* (19/11, fase B) situação de cada conversa, decidida no servidor (ecossistema/app-whatsapp/cor.js): Caso sério, Resolvendo ou
-   Resolvido, com o motivo curto (quem). A marca feita aqui vale na hora (marcaLocal) até o pacote confirmar. Pacote antigo, sem cor:
-   a tela deduz do que ele tem (quer pessoa = Caso sério; vendedor ou assumida = Resolvendo) */
-var COR={vermelho:['Caso sério','bad'],amarelo:['Resolvendo','warn'],verde:['Resolvido','ok']};
+/* (19/11, fase B; regra do Gestor) a COR é só a marca que o Leonardo ou o pai põem à mão: Caso sério, Resolvendo ou Resolvido. Nada troca
+   a cor sozinho; conversa sem marca fica cinza ("Sem marca"). Ao lado vai o que o sistema sabe (quem), só como texto; os alertas
+   (Precisa de você, Sem dono, Envio não saiu) ganham destaque sem cor. A marca feita aqui vale na hora (marcaLocal) até o pacote confirmar.
+   Pacote antigo (sem quem): a tela deduz o texto do que ele tem */
+var COR={vermelho:['Caso sério','bad'],amarelo:['Resolvendo','warn'],verde:['Resolvido','ok']}, SEM=['Sem marca','mute'];
 function corServidor(c,semMarca){
-  if(c.cor&&COR[c.cor]&&!(semMarca&&c.manual)) return {cor:c.cor,quem:c.quem||'',porque:c.porque||'',desde:c.porqueDesde||'',manual:!!c.manual};
-  if(assumida(c)) return {cor:'amarelo',quem:'Assumida'};
-  if(c.quer) return {cor:'vermelho',quem:'Precisa de você',porque:c.motivo||'',desde:c.desde||''};
-  return c.vend?{cor:'amarelo',quem:'Vendedor'}:{cor:'verde',quem:'Robô'};
+  var r={cor:'',quem:c.quem||(assumida(c)?'Assumida':c.quer?'Precisa de você':c.vend?'Vendedor':'Robô'),porque:c.porque||(c.quer?c.motivo||'':''),
+    desde:c.porqueDesde||(c.quer?c.desde||'':''),alerta:c.alerta!=null?!!c.alerta:!!c.quer,manual:false};
+  if(!semMarca&&c.manual&&COR[c.cor]){r.cor=c.cor;r.manual=true;r.marcaPor=c.marcaPor||'';r.marcaEm=c.marcaEm||'';}
+  return r;
 }
 function corDe(c){
   var ml=S.marcaLocal[c.id];
-  if(ml&&Date.now()-ml.t<1200000) return ml.cor?{cor:ml.cor,quem:'Marcado por '+(PAPEL==='familia'?'Pai':'Leonardo'),manual:true}:corServidor(c,true);
-  if(resolvida(c)) return {cor:'verde',quem:'Resolvido agora',manual:true};
-  return corServidor(c);
+  if(!(ml&&Date.now()-ml.t<1200000)) return corServidor(c);
+  var r=corServidor(c,true); if(ml.cor){r.cor=ml.cor;r.manual=true;r.marcaPor=PAPEL==='familia'?'Pai':'Leonardo';r.marcaEm=new Date(ml.t).toISOString();}
+  return r;
 }
-function ordemCor(a,b){var P={vermelho:0,amarelo:1,verde:2},ea=corDe(a),eb=corDe(b);
+function tom(e){return e.cor?COR[e.cor]:SEM;}
+/* ordem da lista: Caso sério, sem marca (as com alerta primeiro), Resolvendo, Resolvido; dentro de cada uma, a mais recente primeiro */
+function ordemCor(a,b){var P={vermelho:0,'':1,amarelo:2,verde:3},ea=corDe(a),eb=corDe(b);
   if(P[ea.cor]!==P[eb.cor]) return P[ea.cor]-P[eb.cor];
-  if(ea.cor==='vermelho') return String(ea.desde||a.quando).localeCompare(String(eb.desde||b.quando)); /* quem espera há mais tempo primeiro */
+  if(!ea.cor&&ea.alerta!==eb.alerta) return ea.alerta?-1:1;
   return String(b.quando).localeCompare(String(a.quando));}
 /* (fase 3) Hoje ou Ontem e busca (procura em todas, sem filtro). A busca só redesenha a lista, não a tela inteira:
    o teclado do celular não fecha a cada letra. (19/11) busca também por código, final do telefone, rota e bairro */
@@ -431,18 +437,19 @@ function previa(c){
   return '<span>'+esc(quem+String(m.t).replace(/\n/g,' '))+'</span>';
 }
 function linhaConv(c){
-  var e=corDe(c), t=COR[e.cor], f=c.ficha||{}, onde=[f.rota?'Rota '+f.rota:'',f.bairro||''].filter(Boolean).join(' · ');
-  var tm=c.antiga?ddmm(e.desde||c.desde||c.quando):e.cor==='vermelho'&&e.desde&&ehHoje(e.desde)?tempo(minAtras(e.desde)):hhmm(c.quando);
+  var e=corDe(c), t=tom(e), f=c.ficha||{}, onde=[f.rota?'Rota '+f.rota:'',f.bairro||''].filter(Boolean).join(' · ');
+  var tm=c.antiga?ddmm(c.marcaEm||c.desde||c.quando):hhmm(c.quando);
   return '<button class="row" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+t[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
     '<div class="t2 pv">'+previa(c)+'</div><div class="t3"><span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span>'+esc(onde)+'</span>':'')+'</div></div>'+
-    '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'<span class="quem">'+(e.manual?IC.flag:'')+esc(e.quem||'')+'</span></div></button>';
+    '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span></div></button>';
 }
 function segFiltro(){
   if(S.busca.trim()) return '';
-  var n={todas:0,vermelho:0,amarelo:0,verde:0}; listaDia().forEach(function(c){n.todas++;n[corDe(c).cor]++;});
+  var n={todas:0,vermelho:0,amarelo:0,verde:0,'':0}; listaDia().forEach(function(c){n.todas++;n[corDe(c).cor]++;});
   var op=[['todas','Todas',''],['vermelho','Caso sério','bad'],['amarelo','Resolvendo','warn'],['verde','Resolvido','ok']];
-  return '<div class="fhead"><h2 class="sub-h">Situação</h2><button class="help" data-act="cores" aria-label="O que é cada cor">?</button></div>'+
-    '<div class="filt" role="group" aria-label="Filtrar por situação">'+op.map(function(x){return '<button class="'+x[2]+'" aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'"><span class="n">'+n[x[0]]+'</span><span class="l">'+(x[2]?'<span class="dot '+x[2]+'"></span>':'')+x[1]+'</span></button>';}).join('')+'</div>';
+  return '<div class="fhead"><h2 class="sub-h">Marcas</h2><button class="help" data-act="cores" aria-label="Como funcionam as cores">?</button></div>'+
+    '<div class="filt" role="group" aria-label="Filtrar pela marca">'+op.map(function(x){return '<button class="'+x[2]+'" aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'"><span class="n">'+n[x[0]]+'</span><span class="l">'+(x[2]?'<span class="dot '+x[2]+'"></span>':'')+x[1]+'</span></button>';}).join('')+'</div>'+
+    (n['']?'<div class="found">'+n['']+(n['']>1?' conversas sem marca':' conversa sem marca')+' (só em Todas)</div>':'');
 }
 function listaHTML(){
   if(S.dia==='ontem'&&!DO) return '<div class="card"><div class="empty">'+(DO_ERRO?'<b>'+esc(DO_ERRO)+'</b><button class="btn" data-act="ontem-de-novo">Tentar de novo</button>':'<b>Carregando ontem…</b>')+'</div></div>';
@@ -459,7 +466,7 @@ function listaHTML(){
   }
   L=L.slice().sort(ordemCor);
   h+='<div class="card">';
-  if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>'+(S.filtro==='vermelho'?'Nenhum caso sério':'Nada aqui')+'</b><span>'+(S.filtro==='vermelho'?'Tudo dentro do prazo':'0 conversas')+'</span></div>';
+  if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>'+(S.filtro==='vermelho'?'Nenhum caso sério':'Nada aqui')+'</b><span>'+(S.filtro==='vermelho'?'Nenhuma conversa marcada assim':'0 conversas')+'</span></div>';
   L.forEach(function(c){h+=linhaConv(c);});
   return h+'</div>';
 }
@@ -475,10 +482,11 @@ function acharConv(id){
 function vConv(){
   var c=acharConv(S.conv);
   if(!c){S.conv=null;return vLista();}
-  var deOntem=!!(DO&&(DO.convs||[]).indexOf(c)>=0), e=corDe(c), t=COR[e.cor], f=c.ficha||{};
-  /* (19/11, fase B) cabeçalho com a situação (toque para marcar), ficha do cliente, falas com o resultado do envio */
-  var h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+(f.cod?'Cód. '+esc(f.cod)+' · ':'')+esc(c.chip)+(deOntem?' · conversa de ontem':'')+'</div></div>'+
-    '<button class="stbtn" data-act="marcar" aria-label="Situação: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'<span class="quem">'+(e.manual?IC.flag:'')+esc(e.quem||'')+'</span></button></div>';
+  var deOntem=!!(DO&&(DO.convs||[]).indexOf(c)>=0), e=corDe(c), t=tom(e), f=c.ficha||{};
+  /* (19/11, fase B) cabeçalho: a marca (toque para marcar) e, embaixo do nome, o que o sistema sabe; ficha do cliente; falas com o resultado do envio */
+  var qm=e.marcaEm?(ehHoje(e.marcaEm)?hhmm(e.marcaEm):ddmm(e.marcaEm)):'';
+  var h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+(f.cod?'Cód. '+esc(f.cod)+' · ':'')+esc(c.chip)+(deOntem?' · conversa de ontem':'')+(e.quem?' · '+esc(e.quem):'')+'</div></div>'+
+    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'<span class="quem">'+(e.manual?IC.flag+'por '+esc(e.marcaPor||'')+(qm?' · '+qm:''):'Tocar para marcar')+'</span></button></div>';
   h+=vFicha(f)+'<div class="card"><div class="thread">';
   if(!(c.msgs||[]).length) h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
   /* (fase D) dias anteriores, do histórico (app_mensagens), antes das falas de hoje */
@@ -490,9 +498,10 @@ function vConv(){
   (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
     h+='<div class="msg out eu'+(s.st==='erro'||s.st==='expirada'||s.st==='sem_confirmacao'?' falhou':'')+'"><span class="meta">Você · '+esc(st)+'</span><div class="bub">'+esc(s.t)+'</div></div>';});
   h+='</div></div>';
-  /* logo abaixo da última fala (a tela desce até ela): por que é Caso sério, desde quando e o Resolvido (o Leonardo e o pai, desde 19/11) */
-  if(e.cor==='vermelho'&&!e.manual){var dq=e.desde||c.quando;
-    h+='<div class="why"><div class="t"><b>'+esc(e.quem||'Caso sério')+':</b> '+esc(e.porque||'o robô pediu uma pessoa')+'</div>'+(dq?'<div class="s">Desde '+(ehHoje(dq)?hhmm(dq):ddmm(dq)+' às '+hhmm(dq))+'</div>':'')+
+  /* logo abaixo da última fala (a tela desce até ela): o alerta do sistema (Precisa de você, Sem dono, Envio não saiu), desde quando e o
+     Resolvido (o Leonardo e o pai). Sem cor própria: a cor é só a marca */
+  if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando;
+    h+='<div class="why neutro"><div class="t"><b>'+esc(e.quem||'Atenção')+':</b> '+esc(e.porque||'o robô pediu uma pessoa')+'</div>'+(dq?'<div class="s">Desde '+(ehHoje(dq)?hhmm(dq):ddmm(dq)+' às '+hhmm(dq))+'</div>':'')+
       '<button class="btn okb" data-act="resolver">'+IC.ok+'Resolvido</button></div>';}
   var as=assumida(c);
   if(as) h+='<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>';
@@ -534,17 +543,17 @@ function vMarcar(){
   var sel=S.marcar.cor, e=corDe(c);
   function op(cor,rot,sub){return '<button class="opt" data-act="cor" data-id="'+cor+'" aria-pressed="'+(sel===cor)+'"><span class="cdot '+(COR[cor]?COR[cor][1]:'mute')+'"></span><span class="ot"><b>'+rot+'</b><span>'+sub+'</span></span></button>';}
   return '<div class="scrim" data-act="cancelar-marca"><div class="sheet" role="dialog" aria-modal="true" aria-label="Marcar conversa"><span class="grab"></span><h3>Marcar '+esc(String(c.nome).split(' ')[0])+'</h3>'+
-    op('vermelho','Caso sério','Fica no topo da lista até alguém resolver')+op('amarelo','Resolvendo','Alguém está cuidando')+op('verde','Resolvido','Fecha as pendências e tira dos casos sérios')+
-    (e.manual?op('','Tirar a marca','Volta para a cor automática'):'')+'<p>A marca vale até o cliente escrever de novo.</p>'+
+    op('vermelho','Caso sério','Fica no topo da lista')+op('amarelo','Resolvendo','Alguém está cuidando')+op('verde','Resolvido','Também fecha as pendências abertas desta conversa')+
+    (e.manual?op('','Tirar a marca','Fica sem cor'):'')+'<p>A cor fica até alguém trocar. Nada muda sozinho.</p>'+
     '<div class="btns"><button class="btn" data-act="cancelar-marca">Cancelar</button><button class="btn pri" data-act="marcar-ok"'+(sel==null?' disabled':'')+'>Marcar</button></div></div></div>';
 }
 function vCores(){
-  var pz=D&&D.prazoMin>0?D.prazoMin:120, pzT=pz%60?pz+' min':pz/60+' h';
-  return '<div class="scrim" data-act="fechar-info"><div class="sheet" role="dialog" aria-modal="true" aria-label="O que é cada cor"><span class="grab"></span><h3>O que é cada cor</h3><div class="legenda">'+
-    '<div><span class="cdot bad"></span><span><b>Caso sério</b>: decisão de uma pessoa, pendência sem dono, resposta que não saiu ou cliente há mais de '+pzT+' sem resposta.</span></div>'+
-    '<div><span class="cdot warn"></span><span><b>Resolvendo</b>: robô, vendedor, escritório ou uma pessoa cuidando, dentro do prazo.</span></div>'+
-    '<div><span class="cdot ok"></span><span><b>Resolvido</b>: nada aberto e a última fala é nossa. A bandeira mostra quem marcou à mão.</span></div></div>'+
-    '<button class="btn pri" data-act="fechar-info">Entendi</button></div></div>';
+  return '<div class="scrim" data-act="fechar-info"><div class="sheet" role="dialog" aria-modal="true" aria-label="Como funcionam as cores"><span class="grab"></span><h3>Como funcionam as cores</h3><div class="legenda">'+
+    '<div><span class="cdot bad"></span><span><b>Caso sério</b>: marcado por você ou pelo seu pai. Fica no topo.</span></div>'+
+    '<div><span class="cdot warn"></span><span><b>Resolvendo</b>: alguém está cuidando.</span></div>'+
+    '<div><span class="cdot ok"></span><span><b>Resolvido</b>: terminou. Marcar Resolvido também fecha as pendências da conversa.</span></div>'+
+    '<div><span class="cdot mute"></span><span><b>Sem marca</b>: ninguém marcou ainda. O texto ao lado diz o que o sistema sabe.</span></div></div>'+
+    '<p>Só vocês trocam a cor. Nada muda sozinho, nem com o tempo.</p><button class="btn pri" data-act="fechar-info">Entendi</button></div></div>';
 }
 
 /* ---------- ENVIOS ---------- */
@@ -827,7 +836,7 @@ function render(){
   var app=document.getElementById('app');
   if(!EM){app.innerHTML=vLogin();var f=document.getElementById('fLogin');f.addEventListener('submit',entrar);return;}
   if(!D){app.innerHTML='<div class="login"><div class="empty">'+(ERRO?'<b>'+esc(ERRO)+'</b><span>'+esc(EM)+'</span><button class="btn" data-act="sair">Sair</button>':'<b>Carregando…</b>')+'</div></div>';return;}
-  var Q=convs().filter(function(c){return corDe(c).cor==='vermelho';}).length, m=minAtras(D.geradoEm), velho=m==null||m>15; /* (19/11) número da aba = casos sérios */
+  var Q=convs().filter(function(c){var e=corDe(c);return e.cor==='vermelho'||(!e.cor&&e.alerta);}).length, m=minAtras(D.geradoEm), velho=m==null||m>15; /* (19/11) número da aba = marcadas Caso sério + sem marca com alerta */
   var C=chips(), cs=S.num?C.filter(function(c){return c.nome===S.num;})[0]:null;
   var tom=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
   var h='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tom+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header><main>';
@@ -886,7 +895,7 @@ document.addEventListener('click',function(ev){
   var cv=S.conv&&acharConv(S.conv);
   switch(a){
     case 'resolver': if(!cv) return; /* (19/11) o Leonardo e o pai */
-      S.modal={t:'Resolver '+String(cv.nome).split(' ')[0]+'?',p:'Fecha as pendências que a puseram em Caso sério e o robô volta a cuidar. Vale até o cliente escrever de novo.',ok:'Resolvido',fazer:function(){marcarConv(cv,'verde');}}; break;
+      S.modal={t:'Resolver '+String(cv.nome).split(' ')[0]+'?',p:'Marca como Resolvido e fecha as pendências abertas desta conversa. Fica assim até alguém trocar.',ok:'Resolvido',fazer:function(){marcarConv(cv,'verde');}}; break;
     case 'marcar': if(cv) S.marcar={id:cv.id,cor:null}; break;
     case 'cor': if(S.marcar) S.marcar.cor=id||''; break;
     case 'marcar-ok': if(S.marcar&&S.marcar.cor!=null){var mc=acharConv(S.marcar.id); if(mc) marcarConv(mc,S.marcar.cor);} return;
