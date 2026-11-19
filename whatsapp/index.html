@@ -262,17 +262,19 @@ body.fixo{height:100%;overflow:hidden}
 /* (19/11 noite) o que fica dentro da área que rola nunca encolhe: o .card (overflow:hidden) encolhia até caber e cortava as últimas falas */
 .crola>*,.lrola>*{flex-shrink:0}
 /* aviso do sistema: faixa parada entre o cabeçalho e as mensagens, 2 linhas; tocar abre o texto inteiro (rola por dentro se for longo) */
-.alerta{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 12px;background:var(--card);border-bottom:1px solid var(--line);border-left:4px solid var(--ink-3)}
-.alerta .al-l{flex:1;min-width:0;font-size:14px;line-height:1.35;cursor:pointer}
-.alerta .al-x{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-.alerta .al-q{color:var(--ink-3)}
-.alerta.aberto{align-items:flex-start}
-.alerta.aberto .al-l{max-height:40vh;max-height:40dvh;overflow-y:auto;overscroll-behavior:contain}
-.alerta.aberto .al-x{display:block;white-space:pre-wrap}
-.alerta .al-tog{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2)}
-.alerta .al-tog[hidden]{display:none}
-.alerta.aberto .al-tog svg{transform:rotate(180deg)}
-.alerta .al-ok{flex:none;height:36px;padding:0 12px;border-radius:999px;border:0;background:var(--ok);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+/* (classe "faixa", não "alerta": o rótulo da lista já usa "quem alerta" e herdava a borda e o espaço da faixa) */
+.faixa{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 12px;background:var(--card);border-bottom:1px solid var(--line);border-left:4px solid var(--ink-3)}
+.faixa .al-l{flex:1;min-width:0;font-size:14px;line-height:1.35;cursor:pointer}
+.faixa .al-x{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.faixa .al-q{color:var(--ink-3)}
+.faixa.aberto{align-items:flex-start}
+.faixa.aberto .al-l{max-height:40vh;max-height:40dvh;overflow-y:auto;overscroll-behavior:contain}
+.faixa.aberto .al-x{display:block;white-space:pre-wrap}
+.faixa .al-tog{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.faixa .al-tog[hidden]{display:none}
+.faixa.aberto .al-tog svg{transform:rotate(180deg)}
+.faixa .al-ok{flex:none;height:36px;padding:0 12px;border-radius:999px;border:0;background:var(--ok);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.cv .cbar .tel{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical} /* telefone, chip e aviso em até 2 linhas, sem esconder */
 .cv .compose{flex:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:10px}
 .cv .held{padding:8px 12px}
 .fbtn{height:36px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex:none;color:var(--ink)}
@@ -303,8 +305,9 @@ body.fixo{height:100%;overflow:hidden}
 .quem.alerta{color:var(--ink);font-weight:700}
 .row.conv .t1 .nm,.cv .cbar .nm{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .cv .cbar .nm{line-height:1.2}
-.t2.pv .quem{flex:none;overflow:visible;font-size:12px}
-.t2.pv .quem::after{content:"·";margin-left:4px;color:var(--ink-3);font-weight:400}
+.t3 .quem{flex:none;font-size:12px}
+.row.conv .t3 .tag{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row.conv .t3 .onde{flex:1 1 0;min-width:0}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -494,9 +497,11 @@ function previa(c){
 function linhaConv(c){
   var e=corDe(c), t=tom(e), f=c.ficha||{}, onde=[f.rota?'Rota '+f.rota:'',f.bairro||''].filter(Boolean).join(' · ');
   var tm=c.antiga?ddmm(c.marcaEm||c.desde||c.quando):hhmm(c.quando);
-  /* (19/11 noite) o aviso (quem) abre a 2ª linha, antes da prévia: na coluna da direita ele apertava o nome até cortar "CLIENTE TESTE…" */
+  /* (19/11 noite) o aviso (quem) abre a 3ª linha, antes do chip e da rota: na coluna da direita ele apertava o nome até cortar
+     "CLIENTE TESTE…", e na linha da prévia deixava a última fala com 40 px. O aviso nunca corta; chip e rota encurtam se faltar lugar */
   return '<button class="row conv" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+t[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
-    '<div class="t2 pv">'+(e.quem||e.manual?'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span>':'')+previa(c)+'</div><div class="t3"><span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span>'+esc(onde)+'</span>':'')+'</div></div>'+
+    '<div class="t2 pv">'+previa(c)+'</div><div class="t3">'+(e.quem||e.manual?'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span>':'')+
+    '<span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span class="onde">'+esc(onde)+'</span>':'')+'</div></div>'+
     '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'</div></button>';
 }
 /* (19/11 tarde) filtros rápidos pelo aviso do sistema (o texto ao lado da cor) e, embaixo, pelas marcas feitas à mão; os dois se somam.
@@ -558,15 +563,15 @@ function vConv(){
   var tel=f.telChat?fmtTel(telBR(f.telChat)):f.telCad?fmtTel(telBR(f.telCad))+' (cadastro)':'sem telefone';
   var h='<div class="cv"><div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
     '<div class="tel">'+esc(tel)+' · '+esc(c.chip)+(deOntem?' · ontem':'')+(e.quem&&!(e.alerta&&e.cor!=='verde')?' · '+esc(e.quem):'')+'</div></div>'+
-    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
-    '<button class="fbtn" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
+    '<button class="stbtn" id="bt-marca" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
+    '<button class="fbtn" id="bt-ficha" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
   /* (19/11 noite) o aviso do sistema é uma faixa de 2 linhas parada embaixo do cabeçalho (tocar abre o texto inteiro, com a data);
      a área que rola tem só as mensagens, até a última */
   if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando, outro=dq&&!ehHoje(dq), ab=S.alertaAberto===c.id;
-    h+='<div class="alerta'+(ab?' aberto':'')+'" id="alerta"><div class="al-l" data-act="ver-alerta"><div class="al-x"><b>'+esc(e.quem||'Atenção')+'</b><span class="al-q">'+
+    h+='<div class="faixa'+(ab?' aberto':'')+'" id="faixa"><div class="al-l" data-act="ver-alerta"><div class="al-x"><b>'+esc(e.quem||'Atenção')+'</b><span class="al-q">'+
       (dq?(outro?' · pendência de '+ddmm(dq)+' às '+hhmm(dq):' · desde '+hhmm(dq)):'')+':</span> '+esc(e.porque||'o robô pediu uma pessoa')+'</div></div>'+
-      '<button class="al-tog" data-act="ver-alerta" aria-expanded="'+ab+'" aria-controls="alerta" aria-label="'+(ab?'Recolher o aviso':'Ver o aviso inteiro')+'">'+IC.down+'</button>'+
-      '<button class="al-ok" data-act="resolver">'+IC.ok14+'Resolvido</button></div>';}
+      '<button class="al-tog" id="al-tog" data-act="ver-alerta" aria-expanded="'+ab+'" aria-controls="faixa" aria-label="'+(ab?'Recolher o aviso':'Ver o aviso inteiro')+'">'+IC.down+'</button>'+
+      '<button class="al-ok" id="al-ok" data-act="resolver">'+IC.ok14+'Resolvido</button></div>';}
   h+='<div class="crola" id="crola"><div class="card"><div class="thread">';
   /* (fase D) dias anteriores, do histórico (app_mensagens), cada dia com o seu divisor; depois o divisor de hoje */
   var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
@@ -580,13 +585,15 @@ function vConv(){
   h+='</div></div></div>';
   var as=assumida(c), lin=S.draft?S.draft.split('\n').length:0;
   h+='<div class="compose">'+(as?'<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>':'')+
-    '<div class="quick q4"><button data-act="pix">'+IC.pix+'Pix</button><button data-act="catalogo">'+IC.list+'Catálogo</button><button data-act="assumir" class="'+(as?'on':'')+'" aria-pressed="'+as+'">'+IC.hand+(as?'Sua':'Assumir')+'</button><button data-act="marcar">'+IC.flag+'Marcar</button></div>';
+    '<div class="quick q4"><button data-act="pix">'+IC.pix+'Pix</button><button data-act="catalogo">'+IC.list+'Catálogo</button><button data-act="assumir" class="'+(as?'on':'')+'" aria-pressed="'+as+'">'+IC.hand+(as?'Sua':'Assumir')+'</button><button id="bt-marcar" data-act="marcar">'+IC.flag+'Marcar</button></div>';
   if(lin>4) h+='<span class="warnline">Mais de 4 linhas</span>';
   h+='<div class="inrow"><label for="txt" style="position:absolute;left:-9999px">Mensagem</label><textarea id="txt" rows="1" maxlength="600" placeholder="Mensagem">'+esc(S.draft)+'</textarea><button class="send" data-act="enviar" aria-label="Enviar">'+IC.send+'</button></div></div></div>';
   return h;
 }
 /* (19/11, fase B) ficha do cliente: telefone do WhatsApp (o que o WhatsApp mostra, muitas vezes sem o 9) e do cadastro, rota e vendedor,
    endereço e valores (o pai vê tudo, ordem do Gestor de 19/11). Dado nenhum fica neste arquivo: tudo vem do pacote depois do login */
+/* (19/11 noite) rota e bairro que ficariam com menos de 36 px (só um "…") saem da linha; a Ficha mostra */
+function aparaOnde(el){if(el)el.querySelectorAll('.row.conv .onde').forEach(function(o){if(o.clientWidth<36)o.hidden=true;});}
 /* (19/11 noite) número limpo para copiar e para o wa.me: só dígitos, sem 55 e com o nono dígito no celular que veio sem ele
    (a mesma regra do telefone.js celularBR: 10 dígitos com 6 a 9 depois do DDD é celular antigo) */
 function telBR(t){var d=String(t||'').replace(/\D/g,'').replace(/^0+/,'');if((d.length===12||d.length===13)&&d.slice(0,2)==='55')d=d.slice(2);if(d.length===10&&/[6-9]/.test(d[2]))d=d.slice(0,2)+'9'+d.slice(2);return d;}
@@ -966,18 +973,20 @@ function render(){
   var foco=document.activeElement&&document.activeElement.id;
   app.innerHTML=h;
   /* aviso que já cabe nas 2 linhas não precisa do botão de abrir */
-  var ax=app.querySelector('.alerta:not(.aberto) .al-x'); if(ax&&ax.scrollHeight<=ax.clientHeight+2){var tg=app.querySelector('.alerta .al-tog');if(tg)tg.hidden=true;ax.parentNode.removeAttribute('data-act');ax.parentNode.style.cursor='default';}
+  aparaOnde(app);
+  var ax=app.querySelector('.faixa:not(.aberto) .al-x'); if(ax&&ax.scrollHeight<=ax.clientHeight+2){var tg=app.querySelector('.faixa .al-tog');if(tg)tg.hidden=true;ax.parentNode.removeAttribute('data-act');ax.parentNode.style.cursor='default';}
   var ta=document.getElementById('txt');
   if(ta){ta.addEventListener('input',function(){var antes=S.draft.split('\n').length>4;S.draft=ta.value;if((ta.value.split('\n').length>4)!==antes)render();});}
   var ak=document.getElementById('ask');
   if(ak){ak.addEventListener('input',function(){S.ask=ak.value;});ak.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();perguntar(ak.value.trim());}});}
   /* (fase 3) a busca redesenha só a lista (e os filtros quando ela começa ou termina): o campo não é recriado a cada letra */
   var bu=document.getElementById('busca');
-  if(bu){bu.addEventListener('input',function(){var tinha=!!S.busca.trim();S.busca=bu.value;if(!!S.busca.trim()!==tinha){var fi=document.getElementById('filtros');if(fi)fi.innerHTML=segFiltro();}var l=document.getElementById('lista');if(l)l.innerHTML=listaHTML();});}
+  if(bu){bu.addEventListener('input',function(){var tinha=!!S.busca.trim();S.busca=bu.value;if(!!S.busca.trim()!==tinha){var fi=document.getElementById('filtros');if(fi)fi.innerHTML=segFiltro();}var l=document.getElementById('lista');if(l){l.innerHTML=listaHTML();aparaOnde(l);}});}
   if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)try{el.setSelectionRange(el.value.length,el.value.length);}catch(x){}}
   /* mesma tela: a lista e as mensagens voltam ao ponto onde estavam. (etapa 3) ao abrir uma conversa ou o chat, e sempre que chega
      mensagem nova, desce até a última (agora dentro da área que rola) */
-  if(vista===render.vista) Object.keys(rolas).forEach(function(id){var el=document.getElementById(id);if(el)el.scrollTop=rolas[id];});
+  /* (19/11 noite) quem estava no fim da conversa continua no fim (abrir o aviso inteiro encolhe a área e escondia a última fala) */
+  if(vista===render.vista) Object.keys(rolas).forEach(function(id){var el=document.getElementById(id);if(el)el.scrollTop=id==='crola'&&perto.crola?el.scrollHeight:rolas[id];});
   render.vista=vista;
   var cv=emConv;
   var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length+':'+((S.hist[cv.id]||{}).rows||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
@@ -988,7 +997,8 @@ function render(){
   render.rol=rol; render.dono=dono;
   /* folha que acabou de abrir recebe o foco (teclado e leitor de tela); Esc fecha a de cima (ouvinte lá embaixo) */
   var dl=app.querySelectorAll('[role="dialog"]'), topo=dl[dl.length-1], dk=topo?topo.getAttribute('aria-label'):'';
-  if(topo&&dk!==render.dlg&&!topo.contains(document.activeElement)){topo.setAttribute('tabindex','-1');try{topo.focus({preventScroll:true});}catch(x){}}
+  if(topo&&dk!==render.dlg){if(!render.dlg)render.volta=foco||''; if(!topo.contains(document.activeElement)){topo.setAttribute('tabindex','-1');try{topo.focus({preventScroll:true});}catch(x){}}}
+  if(!topo&&render.dlg&&render.volta){var vb=document.getElementById(render.volta);if(vb)try{vb.focus({preventScroll:true});}catch(x){}render.volta='';} /* fechou: o foco volta ao botão que abriu */
   render.dlg=dk;
 }
 
