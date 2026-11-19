@@ -274,7 +274,10 @@ body.fixo{height:100%;overflow:hidden}
 .faixa .al-tog[hidden]{display:none}
 .faixa.aberto .al-tog svg{transform:rotate(180deg)}
 .faixa .al-ok{flex:none;height:36px;padding:0 12px;border-radius:999px;border:0;background:var(--ok);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
-.cv .cbar .tel{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical} /* telefone, chip e aviso em até 2 linhas, sem esconder */
+.cv .cbar .tel{white-space:normal;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical} /* telefone, chip e aviso em até 3 linhas, sem esconder */
+.cv .cbar .tel .sg:nth-child(-n+2){white-space:nowrap} /* telefone e chip nunca quebram no meio; o aviso pode quebrar entre palavras */
+@media (max-width:400px){.fbtn svg{display:none}.fbtn{padding:0 12px}} /* celular: "Ficha" sem o ícone (como a barra de baixo) dá lugar ao nome e ao telefone */
+@media (max-width:370px){.cv .cbar .tel{font-size:11px}}
 .cv .compose{flex:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:10px}
 .cv .held{padding:8px 12px}
 .fbtn{height:36px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex:none;color:var(--ink)}
@@ -306,7 +309,7 @@ body.fixo{height:100%;overflow:hidden}
 .row.conv .t1 .nm,.cv .cbar .nm{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .cv .cbar .nm{line-height:1.2}
 .t3 .quem{flex:none;font-size:12px}
-.row.conv .t3 .tag{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row.conv .t3{flex-wrap:wrap;row-gap:2px} /* aviso e chip nunca encolhem: o chip desce de linha se não couber */
 .row.conv .t3 .onde{flex:1 1 0;min-width:0}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
@@ -562,7 +565,7 @@ function vConv(){
      rolam e a barra de baixo (Pix, Catálogo, Assumir, Marcar e o campo de texto) fica parada embaixo */
   var tel=f.telChat?fmtTel(telBR(f.telChat)):f.telCad?fmtTel(telBR(f.telCad))+' (cadastro)':'sem telefone';
   var h='<div class="cv"><div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
-    '<div class="tel">'+esc(tel)+' · '+esc(c.chip)+(deOntem?' · ontem':'')+(e.quem&&!(e.alerta&&e.cor!=='verde')?' · '+esc(e.quem):'')+'</div></div>'+
+    '<div class="tel">'+[tel,c.chip].concat(deOntem?['ontem']:[],e.quem&&!(e.alerta&&e.cor!=='verde')?[e.quem]:[]).map(function(s,i){return '<span class="sg">'+(i?'· ':'')+esc(s)+'</span>';}).join(' ')+'</div></div>'+
     '<button class="stbtn" id="bt-marca" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
     '<button class="fbtn" id="bt-ficha" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
   /* (19/11 noite) o aviso do sistema é uma faixa de 2 linhas parada embaixo do cabeçalho (tocar abre o texto inteiro, com a data);
@@ -942,10 +945,10 @@ function vLogin(){
     '<button class="btn pri" type="submit"'+(S.entrando?' disabled':'')+'>'+(S.entrando?'Entrando…':'Entrar')+'</button></form>';
 }
 function render(){
-  var app=document.getElementById('app'), rolas={}, perto={};
+  var app=document.getElementById('app'), rolas={}, perto={}, nofim={}; /* perto (80 px): fala nova puxa; no fim (4 px): redesenho mantém no fim */
   /* (19/11 noite) a rolagem é lida ANTES de mexer na classe "fixo": sem ela a área cresce até o conteúdo e a leitura dava sempre 0,
      então cada redesenho (tempo real, 30 s) jogava a lista e a conversa de volta ao topo */
-  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el){rolas[id]=el.scrollTop;perto[id]=el.scrollHeight-el.clientHeight-el.scrollTop<80;}});
+  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el){var falta=el.scrollHeight-el.clientHeight-el.scrollTop;rolas[id]=el.scrollTop;perto[id]=falta<80;nofim[id]=falta<4;}});
   if(!EM||!D){document.body.classList.remove('fixo');app.classList.remove('fixo');} /* entrar e carregando rolam como página comum */
   if(!EM){app.innerHTML=vLogin();var f=document.getElementById('fLogin');f.addEventListener('submit',entrar);return;}
   if(!D){app.innerHTML='<div class="login"><div class="empty">'+(ERRO?'<b>'+esc(ERRO)+'</b><span>'+esc(EM)+'</span><button class="btn" data-act="sair">Sair</button>':'<b>Carregando…</b>')+'</div></div>';return;}
@@ -986,7 +989,7 @@ function render(){
   /* mesma tela: a lista e as mensagens voltam ao ponto onde estavam. (etapa 3) ao abrir uma conversa ou o chat, e sempre que chega
      mensagem nova, desce até a última (agora dentro da área que rola) */
   /* (19/11 noite) quem estava no fim da conversa continua no fim (abrir o aviso inteiro encolhe a área e escondia a última fala) */
-  if(vista===render.vista) Object.keys(rolas).forEach(function(id){var el=document.getElementById(id);if(el)el.scrollTop=id==='crola'&&perto.crola?el.scrollHeight:rolas[id];});
+  if(vista===render.vista) Object.keys(rolas).forEach(function(id){var el=document.getElementById(id);if(el)el.scrollTop=id==='crola'&&nofim.crola?el.scrollHeight:rolas[id];});
   render.vista=vista;
   var cv=emConv;
   var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length+':'+((S.hist[cv.id]||{}).rows||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
