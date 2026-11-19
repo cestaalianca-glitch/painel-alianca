@@ -202,12 +202,6 @@ button.kpi:active{background:var(--line-2)}
 @media (max-width:370px){.seg.quatro .n{display:none}.seg.quatro button{font-size:12px}.seg.dia{width:116px}}
 .divider{padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line-2);font-size:12px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;scroll-margin-top:72px}
 .found{font-size:13px;color:var(--ink-3);padding:0 4px}
-.why{display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:var(--r)}
-.why .t{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
-.why .t b{color:var(--bad)}
-.why .s{font-size:13px;color:var(--ink-3)}
-.why .btn{height:48px;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn.okb{background:var(--ok);border-color:var(--ok);color:#fff}
 #filtros:empty{display:none}
 #filtros{display:flex;flex-direction:column;gap:8px}
 #lista{display:flex;flex-direction:column;gap:12px}
@@ -234,7 +228,6 @@ button.kpi:active{background:var(--line-2)}
 .fl .k{color:var(--ink-3);font-size:13px}
 .fl .v{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;font-variant-numeric:tabular-nums}
 .fl .vazio{grid-column:1/-1;color:var(--ink-3)}
-.mini{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:5px;color:var(--pri);text-decoration:none}
 .est{font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;padding:0 6px;flex-wrap:wrap}
 .est.ok{color:var(--ok)}.est.bad{color:var(--bad)}
 .retry{border:0;background:transparent;color:var(--pri);font-weight:700;font-size:12px;padding:6px 0 6px 6px}
@@ -251,7 +244,6 @@ button.kpi:active{background:var(--line-2)}
 .legenda div{display:flex;gap:10px;align-items:flex-start}.legenda .cdot{margin-top:3px}
 .btn:disabled{opacity:.5}
 .dsep{align-self:center;font-size:12px;font-weight:600;color:var(--ink-3);background:var(--line-2);padding:3px 10px;border-radius:999px}
-.why.neutro{border-left-color:var(--ink-3)}.why.neutro .t b{color:var(--ink)}
 /* (19/11 tarde) tela fixa estilo WhatsApp: a página não rola; rolam só a lista e as mensagens */
 body.fixo{height:100%;overflow:hidden}
 .app.fixo{height:100vh;height:100dvh;min-height:0;overflow:hidden}
@@ -261,26 +253,58 @@ body.fixo{height:100%;overflow:hidden}
 .app.fixo .askbar{bottom:0}
 .app.fixo main.mlista,.app.fixo main.mconv{overflow:hidden;padding:0;gap:0}
 .lfixo{flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 16px 10px;border-bottom:1px solid var(--line);background:var(--bg)}
-.lrola{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
-.cv{display:flex;flex-direction:column;height:100%;min-height:0}
+.lrola{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.cv{flex:1;display:flex;flex-direction:column;min-height:0}
 .cv .cbar{flex:none;gap:8px;background:var(--card);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
 .cv .cbar .back{width:40px;height:40px}
 .cbar .tel{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crola{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:12px}
+.crola{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:12px}
+/* (19/11 noite) o que fica dentro da área que rola nunca encolhe: o .card (overflow:hidden) encolhia até caber e cortava as últimas falas */
+.crola>*,.lrola>*{flex-shrink:0}
+/* aviso do sistema: faixa parada entre o cabeçalho e as mensagens, 2 linhas; tocar abre o texto inteiro (rola por dentro se for longo) */
+.alerta{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 12px;background:var(--card);border-bottom:1px solid var(--line);border-left:4px solid var(--ink-3)}
+.alerta .al-l{flex:1;min-width:0;font-size:14px;line-height:1.35;cursor:pointer}
+.alerta .al-x{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.alerta .al-q{color:var(--ink-3)}
+.alerta.aberto{align-items:flex-start}
+.alerta.aberto .al-l{max-height:40vh;max-height:40dvh;overflow-y:auto;overscroll-behavior:contain}
+.alerta.aberto .al-x{display:block;white-space:pre-wrap}
+.alerta .al-tog{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.alerta .al-tog[hidden]{display:none}
+.alerta.aberto .al-tog svg{transform:rotate(180deg)}
+.alerta .al-ok{flex:none;height:36px;padding:0 12px;border-radius:999px;border:0;background:var(--ok);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 .cv .compose{flex:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:10px}
 .cv .held{padding:8px 12px}
 .fbtn{height:36px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex:none;color:var(--ink)}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;align-items:center}
-.chips::-webkit-scrollbar{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center} /* (19/11 noite) quebra a linha: nenhum filtro fica cortado na borda */
 .chips button:not(.help){flex:none;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--ink-2)}
 .chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chips .n{font-variant-numeric:tabular-nums;font-weight:700}
 .chips .help{flex:none}
-.why .t{white-space:pre-wrap}
-.ficha-sh .fl{padding:0;grid-template-columns:96px minmax(0,1fr)}
+.ficha-sh .fl{padding:0;grid-template-columns:96px minmax(0,1fr);align-items:start}
+.ficha-sh .fl .k{padding-top:2px}
+.ficha-sh .teln{font-size:16px;font-weight:700;color:var(--ink);text-decoration:none;font-variant-numeric:tabular-nums}
+.ficha-sh .tacoes{flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap}
+.tb{height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;color:var(--pri);text-decoration:none}
+.tb.wa{color:#0f6b36;border-color:#b7e4c7;background:#effaf3}
+.tb.feito{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* (19/11 noite) achados da auditoria independente da tela publicada */
+#mrola:not(.mlista)>*{flex-shrink:0} /* Perguntar › Anotações: o card encolhia e cortava (o mesmo defeito da conversa) */
+.app.fixo .askbar{margin-top:auto} /* conversa curta com a IA: a caixa fica embaixo, não no meio da tela */
+.toast{white-space:normal;width:max-content;max-width:calc(100vw - 32px);text-align:center;border-radius:16px} /* aviso longo não corta nas bordas */
+.find input,.inrow textarea,.askbar textarea{font-size:16px} /* abaixo de 16 px o iPhone dá zoom e desloca a tela fixa */
+.row:focus-visible,.ord:focus-visible,.type:focus-visible{outline-offset:-2px} /* o card com overflow:hidden cortava o anel do foco */
+.sheet{max-height:88vh;max-height:88dvh;overscroll-behavior:contain}
+.help{width:34px;height:34px}
+.retry{padding:10px 0 10px 8px}
 .ficha-sh .difere{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600}
 .nada{color:var(--ink-3)}
 .quem.alerta{color:var(--ink);font-weight:700}
+.row.conv .t1 .nm,.cv .cbar .nm{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.cv .cbar .nm{line-height:1.2}
+.t2.pv .quem{flex:none;overflow:visible;font-size:12px}
+.t2.pv .quem::after{content:"·";margin-left:4px;color:var(--ink-3);font-weight:400}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -314,15 +338,15 @@ var IC={
   hand:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M11 5.5v-2a1.5 1.5 0 1 1 3 0v8.5"/><path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5"/><path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1-6 6h-2a7 6 0 0 1-5-3l-2.7-5.3a1.5 1.5 0 0 1 2.6-1.4l1.1 1.7"/></svg>',
   search:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3a7 7 0 1 0 0 14a7 7 0 0 0 0-14z"/><path d="M21 21l-6-6"/></svg>',
   clock:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z"/><path d="M12 7v5l3 3"/></svg>',
-  ok:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>',
   ok14:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>',
   x14:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>',
   alerta14:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9l-8.1 14a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3l-8.1-14a2 2 0 0 0-3.4 0z"/></svg>',
   flag:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-17h11l-2 4l2 4h-11"/></svg>',
-  phone:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5-2.5l5 2v4a2 2 0 0 1-2 2a16 16 0 0 1-15-15a2 2 0 0 1 2-2"/></svg>',
   mic:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>',
   img:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14h-16z"/><path d="M4 16l5-5l5 5"/><path d="M14 14l2-2l4 4"/><path d="M15 8h.01"/></svg>',
-  file:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1-2-2v-14a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg>'
+  file:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1-2-2v-14a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg>',
+  copy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 9h11v11h-11z"/><path d="M5 15h-1v-11h11v1"/></svg>',
+  wa:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9l-5.05.9"/><path d="M9 10a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>'
 };
 var ST={ok:['Ok','ok'],limite:['No limite','warn'],caiu:['Caiu','bad'],restrito:['Restrito','bad'],desligado:['Desligado','mute']};
 var ORDENS=[{n:1,nome:'Rotina',cls:'c1',cor:'#0b63ce'},{n:2,nome:'Vendas',cls:'c2',cor:'#7c3aed'},{n:3,nome:'Cobrança',cls:'c3',cor:'#d97706'}];
@@ -344,7 +368,8 @@ var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
   dia:'hoje',busca:'',resolvLocal:{},
-  marcaLocal:{},marcar:null,info:null,fichaAberta:false,cor:'',hist:{}}; /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
+  marcaLocal:{},marcar:null,info:null,fichaAberta:false,cor:'',hist:{}, /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
+  alertaAberto:'',copiado:{}}; /* (19/11 noite) aviso da conversa aberto por inteiro (id da conversa) e quando cada botão Copiar copiou */
 var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
 /* (18/11) falhas da tela (sem internet, login vencido) vão junto da próxima ordem que chegar, para o log do servidor;
    sugestão de anotação descartada não volta quando a conversa é recarregada */
@@ -433,12 +458,13 @@ function vAgora(){
 function assumida(c){return S.assumeLocal[c.id]!==undefined?S.assumeLocal[c.id]:!!c.assumido;}
 /* (19/11, fase B; regra do Gestor) a COR é só a marca que o Leonardo ou o pai põem à mão: Caso sério, Resolvendo ou Resolvido. Nada troca
    a cor sozinho; conversa sem marca fica cinza ("Sem marca"). Ao lado vai o que o sistema sabe (quem), só como texto; os alertas
-   (Precisa de você, Sem dono, Envio não saiu) ganham destaque sem cor. A marca feita aqui vale na hora (marcaLocal) até o pacote confirmar.
-   Pacote antigo (sem quem): a tela deduz o texto do que ele tem */
+   (Precisa de você e Envio não saiu) ganham destaque sem cor. A marca feita aqui vale na hora (marcaLocal) até o pacote confirmar.
+   Pacote antigo (sem quem): a tela deduz o texto do que ele tem. (19/11 noite, ordem do Gestor) "Sem dono" deixou de ser alerta */
 var COR={vermelho:['Caso sério','bad'],amarelo:['Resolvendo','warn'],verde:['Resolvido','ok']}, SEM=['Sem marca','mute'];
 function corServidor(c,semMarca){
   var r={cor:'',quem:c.quem||(assumida(c)?'Assumida':c.quer?'Precisa de você':c.vend?'Vendedor':'Robô'),porque:c.porque||(c.quer?c.motivo||'':''),
     desde:c.porqueDesde||(c.quer?c.desde||'':''),alerta:c.alerta!=null?!!c.alerta:!!c.quer,manual:false};
+  if(r.quem==='Sem dono'){r.quem='Robô';r.porque='';r.desde='';r.alerta=false;} /* pacote de antes do servidor novo */
   if(!semMarca&&c.manual&&COR[c.cor]){r.cor=c.cor;r.manual=true;r.marcaPor=c.marcaPor||'';r.marcaEm=c.marcaEm||'';}
   return r;
 }
@@ -468,17 +494,18 @@ function previa(c){
 function linhaConv(c){
   var e=corDe(c), t=tom(e), f=c.ficha||{}, onde=[f.rota?'Rota '+f.rota:'',f.bairro||''].filter(Boolean).join(' · ');
   var tm=c.antiga?ddmm(c.marcaEm||c.desde||c.quando):hhmm(c.quando);
-  return '<button class="row" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+t[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
-    '<div class="t2 pv">'+previa(c)+'</div><div class="t3"><span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span>'+esc(onde)+'</span>':'')+'</div></div>'+
-    '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span></div></button>';
+  /* (19/11 noite) o aviso (quem) abre a 2ª linha, antes da prévia: na coluna da direita ele apertava o nome até cortar "CLIENTE TESTE…" */
+  return '<button class="row conv" data-act="abrir" data-id="'+esc(c.id)+'"><div class="ico '+t[1]+'">'+esc(ini(c.nome))+'</div><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
+    '<div class="t2 pv">'+(e.quem||e.manual?'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span>':'')+previa(c)+'</div><div class="t3"><span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span>'+esc(onde)+'</span>':'')+'</div></div>'+
+    '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'</div></button>';
 }
 /* (19/11 tarde) filtros rápidos pelo aviso do sistema (o texto ao lado da cor) e, embaixo, pelas marcas feitas à mão; os dois se somam.
    "Não saiu" pega toda conversa com fala que não chegou ao cliente hoje */
-var AVISOS=[['todas','Todas'],['precisa','Precisa de você'],['semdono','Sem dono'],['naosaiu','Não saiu'],['escritorio','Escritório']];
+var AVISOS=[['todas','Todas'],['precisa','Precisa de você'],['naosaiu','Não saiu'],['escritorio','Escritório']];
 function temAviso(c,k){
   if(k==='todas') return true; var e=corDe(c);
   if(k==='naosaiu') return e.quem==='Envio não saiu'||(c.msgs||[]).some(function(m){return m.st==='falhou';});
-  return e.quem===({precisa:'Precisa de você',semdono:'Sem dono',escritorio:'Escritório'})[k];
+  return e.quem===({precisa:'Precisa de você',escritorio:'Escritório'})[k];
 }
 function segFiltro(){
   if(S.busca.trim()) return '';
@@ -528,18 +555,19 @@ function vConv(){
   var deOntem=!!(DO&&(DO.convs||[]).indexOf(c)>=0), e=corDe(c), t=tom(e), f=c.ficha||{};
   /* (19/11 tarde) tela da conversa estilo WhatsApp: cabeçalho parado no topo (voltar, nome e telefone, marca e Ficha), só as mensagens
      rolam e a barra de baixo (Pix, Catálogo, Assumir, Marcar e o campo de texto) fica parada embaixo */
-  var qm=e.marcaEm?(ehHoje(e.marcaEm)?hhmm(e.marcaEm):ddmm(e.marcaEm)):'';
-  var tel=f.telChat?fmtTel(f.telChat):f.telCad?fmtTel(f.telCad)+' (cadastro)':'sem telefone';
+  var tel=f.telChat?fmtTel(telBR(f.telChat)):f.telCad?fmtTel(telBR(f.telCad))+' (cadastro)':'sem telefone';
   var h='<div class="cv"><div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
-    '<div class="tel">'+esc(tel)+' · '+esc(c.chip)+(deOntem?' · ontem':'')+(e.quem?' · '+esc(e.quem):'')+'</div></div>'+
-    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+(e.manual?'<span class="quem">'+IC.flag+'por '+esc(e.marcaPor||'')+(qm?' · '+qm:'')+'</span>':'')+'</button>'+
+    '<div class="tel">'+esc(tel)+' · '+esc(c.chip)+(deOntem?' · ontem':'')+(e.quem&&!(e.alerta&&e.cor!=='verde')?' · '+esc(e.quem):'')+'</div></div>'+
+    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
     '<button class="fbtn" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
-  h+='<div class="crola" id="crola">';
-  /* o alerta do sistema vem no topo, com o texto inteiro e a data dele; pendência de outro dia fica separada das falas de hoje */
-  if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando, outro=dq&&!ehHoje(dq);
-    h+='<div class="why neutro">'+(outro?'<div class="s">Pendência de '+ddmm(dq)+' às '+hhmm(dq)+'</div>':'')+'<div class="t"><b>'+esc(e.quem||'Atenção')+':</b> '+esc(e.porque||'o robô pediu uma pessoa')+'</div>'+
-      (dq&&!outro?'<div class="s">Desde '+hhmm(dq)+'</div>':'')+'<button class="btn okb" data-act="resolver">'+IC.ok+'Resolvido</button></div>';}
-  h+='<div class="card"><div class="thread">';
+  /* (19/11 noite) o aviso do sistema é uma faixa de 2 linhas parada embaixo do cabeçalho (tocar abre o texto inteiro, com a data);
+     a área que rola tem só as mensagens, até a última */
+  if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando, outro=dq&&!ehHoje(dq), ab=S.alertaAberto===c.id;
+    h+='<div class="alerta'+(ab?' aberto':'')+'" id="alerta"><div class="al-l" data-act="ver-alerta"><div class="al-x"><b>'+esc(e.quem||'Atenção')+'</b><span class="al-q">'+
+      (dq?(outro?' · pendência de '+ddmm(dq)+' às '+hhmm(dq):' · desde '+hhmm(dq)):'')+':</span> '+esc(e.porque||'o robô pediu uma pessoa')+'</div></div>'+
+      '<button class="al-tog" data-act="ver-alerta" aria-expanded="'+ab+'" aria-controls="alerta" aria-label="'+(ab?'Recolher o aviso':'Ver o aviso inteiro')+'">'+IC.down+'</button>'+
+      '<button class="al-ok" data-act="resolver">'+IC.ok14+'Resolvido</button></div>';}
+  h+='<div class="crola" id="crola"><div class="card"><div class="thread">';
   /* (fase D) dias anteriores, do histórico (app_mensagens), cada dia com o seu divisor; depois o divisor de hoje */
   var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
   H.forEach(function(m){var dd=diaBR(m.quando); if(dd!==dAnt){dAnt=dd;h+='<div class="dsep">'+(dd===ontemD?'Ontem':ddmm(m.quando))+'</div>';} h+=bolha(c,{de:m.de,t:m.texto,h:hhmm(m.quando),tipo:m.tipo,st:m.st,mot:m.mot},-1,false);});
@@ -559,25 +587,33 @@ function vConv(){
 }
 /* (19/11, fase B) ficha do cliente: telefone do WhatsApp (o que o WhatsApp mostra, muitas vezes sem o 9) e do cadastro, rota e vendedor,
    endereço e valores (o pai vê tudo, ordem do Gestor de 19/11). Dado nenhum fica neste arquivo: tudo vem do pacote depois do login */
+/* (19/11 noite) número limpo para copiar e para o wa.me: só dígitos, sem 55 e com o nono dígito no celular que veio sem ele
+   (a mesma regra do telefone.js celularBR: 10 dígitos com 6 a 9 depois do DDD é celular antigo) */
+function telBR(t){var d=String(t||'').replace(/\D/g,'').replace(/^0+/,'');if((d.length===12||d.length===13)&&d.slice(0,2)==='55')d=d.slice(2);if(d.length===10&&/[6-9]/.test(d[2]))d=d.slice(0,2)+'9'+d.slice(2);return d;}
 function fmtTel(t){var d=String(t||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');return d.length===11?'('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7):d.length===10?'('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6):d;}
 function reais(v){var n=typeof v==='number'?v:Number(String(v==null?'':v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'));return isNaN(n)?esc(v):'R$ '+n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 /* (19/11 tarde) Ficha do cliente, aberta pelo botão do cabeçalho: os DOIS telefones sempre à vista (o do WhatsApp, de onde ele escreveu,
    e o do cadastro), com destaque quando são diferentes; código, rota e vendedor, endereço, valores, chip e o aviso do sistema */
 function vFichaSheet(c){
-  var f=c.ficha||{}, e=corDe(c), so=function(t){return String(t||'').replace(/^55(?=\d{10,11}$)/,'');}, mesmo=f.telChat&&f.telCad&&String(f.telChat).slice(-8)===String(f.telCad).slice(-8);
-  var liga=function(t){return ' <a class="mini" href="tel:+55'+esc(so(t))+'">'+IC.phone+'Ligar</a>';}, nada=function(t){return '<span class="nada">'+t+'</span>';};
+  var f=c.ficha||{}, e=corDe(c), mesmo=f.telChat&&f.telCad&&String(f.telChat).slice(-8)===String(f.telCad).slice(-8), nada=function(t){return '<span class="nada">'+t+'</span>';};
+  /* (19/11 noite) cada telefone: o número (tocar liga), Copiar (número limpo, mostra "Copiado!") e WhatsApp (abre o wa.me) */
+  var fone=function(t,qual,extra){var n=telBR(t), id='cp-'+qual, foi=Date.now()-(S.copiado[id]||0)<1600, br=n.length===10||n.length===11;
+    return '<a class="teln" href="'+(br?'tel:+55':'tel:')+esc(n)+'">'+esc(fmtTel(n))+'</a>'+(extra||'')+'<span class="tacoes">'+
+      '<button class="tb'+(foi?' feito':'')+'" id="'+id+'" data-act="copiar" data-tel="'+esc(n)+'">'+(foi?IC.ok14+'Copiado!':IC.copy+'Copiar<span class="sr"> o número do '+(qual==='chat'?'WhatsApp':'cadastro')+'</span>')+'</button>'+
+      (br?'<a class="tb wa" href="https://wa.me/55'+esc(n)+'" target="_blank" rel="noopener noreferrer">'+IC.wa+'WhatsApp<span class="sr"> (abre em outra aba)</span></a>':'')+'</span>';};
   var h='<div class="scrim" data-act="fechar-ficha"><div class="sheet ficha-sh" role="dialog" aria-modal="true" aria-label="Ficha do cliente"><span class="grab"></span>'+
     '<div class="sh-h"><h3>'+esc(c.nome)+'</h3><button class="x" data-act="fechar-ficha" aria-label="Fechar">'+IC.x+'</button></div>';
   if(f.telChat&&f.telCad&&!mesmo) h+='<div class="difere">O cliente escreveu de um número diferente do cadastro</div>';
   h+='<div class="fl">'+
-    '<span class="k">WhatsApp</span><span class="v">'+(f.telChat?esc(fmtTel(f.telChat))+liga(f.telChat):nada('o robô não leu o número'))+'</span>'+
-    '<span class="k">Cadastro</span><span class="v">'+(f.telCad?esc(fmtTel(f.telCad))+(f.telChat?' '+pill(mesmo?'mesmo número':'outro número',mesmo?'ok':'warn'):'')+(f.telChat&&!mesmo?liga(f.telCad):''):nada('sem telefone no cadastro'))+'</span>'+
+    '<span class="k">WhatsApp</span><span class="v">'+(f.telChat?fone(f.telChat,'chat'):nada('o robô não leu o número'))+'</span>'+
+    '<span class="k">Cadastro</span><span class="v">'+(f.telCad?fone(f.telCad,'cad',f.telChat?pill(mesmo?'mesmo número':'outro número',mesmo?'ok':'warn'):''):nada('sem telefone no cadastro'))+'</span>'+
     '<span class="k">Código</span><span class="v">'+(f.cod?esc(f.cod):nada('sem cadastro ligado'))+'</span>'+
     '<span class="k">Rota</span><span class="v">'+(f.rota?esc(f.rota)+(f.vend?' · vendedor '+esc(f.vend):''):nada('sem rota'))+'</span>'+
     '<span class="k">Endereço</span><span class="v">'+((f.bairro||f.cidade)?esc([f.bairro,f.cidade].filter(Boolean).join(' · ')):nada('sem endereço'))+'</span>'+
     '<span class="k">Valores</span><span class="v">'+(f.deve!=null?(f.deve?'Deve '+reais(f.deve):'Não deve')+(f.ultPag&&f.ultPag.valor?' · pagou '+reais(f.ultPag.valor)+(f.ultPag.data?' em '+esc(String(f.ultPag.data).slice(0,5)):''):'')+(f.compras!=null?' · '+f.compras+(f.compras===1?' compra':' compras'):''):nada('sem cadastro ligado'))+'</span>'+
     '<span class="k">Chip</span><span class="v">'+esc(c.chip)+'</span>'+
-    '<span class="k">Aviso</span><span class="v">'+esc(e.quem||'—')+'</span></div></div></div>';
+    '<span class="k">Aviso</span><span class="v">'+esc(e.quem||'—')+'</span>'+
+    '<span class="k">Marca</span><span class="v">'+pill(tom(e)[0],tom(e)[1])+(e.manual?' por '+esc(e.marcaPor||'uma pessoa')+(e.marcaEm?' · '+(ehHoje(e.marcaEm)?hhmm(e.marcaEm):ddmm(e.marcaEm)):''):'')+'</span></div></div></div>';
   return h;
 }
 /* uma fala: do cliente (com a mídia que o robô não transcreveu), do robô ou pelo app, com o resultado do envio gravado pelo robô */
@@ -680,6 +716,20 @@ function vIA(){
 
 /* ---------- ORDENS (gravadas no banco; o servidor executa numa lista fechada) ---------- */
 function toast(t){S.toast=t;render();clearTimeout(toast.t);toast.t=setTimeout(function(){S.toast='';render();},2200);}
+/* (19/11 noite) Copiar da ficha: área de transferência do navegador (https) e, se ela recusar, o jeito antigo (execCommand).
+   O botão vira "Copiado!" por 1,6 s (cada botão com o seu relógio); o estado fica em S.copiado para sobreviver a um redesenho no meio */
+var COPIA_T={};
+function copiar(tel,id){
+  var rotulo=function(foi){var b=document.getElementById(id);if(!b)return;b.classList.toggle('feito',foi);
+    b.innerHTML=foi?IC.ok14+'Copiado!':IC.copy+'Copiar<span class="sr"> o número do '+(id==='cp-chat'?'WhatsApp':'cadastro')+'</span>';};
+  var ok=function(){S.copiado[id]=Date.now();rotulo(true);clearTimeout(COPIA_T[id]);COPIA_T[id]=setTimeout(function(){delete S.copiado[id];rotulo(false);},1600);};
+  var plano=function(){var ta=document.createElement('textarea'),r=false;ta.value=tel;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);ta.select();try{ta.setSelectionRange(0,tel.length);r=document.execCommand('copy');}catch(e){}document.body.removeChild(ta);
+    if(r)ok();else toast('Não deu para copiar: '+fmtTel(tel));};
+  if(!tel) return;
+  try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(tel).then(ok,plano);return;}}catch(e){}
+  plano();
+}
 /* (18/11) motivo curto e verdadeiro da falha (antes era sempre "Sem permissão ou sem conexão") e registro para o log do servidor */
 function motivoCurto(e){var t=String((e&&e.message)||e||'');
   return /fetch|network|internet|load failed|offline/i.test(t)?'sem internet':/jwt|token|expired|401|sess/i.test(t)?'login vencido: saia e entre de novo':/row-level|permission|42501|403/i.test(t)?'sem permissão':t.slice(0,60)||'erro desconhecido';}
@@ -885,8 +935,11 @@ function vLogin(){
     '<button class="btn pri" type="submit"'+(S.entrando?' disabled':'')+'>'+(S.entrando?'Entrando…':'Entrar')+'</button></form>';
 }
 function render(){
-  var app=document.getElementById('app');
-  document.body.classList.remove('fixo'); app.classList.remove('fixo'); /* entrar e carregando rolam como página comum */
+  var app=document.getElementById('app'), rolas={}, perto={};
+  /* (19/11 noite) a rolagem é lida ANTES de mexer na classe "fixo": sem ela a área cresce até o conteúdo e a leitura dava sempre 0,
+     então cada redesenho (tempo real, 30 s) jogava a lista e a conversa de volta ao topo */
+  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el){rolas[id]=el.scrollTop;perto[id]=el.scrollHeight-el.clientHeight-el.scrollTop<80;}});
+  if(!EM||!D){document.body.classList.remove('fixo');app.classList.remove('fixo');} /* entrar e carregando rolam como página comum */
   if(!EM){app.innerHTML=vLogin();var f=document.getElementById('fLogin');f.addEventListener('submit',entrar);return;}
   if(!D){app.innerHTML='<div class="login"><div class="empty">'+(ERRO?'<b>'+esc(ERRO)+'</b><span>'+esc(EM)+'</span><button class="btn" data-act="sair">Sair</button>':'<b>Carregando…</b>')+'</div></div>';return;}
   var Q=convs().filter(function(c){var e=corDe(c);return e.cor==='vermelho'||(!e.cor&&e.alerta);}).length, m=minAtras(D.geradoEm), velho=m==null||m>15; /* (19/11) número da aba = marcadas Caso sério + sem marca com alerta */
@@ -894,8 +947,7 @@ function render(){
   var tomTopo=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
   /* (19/11 tarde) tela fixa: a conversa ocupa a tela toda (cabeçalho e barra de baixo parados); nas outras telas o topo e as abas ficam
      parados e só o meio rola. A rolagem da lista e das mensagens é guardada, porque a tela é redesenhada inteira a cada mudança */
-  var emConv=S.tab==='conversas'&&S.conv?acharConv(S.conv):null, vista=S.tab+'|'+(S.conv||'')+'|'+S.dia, rolas={};
-  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el)rolas[id]=el.scrollTop;});
+  var emConv=S.tab==='conversas'&&S.conv?acharConv(S.conv):null, vista=S.tab+'|'+(S.conv||'')+'|'+S.dia;
   document.body.classList.add('fixo'); app.classList.add('fixo');
   var h='';
   if(emConv) h+='<main class="mconv">'+vConv()+'</main>';
@@ -913,6 +965,8 @@ function render(){
   if(S.toast) h+='<div class="toast" role="status">'+esc(S.toast)+'</div>';
   var foco=document.activeElement&&document.activeElement.id;
   app.innerHTML=h;
+  /* aviso que já cabe nas 2 linhas não precisa do botão de abrir */
+  var ax=app.querySelector('.alerta:not(.aberto) .al-x'); if(ax&&ax.scrollHeight<=ax.clientHeight+2){var tg=app.querySelector('.alerta .al-tog');if(tg)tg.hidden=true;ax.parentNode.removeAttribute('data-act');ax.parentNode.style.cursor='default';}
   var ta=document.getElementById('txt');
   if(ta){ta.addEventListener('input',function(){var antes=S.draft.split('\n').length>4;S.draft=ta.value;if((ta.value.split('\n').length>4)!==antes)render();});}
   var ak=document.getElementById('ask');
@@ -927,8 +981,15 @@ function render(){
   render.vista=vista;
   var cv=emConv;
   var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length+':'+((S.hist[cv.id]||{}).rows||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
-  if(rol&&rol!==render.rol) requestAnimationFrame(function(){var el=document.getElementById(cv?'crola':'mrola');if(el)el.scrollTop=el.scrollHeight;});
-  render.rol=rol;
+  /* (19/11 noite) desce na hora e de novo no quadro seguinte (aba em segundo plano não roda o quadro e a conversa abria no topo).
+     Fala nova só puxa para o fim quem já estava perto dele: quem subiu para ler fica onde está; ao abrir, desce sempre */
+  var dono=cv?'c:'+cv.id:rol?'i':'', alvo=cv?'crola':'mrola';
+  if(rol&&rol!==render.rol&&(dono!==render.dono||perto[alvo]!==false)){var desce=function(){var el=document.getElementById(alvo);if(el)el.scrollTop=el.scrollHeight;};desce();requestAnimationFrame(desce);}
+  render.rol=rol; render.dono=dono;
+  /* folha que acabou de abrir recebe o foco (teclado e leitor de tela); Esc fecha a de cima (ouvinte lá embaixo) */
+  var dl=app.querySelectorAll('[role="dialog"]'), topo=dl[dl.length-1], dk=topo?topo.getAttribute('aria-label'):'';
+  if(topo&&dk!==render.dlg&&!topo.contains(document.activeElement)){topo.setAttribute('tabindex','-1');try{topo.focus({preventScroll:true});}catch(x){}}
+  render.dlg=dk;
 }
 
 /* ---------- banco ---------- */
@@ -953,6 +1014,11 @@ async function entrar(ev){
   comecar(r.data.user.email);
 }
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&EM)buscar();});
+document.addEventListener('keydown',function(ev){ /* (19/11 noite) Esc fecha a folha de cima */
+  if(ev.key!=='Escape') return;
+  if(S.modal) S.modal=null; else if(S.marcar) S.marcar=null; else if(S.info) S.info=null; else if(S.fichaAberta) S.fichaAberta=false; else if(S.sheet) S.sheet=null; else return;
+  ev.preventDefault(); render();
+});
 document.addEventListener('click',function(ev){
   var el=ev.target.closest('[data-act]'); if(!el) return;
   var a=el.getAttribute('data-act'), id=el.getAttribute('data-id');
@@ -969,6 +1035,8 @@ document.addEventListener('click',function(ev){
     case 'fechar-info': S.info=null; break;
     case 'ficha': S.fichaAberta=true; break;
     case 'fechar-ficha': S.fichaAberta=false; break;
+    case 'ver-alerta': if(cv) S.alertaAberto=S.alertaAberto===cv.id?'':cv.id; break;
+    case 'copiar': copiar(el.getAttribute('data-tel')||'',el.id); return; /* sem redesenhar: o botão troca o texto sozinho */
     case 'cor-filtro': S.cor=S.cor===id?'':id; break; /* toque de novo na mesma marca tira o filtro */
     case 'tentar': if(!cv) return; var mt=(cv.msgs||[])[+id]; if(mt&&mt.t) mandar('responder',String(mt.t).slice(0,600)); return;
     case 'enviar': if(S.draft.trim()&&cv) mandar('responder',S.draft.trim()); return;
@@ -993,7 +1061,7 @@ document.addEventListener('click',function(ev){
     case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
     case 'ia-repetir': repetir(+id); return;
     case 'tab': S.tab=id; S.conv=null; break;
-    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; S.fichaAberta=false; carregarHist(id); break;
+    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; S.fichaAberta=false; S.alertaAberto=''; carregarHist(id); break;
     case 'ver-querem': case 'ver-antigas': case 'ver-vendedor':
       S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.cor=''; S.filtro=a==='ver-vendedor'?'todas':'precisa'; break; /* (19/11 tarde) filtros por aviso */
     case 'dia': S.dia=id; S.conv=null; if(id==='ontem') buscarOntem(); break;
@@ -1006,7 +1074,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
