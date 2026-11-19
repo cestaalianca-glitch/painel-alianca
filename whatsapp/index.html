@@ -249,6 +249,7 @@ button.kpi:active{background:var(--line-2)}
 .legenda{display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.4}
 .legenda div{display:flex;gap:10px;align-items:flex-start}.legenda .cdot{margin-top:3px}
 .btn:disabled{opacity:.5}
+.dsep{align-self:center;font-size:12px;font-weight:600;color:var(--ink-3);background:var(--line-2);padding:3px 10px;border-radius:999px}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
 .login h1{margin:0;font-size:24px;font-weight:700}
@@ -311,7 +312,7 @@ var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
   dia:'hoje',busca:'',resolvLocal:{},
-  marcaLocal:{},marcar:null,info:null,ficha:true}; /* (19/11, fase B) marca feita aqui (vale na hora), folha de marcar, folha das cores e ficha aberta */
+  marcaLocal:{},marcar:null,info:null,ficha:true,hist:{}}; /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
 var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
 /* (18/11) falhas da tela (sem internet, login vencido) vão junto da próxima ordem que chegar, para o log do servidor;
    sugestão de anotação descartada não volta quando a conversa é recarregada */
@@ -321,7 +322,11 @@ try{FALHAS=JSON.parse(localStorage.getItem('app-falhas')||'[]')||[];DESC=JSON.pa
 /* ---------- dados derivados (o pacote vem pronto do servidor) ---------- */
 function chips(){return (D&&D.chips)||[];}
 function doChip(L){return (L||[]).filter(function(c){return !S.num||c.chip===S.num;});}
-function convs(){return doChip(D&&D.convs);} /* as do dia e, desde a fase 3, as antigas (quem espera o Leonardo desde outro dia) */
+/* (19/11, fase D) com o tempo real ligado, as conversas do dia vêm da tabela app_conversas (o celular recebe cada mudança na hora);
+   sem ele (tabela ainda não criada, canal caído), do pacote de 1 em 1 min, como antes */
+var RT={convs:null,canal:null,vivo:false,dia:''};
+function convsDoDia(){return RT.convs&&RT.vivo?Object.keys(RT.convs).map(function(k){return RT.convs[k];}):(D&&D.convs)||[];}
+function convs(){return doChip(convsDoDia());} /* as do dia e, desde a fase 3, as antigas (quem espera o Leonardo desde outro dia) */
 function hojeC(){return convs().filter(function(c){return !c.antiga;});}
 /* (fase 3) Resolvido some da tela na hora; se o servidor confirmar e o pacote ainda não mostrar, espera até 20 min (sincronismo e Ontem) */
 function resolvida(c){var t=S.resolvLocal[c.id];return !!t&&Date.now()-t<1200000;}
@@ -464,7 +469,7 @@ function vLista(){
   return h+'<div id="filtros">'+segFiltro()+'</div><div id="lista">'+listaHTML()+'</div>';
 }
 function acharConv(id){
-  var a=((S.dia==='ontem'&&DO?DO.convs:D&&D.convs)||[]), b=((S.dia==='ontem'?D&&D.convs:DO&&DO.convs)||[]);
+  var a=((S.dia==='ontem'&&DO?DO.convs:convsDoDia())||[]), b=((S.dia==='ontem'?convsDoDia():DO&&DO.convs)||[]);
   return a.filter(function(x){return x.id===id;})[0]||b.filter(function(x){return x.id===id;})[0]||null;
 }
 function vConv(){
@@ -476,6 +481,10 @@ function vConv(){
     '<button class="stbtn" data-act="marcar" aria-label="Situação: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'<span class="quem">'+(e.manual?IC.flag:'')+esc(e.quem||'')+'</span></button></div>';
   h+=vFicha(f)+'<div class="card"><div class="thread">';
   if(!(c.msgs||[]).length) h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
+  /* (fase D) dias anteriores, do histórico (app_mensagens), antes das falas de hoje */
+  var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
+  H.forEach(function(m){var dd=diaBR(m.quando); if(dd!==dAnt){dAnt=dd;h+='<div class="dsep">'+(dd===ontemD?'Ontem':ddmm(m.quando))+'</div>';} h+=bolha(c,{de:m.de,t:m.texto,h:hhmm(m.quando),tipo:m.tipo,st:m.st,mot:m.mot},-1,false);});
+  if(H.length&&(c.msgs||[]).length) h+='<div class="dsep">Hoje</div>';
   var ult=-1; (c.msgs||[]).forEach(function(m,i){if(m.de==='app') ult=m.st==='falhou'?i:-1;}); /* só a última resposta do app que não saiu oferece Tentar de novo */
   (c.msgs||[]).forEach(function(m,i){h+=bolha(c,m,i,i===ult);});
   (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
@@ -670,15 +679,43 @@ async function marcarConv(c,cor){
   catch(e){anotaFalha('marcar',e);volta();toast(/row-level|42501/i.test(String((e&&e.message)||e))?'Não saiu: falta liberar no banco (SQL 0008)':'Não saiu: '+motivoCurto(e));}
 }
 /* a marca local sai quando nenhum pacote (hoje ou ontem) mostra mais a conversa querendo pessoa */
-function limpaResolv(){Object.keys(S.resolvLocal).forEach(function(id){if(!((D&&D.convs)||[]).concat((DO&&DO.convs)||[]).some(function(x){return x.id===id&&x.quer;}))delete S.resolvLocal[id];});}
+function limpaResolv(){Object.keys(S.resolvLocal).forEach(function(id){if(!convsDoDia().concat((DO&&DO.convs)||[]).some(function(x){return x.id===id&&x.quer;}))delete S.resolvLocal[id];});}
 /* (19/11) marca local sai quando o pacote confirma (ou em 20 min); resposta do app que o pacote já mostra (com o resultado do robô) sai
    da lista local de envios ("Na fila do chip" some e fica a fala com Enviado ou Não saiu) */
 function limpaLocais(){
-  var todas=((D&&D.convs)||[]).concat((DO&&DO.convs)||[]), acha=function(id){return todas.filter(function(x){return x.id===id;})[0];};
+  var todas=convsDoDia().concat((DO&&DO.convs)||[]), acha=function(id){return todas.filter(function(x){return x.id===id;})[0];};
   Object.keys(S.marcaLocal).forEach(function(id){var c=acha(id),ml=S.marcaLocal[id];
     if(!c||Date.now()-ml.t>1200000||(ml.cor?(c.manual&&c.cor===ml.cor):!c.manual)) delete S.marcaLocal[id];});
   Object.keys(S.saidas).forEach(function(id){var c=acha(id),n=c?(c.msgs||[]).filter(function(m){return m.de==='app';}).length:0;
     S.saidas[id]=S.saidas[id].filter(function(s){if(s.st!=='feito') return true; if(Date.now()-(s.t0||0)>600000) return false; if(c&&n>s.base){n--;return false;} return true;});});
+}
+/* (19/11, fase D) tempo real: lê as conversas de hoje da tabela app_conversas e assina as mudanças (Realtime). Sem a tabela (SQL 0009 ainda
+   não rodado) ou com o canal caído, a tela segue com o pacote de 1 em 1 min. Ao (re)conectar, relê a tabela; na virada do dia, recomeça */
+async function lerRT(dia){var r;try{r=await SB.from('app_conversas').select('id,dados').eq('dia',dia);}catch(e){r={error:e};}
+  if(r.error||!r.data) return null; var m={}; r.data.forEach(function(x){m[x.id]=x.dados;}); return m;}
+async function iniciarTempoReal(dia){
+  if(!SB||typeof SB.channel!=='function'||!dia||(RT.canal&&RT.dia===dia)||RT.iniciando) return;
+  if(RT.canal){try{SB.removeChannel(RT.canal);}catch(e){} RT={convs:null,canal:null,vivo:false,dia:''};}
+  RT.iniciando=true; var m=await lerRT(dia); RT.iniciando=false;
+  if(!m) return; /* tabela ainda não existe ou sem acesso: fica no pacote */
+  RT.convs=m; RT.dia=dia;
+  var muda=function(p){if(p.eventType==='DELETE'){if(p.old&&p.old.id) delete RT.convs[p.old.id];}else if(p.new&&p.new.id&&p.new.dia===RT.dia) RT.convs[p.new.id]=p.new.dados; limpaLocais(); render();};
+  RT.canal=SB.channel('app-conversas-'+dia)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'app_conversas',filter:'dia=eq.'+dia},muda)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_conversas',filter:'dia=eq.'+dia},muda)
+    .on('postgres_changes',{event:'DELETE',schema:'public',table:'app_conversas'},muda) /* apagar não aceita filtro: chega só a chave */
+    .subscribe(function(st){var v=st==='SUBSCRIBED'; if(v===RT.vivo) return; RT.vivo=v; render();
+      if(v) lerRT(RT.dia).then(function(m2){if(m2){RT.convs=m2;limpaLocais();render();}});});
+}
+/* (19/11, fase D) histórico: ao abrir a conversa, as falas dos dias anteriores (app_mensagens, 90 dias). Sem a tabela, nada aparece */
+function diaBR(iso){return new Date(iso).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});}
+async function carregarHist(id){
+  if(!SB||!id||(S.hist[id]&&Date.now()-S.hist[id].em<300000)) return;
+  var ini=D&&D.dia?D.dia+'T03:00:00Z':new Date().toISOString(); /* meia-noite de Brasília */
+  S.hist[id]={rows:[],em:Date.now()};
+  var r; try{r=await SB.from('app_mensagens').select('quando,de,tipo,texto,st,mot').eq('conversa_id',id).lt('quando',ini).order('quando',{ascending:false}).limit(100);}catch(e){r={error:e};}
+  if(r.error||!r.data||!r.data.length) return;
+  S.hist[id]={rows:r.data.slice().reverse(),em:Date.now()}; if(S.conv===id) render();
 }
 /* (fase 3) Ontem: a linha 'app-whatsapp-ontem' muda a cada 10 min no servidor; lida de novo se tiver mais de 10 min */
 async function buscarOntem(forcar){
@@ -793,7 +830,7 @@ function render(){
   var Q=convs().filter(function(c){return corDe(c).cor==='vermelho';}).length, m=minAtras(D.geradoEm), velho=m==null||m>15; /* (19/11) número da aba = casos sérios */
   var C=chips(), cs=S.num?C.filter(function(c){return c.nome===S.num;})[0]:null;
   var tom=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
-  var h='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tom+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button><span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span></header><main>';
+  var h='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tom+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header><main>';
   h+=S.tab==='agora'?vAgora():S.tab==='conversas'?(S.conv?vConv():vLista()):S.tab==='ia'?vIA():vEnvios();
   h+='</main><nav class="tabs" aria-label="Abas"><div class="in">';
   [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['ia','Perguntar',IC.ask]].forEach(function(t){h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(t[0]==='conversas'&&Q?'<span class="badge">'+Q+'</span>':'')+'</button>';});
@@ -830,6 +867,7 @@ async function buscar(){
   (D.chips||[]).forEach(function(c){if(S.swLocal['c:'+c.conta]===!!c.envio)delete S.swLocal['c:'+c.conta];});
   limpaLocais();
   limpaResolv();
+  iniciarTempoReal(D.dia); /* (fase D) liga uma vez por dia; sem a tabela, não faz nada */
   render();
 }
 function comecar(email){EM=email;render();buscar();carregarNotas().then(carregarChat,carregarChat);
@@ -879,7 +917,7 @@ document.addEventListener('click',function(ev){
     case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
     case 'ia-repetir': repetir(+id); return;
     case 'tab': S.tab=id; S.conv=null; break;
-    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; window.scrollTo(0,0); break;
+    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; window.scrollTo(0,0); carregarHist(id); break;
     case 'ver-querem': case 'ver-antigas': case 'ver-vendedor':
       S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.filtro=a==='ver-vendedor'?'amarelo':'vermelho'; window.scrollTo(0,0); break; /* (19/11) filtros por cor */
     case 'dia': S.dia=id; S.conv=null; if(id==='ontem') buscarOntem(); break;
@@ -892,7 +930,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.hist={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
@@ -900,7 +938,7 @@ document.addEventListener('click',function(ev){
 /* ---------- início ---------- */
 try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);}catch(e){SB=null;}
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
-window.__appWhats={carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;DO=null;DO_EM=0;limpaResolv();render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações, a conversa da aba Perguntar e o Ontem) */
+window.__appWhats={tempoReal:function(dia){return iniciarTempoReal(dia);},carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;DO=null;DO_EM=0;limpaResolv();render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações, a conversa da aba Perguntar e o Ontem) */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
 </script>
