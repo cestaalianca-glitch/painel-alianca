@@ -548,7 +548,7 @@ function listaHTML(){
 }
 /* (19/11 tarde) busca, dia e filtros ficam parados no topo; só a lista rola */
 function vLista(){
-  var h='<div class="lfixo"><div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Nome, código, rota" aria-label="Buscar por nome, código, rota, bairro ou final do telefone" value="'+esc(S.busca)+'"></label>'+
+  var h='<div class="lfixo"><div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Nome ou código" aria-label="Buscar por nome, código, rota, bairro ou final do telefone" value="'+esc(S.busca)+'"></label>'+
     '<div class="seg dia" role="group" aria-label="Dia">'+[['hoje','Hoje'],['ontem','Ontem']].map(function(x){return '<button aria-pressed="'+(S.dia===x[0])+'" data-act="dia" data-id="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
     '<div id="filtros">'+segFiltro()+'</div></div>';
   return h+'<div class="lrola" id="lrola"><div id="lista">'+listaHTML()+'</div></div>';
@@ -565,7 +565,8 @@ function vConv(){
      rolam e a barra de baixo (Pix, Catálogo, Assumir, Marcar e o campo de texto) fica parada embaixo */
   var tel=f.telChat?fmtTel(telBR(f.telChat)):f.telCad?fmtTel(telBR(f.telCad))+' (cadastro)':'sem telefone';
   var h='<div class="cv"><div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
-    '<div class="tel">'+[tel,c.chip].concat(deOntem?['ontem']:[],e.quem&&!(e.alerta&&e.cor!=='verde')?[e.quem]:[]).map(function(s,i){return '<span class="sg">'+(i?'· ':'')+esc(s)+'</span>';}).join(' ')+'</div></div>'+
+    /* telefone · chip · aviso; o ponto fica grudado no fim do dado (nunca começa linha). "Ontem" já vem no divisor das falas */
+    '<div class="tel">'+[tel,c.chip].concat(e.quem&&!(e.alerta&&e.cor!=='verde')?[e.quem]:[]).map(function(s,i,a){return '<span class="sg">'+esc(s)+(i<a.length-1?' ·':'')+'</span>';}).join(' ')+'</div></div>'+
     '<button class="stbtn" id="bt-marca" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
     '<button class="fbtn" id="bt-ficha" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
   /* (19/11 noite) o aviso do sistema é uma faixa de 2 linhas parada embaixo do cabeçalho (tocar abre o texto inteiro, com a data);
