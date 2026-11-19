@@ -209,6 +209,7 @@ button.kpi:active{background:var(--line-2)}
 .why .btn{height:48px;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn.okb{background:var(--ok);border-color:var(--ok);color:#fff}
 #filtros:empty{display:none}
+#filtros{display:flex;flex-direction:column;gap:8px}
 #lista{display:flex;flex-direction:column;gap:12px}
 .note{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r);background:var(--warn-soft);color:var(--warn);font-size:14px;font-weight:600}
 .dia-tag{font-size:12px;font-weight:600;color:var(--ink-3)}
@@ -251,6 +252,34 @@ button.kpi:active{background:var(--line-2)}
 .btn:disabled{opacity:.5}
 .dsep{align-self:center;font-size:12px;font-weight:600;color:var(--ink-3);background:var(--line-2);padding:3px 10px;border-radius:999px}
 .why.neutro{border-left-color:var(--ink-3)}.why.neutro .t b{color:var(--ink)}
+/* (19/11 tarde) tela fixa estilo WhatsApp: a página não rola; rolam só a lista e as mensagens */
+body.fixo{height:100%;overflow:hidden}
+.app.fixo{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.app.fixo .top{position:static;flex:none}
+.app.fixo main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
+.app.fixo .tabs{position:static;flex:none}
+.app.fixo .askbar{bottom:0}
+.app.fixo main.mlista,.app.fixo main.mconv{overflow:hidden;padding:0;gap:0}
+.lfixo{flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 16px 10px;border-bottom:1px solid var(--line);background:var(--bg)}
+.lrola{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.cv{display:flex;flex-direction:column;height:100%;min-height:0}
+.cv .cbar{flex:none;gap:8px;background:var(--card);border-bottom:1px solid var(--line);padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px}
+.cv .cbar .back{width:40px;height:40px}
+.cbar .tel{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crola{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:flex;flex-direction:column;gap:12px}
+.cv .compose{flex:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:10px}
+.cv .held{padding:8px 12px}
+.fbtn{height:36px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex:none;color:var(--ink)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;align-items:center}
+.chips::-webkit-scrollbar{display:none}
+.chips button:not(.help){flex:none;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--ink-2)}
+.chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chips .n{font-variant-numeric:tabular-nums;font-weight:700}
+.chips .help{flex:none}
+.why .t{white-space:pre-wrap}
+.ficha-sh .fl{padding:0;grid-template-columns:96px minmax(0,1fr)}
+.ficha-sh .difere{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600}
+.nada{color:var(--ink-3)}
 .quem.alerta{color:var(--ink);font-weight:700}
 /* entrar */
 .login{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:24px max(16px,env(safe-area-inset-left,0px))}
@@ -315,7 +344,7 @@ var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
   dia:'hoje',busca:'',resolvLocal:{},
-  marcaLocal:{},marcar:null,info:null,ficha:true,hist:{}}; /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
+  marcaLocal:{},marcar:null,info:null,fichaAberta:false,cor:'',hist:{}}; /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
 var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
 /* (18/11) falhas da tela (sem internet, login vencido) vão junto da próxima ordem que chegar, para o log do servidor;
    sugestão de anotação descartada não volta quando a conversa é recarregada */
@@ -443,13 +472,22 @@ function linhaConv(c){
     '<div class="t2 pv">'+previa(c)+'</div><div class="t3"><span class="tag">'+esc(c.chip)+'</span>'+(onde?'<span>'+esc(onde)+'</span>':'')+'</div></div>'+
     '<div class="end"><span class="time">'+tm+'</span>'+pill(t[0],t[1])+'<span class="quem'+(e.alerta?' alerta':'')+'">'+(e.manual?IC.flag:'')+(e.alerta?IC.alerta14:'')+esc(e.quem||'')+'</span></div></button>';
 }
+/* (19/11 tarde) filtros rápidos pelo aviso do sistema (o texto ao lado da cor) e, embaixo, pelas marcas feitas à mão; os dois se somam.
+   "Não saiu" pega toda conversa com fala que não chegou ao cliente hoje */
+var AVISOS=[['todas','Todas'],['precisa','Precisa de você'],['semdono','Sem dono'],['naosaiu','Não saiu'],['escritorio','Escritório']];
+function temAviso(c,k){
+  if(k==='todas') return true; var e=corDe(c);
+  if(k==='naosaiu') return e.quem==='Envio não saiu'||(c.msgs||[]).some(function(m){return m.st==='falhou';});
+  return e.quem===({precisa:'Precisa de você',semdono:'Sem dono',escritorio:'Escritório'})[k];
+}
 function segFiltro(){
   if(S.busca.trim()) return '';
-  var n={todas:0,vermelho:0,amarelo:0,verde:0,'':0}; listaDia().forEach(function(c){n.todas++;n[corDe(c).cor]++;});
-  var op=[['todas','Todas',''],['vermelho','Caso sério','bad'],['amarelo','Resolvendo','warn'],['verde','Resolvido','ok']];
-  return '<div class="fhead"><h2 class="sub-h">Marcas</h2><button class="help" data-act="cores" aria-label="Como funcionam as cores">?</button></div>'+
-    '<div class="filt" role="group" aria-label="Filtrar pela marca">'+op.map(function(x){return '<button class="'+x[2]+'" aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'"><span class="n">'+n[x[0]]+'</span><span class="l">'+(x[2]?'<span class="dot '+x[2]+'"></span>':'')+x[1]+'</span></button>';}).join('')+'</div>'+
-    (n['']?'<div class="found">'+n['']+(n['']>1?' conversas sem marca':' conversa sem marca')+' (só em Todas)</div>':'');
+  var T=listaDia(), nA={}, nC={vermelho:0,amarelo:0,verde:0};
+  AVISOS.forEach(function(x){nA[x[0]]=T.filter(function(c){return temAviso(c,x[0]);}).length;});
+  T.filter(function(c){return temAviso(c,S.filtro);}).forEach(function(c){var k=corDe(c).cor;if(k)nC[k]++;});
+  return '<div class="chips" role="group" aria-label="Filtrar pelo aviso">'+AVISOS.map(function(x){return '<button aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'">'+x[1]+' <span class="n">'+nA[x[0]]+'</span></button>';}).join('')+'</div>'+
+    '<div class="chips" role="group" aria-label="Filtrar pela marca">'+[['vermelho','Caso sério','bad'],['amarelo','Resolvendo','warn'],['verde','Resolvido','ok']].map(function(x){return '<button aria-pressed="'+(S.cor===x[0])+'" data-act="cor-filtro" data-id="'+x[0]+'"><span class="dot '+x[2]+'"></span>'+x[1]+' <span class="n">'+nC[x[0]]+'</span></button>';}).join('')+
+    '<button class="help" data-act="cores" aria-label="Como funcionam as cores">?</button></div>';
 }
 function listaHTML(){
   if(S.dia==='ontem'&&!DO) return '<div class="card"><div class="empty">'+(DO_ERRO?'<b>'+esc(DO_ERRO)+'</b><button class="btn" data-act="ontem-de-novo">Tentar de novo</button>':'<b>Carregando ontem…</b>')+'</div></div>';
@@ -461,19 +499,24 @@ function listaHTML(){
     h+='<div class="found">'+(L.length?L.length+(L.length>1?' encontradas':' encontrada'):'Ninguém encontrado')+(S.dia==='ontem'?' ontem':' hoje')+'</div>';
     if(!L.length) return h;
   } else {
-    L=S.filtro==='todas'?T:T.filter(function(c){return corDe(c).cor===S.filtro;});
+    L=T.filter(function(c){return temAviso(c,S.filtro)&&(!S.cor||corDe(c).cor===S.cor);});
     if(S.dia==='ontem'&&DO.dia) h+='<div class="found">Ontem, '+ddmm(DO.dia+'T12:00:00')+'</div>';
   }
-  L=L.slice().sort(ordemCor);
+  /* (19/11 tarde) as conversas de hoje primeiro; as pendências de dias anteriores (sem fala do cliente hoje) embaixo, depois de um divisor */
+  var hoje=L.filter(function(c){return !c.antiga;}).sort(ordemCor), velhas=L.filter(function(c){return c.antiga;}).sort(ordemCor);
   h+='<div class="card">';
-  if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>'+(S.filtro==='vermelho'?'Nenhum caso sério':'Nada aqui')+'</b><span>'+(S.filtro==='vermelho'?'Nenhuma conversa marcada assim':'0 conversas')+'</span></div>';
-  L.forEach(function(c){h+=linhaConv(c);});
+  if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>Nada aqui</b><span>0 conversas neste filtro</span></div>';
+  hoje.forEach(function(c){h+=linhaConv(c);});
+  if(velhas.length) h+='<div class="divider">Pendências de dias anteriores · '+velhas.length+'</div>';
+  velhas.forEach(function(c){h+=linhaConv(c);});
   return h+'</div>';
 }
+/* (19/11 tarde) busca, dia e filtros ficam parados no topo; só a lista rola */
 function vLista(){
-  var h='<div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Nome, código, rota" aria-label="Buscar por nome, código, rota, bairro ou final do telefone" value="'+esc(S.busca)+'"></label>'+
-    '<div class="seg dia" role="group" aria-label="Dia">'+[['hoje','Hoje'],['ontem','Ontem']].map(function(x){return '<button aria-pressed="'+(S.dia===x[0])+'" data-act="dia" data-id="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>';
-  return h+'<div id="filtros">'+segFiltro()+'</div><div id="lista">'+listaHTML()+'</div>';
+  var h='<div class="lfixo"><div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Nome, código, rota" aria-label="Buscar por nome, código, rota, bairro ou final do telefone" value="'+esc(S.busca)+'"></label>'+
+    '<div class="seg dia" role="group" aria-label="Dia">'+[['hoje','Hoje'],['ontem','Ontem']].map(function(x){return '<button aria-pressed="'+(S.dia===x[0])+'" data-act="dia" data-id="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
+    '<div id="filtros">'+segFiltro()+'</div></div>';
+  return h+'<div class="lrola" id="lrola"><div id="lista">'+listaHTML()+'</div></div>';
 }
 function acharConv(id){
   var a=((S.dia==='ontem'&&DO?DO.convs:convsDoDia())||[]), b=((S.dia==='ontem'?convsDoDia():DO&&DO.convs)||[]);
@@ -483,50 +526,59 @@ function vConv(){
   var c=acharConv(S.conv);
   if(!c){S.conv=null;return vLista();}
   var deOntem=!!(DO&&(DO.convs||[]).indexOf(c)>=0), e=corDe(c), t=tom(e), f=c.ficha||{};
-  /* (19/11, fase B) cabeçalho: a marca (toque para marcar) e, embaixo do nome, o que o sistema sabe; ficha do cliente; falas com o resultado do envio */
+  /* (19/11 tarde) tela da conversa estilo WhatsApp: cabeçalho parado no topo (voltar, nome e telefone, marca e Ficha), só as mensagens
+     rolam e a barra de baixo (Pix, Catálogo, Assumir, Marcar e o campo de texto) fica parada embaixo */
   var qm=e.marcaEm?(ehHoje(e.marcaEm)?hhmm(e.marcaEm):ddmm(e.marcaEm)):'';
-  var h='<div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div><div class="t2">'+(f.cod?'Cód. '+esc(f.cod)+' · ':'')+esc(c.chip)+(deOntem?' · conversa de ontem':'')+(e.quem?' · '+esc(e.quem):'')+'</div></div>'+
-    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'<span class="quem">'+(e.manual?IC.flag+'por '+esc(e.marcaPor||'')+(qm?' · '+qm:''):'Tocar para marcar')+'</span></button></div>';
-  h+=vFicha(f)+'<div class="card"><div class="thread">';
-  if(!(c.msgs||[]).length) h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
-  /* (fase D) dias anteriores, do histórico (app_mensagens), antes das falas de hoje */
+  var tel=f.telChat?fmtTel(f.telChat):f.telCad?fmtTel(f.telCad)+' (cadastro)':'sem telefone';
+  var h='<div class="cv"><div class="cbar"><button class="back" data-act="voltar" aria-label="Voltar">'+IC.back+'</button><div class="mid"><div class="t1"><span class="nm">'+esc(c.nome)+'</span></div>'+
+    '<div class="tel">'+esc(tel)+' · '+esc(c.chip)+(deOntem?' · ontem':'')+(e.quem?' · '+esc(e.quem):'')+'</div></div>'+
+    '<button class="stbtn" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+(e.manual?'<span class="quem">'+IC.flag+'por '+esc(e.marcaPor||'')+(qm?' · '+qm:'')+'</span>':'')+'</button>'+
+    '<button class="fbtn" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
+  h+='<div class="crola" id="crola">';
+  /* o alerta do sistema vem no topo, com o texto inteiro e a data dele; pendência de outro dia fica separada das falas de hoje */
+  if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando, outro=dq&&!ehHoje(dq);
+    h+='<div class="why neutro">'+(outro?'<div class="s">Pendência de '+ddmm(dq)+' às '+hhmm(dq)+'</div>':'')+'<div class="t"><b>'+esc(e.quem||'Atenção')+':</b> '+esc(e.porque||'o robô pediu uma pessoa')+'</div>'+
+      (dq&&!outro?'<div class="s">Desde '+hhmm(dq)+'</div>':'')+'<button class="btn okb" data-act="resolver">'+IC.ok+'Resolvido</button></div>';}
+  h+='<div class="card"><div class="thread">';
+  /* (fase D) dias anteriores, do histórico (app_mensagens), cada dia com o seu divisor; depois o divisor de hoje */
   var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
   H.forEach(function(m){var dd=diaBR(m.quando); if(dd!==dAnt){dAnt=dd;h+='<div class="dsep">'+(dd===ontemD?'Ontem':ddmm(m.quando))+'</div>';} h+=bolha(c,{de:m.de,t:m.texto,h:hhmm(m.quando),tipo:m.tipo,st:m.st,mot:m.mot},-1,false);});
-  if(H.length&&(c.msgs||[]).length) h+='<div class="dsep">Hoje</div>';
+  if((c.msgs||[]).length) h+='<div class="dsep">'+(deOntem?'Ontem':'Hoje')+'</div>';
+  else h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
   var ult=-1; (c.msgs||[]).forEach(function(m,i){if(m.de==='app') ult=m.st==='falhou'?i:-1;}); /* só a última resposta do app que não saiu oferece Tentar de novo */
   (c.msgs||[]).forEach(function(m,i){h+=bolha(c,m,i,i===ult);});
   (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
     h+='<div class="msg out eu'+(s.st==='erro'||s.st==='expirada'||s.st==='sem_confirmacao'?' falhou':'')+'"><span class="meta">Você · '+esc(st)+'</span><div class="bub">'+esc(s.t)+'</div></div>';});
-  h+='</div></div>';
-  /* logo abaixo da última fala (a tela desce até ela): o alerta do sistema (Precisa de você, Sem dono, Envio não saiu), desde quando e o
-     Resolvido (o Leonardo e o pai). Sem cor própria: a cor é só a marca */
-  if(e.alerta&&e.cor!=='verde'){var dq=e.desde||c.quando;
-    h+='<div class="why neutro"><div class="t"><b>'+esc(e.quem||'Atenção')+':</b> '+esc(e.porque||'o robô pediu uma pessoa')+'</div>'+(dq?'<div class="s">Desde '+(ehHoje(dq)?hhmm(dq):ddmm(dq)+' às '+hhmm(dq))+'</div>':'')+
-      '<button class="btn okb" data-act="resolver">'+IC.ok+'Resolvido</button></div>';}
-  var as=assumida(c);
-  if(as) h+='<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>';
-  var lin=S.draft?S.draft.split('\n').length:0;
-  h+='<div class="compose"><div class="quick q4"><button data-act="pix">'+IC.pix+'Pix</button><button data-act="catalogo">'+IC.list+'Catálogo</button><button data-act="assumir" class="'+(as?'on':'')+'" aria-pressed="'+as+'">'+IC.hand+(as?'Sua':'Assumir')+'</button><button data-act="marcar">'+IC.flag+'Marcar</button></div>';
+  h+='</div></div></div>';
+  var as=assumida(c), lin=S.draft?S.draft.split('\n').length:0;
+  h+='<div class="compose">'+(as?'<div class="held"><span>Robô parado'+(c.ate?' · até '+hhmm(c.ate):'')+'</span><button data-act="devolver">Devolver</button></div>':'')+
+    '<div class="quick q4"><button data-act="pix">'+IC.pix+'Pix</button><button data-act="catalogo">'+IC.list+'Catálogo</button><button data-act="assumir" class="'+(as?'on':'')+'" aria-pressed="'+as+'">'+IC.hand+(as?'Sua':'Assumir')+'</button><button data-act="marcar">'+IC.flag+'Marcar</button></div>';
   if(lin>4) h+='<span class="warnline">Mais de 4 linhas</span>';
-  h+='<div class="inrow"><label for="txt" style="position:absolute;left:-9999px">Mensagem</label><textarea id="txt" rows="1" maxlength="600" placeholder="Mensagem">'+esc(S.draft)+'</textarea><button class="send" data-act="enviar" aria-label="Enviar">'+IC.send+'</button></div></div>';
+  h+='<div class="inrow"><label for="txt" style="position:absolute;left:-9999px">Mensagem</label><textarea id="txt" rows="1" maxlength="600" placeholder="Mensagem">'+esc(S.draft)+'</textarea><button class="send" data-act="enviar" aria-label="Enviar">'+IC.send+'</button></div></div></div>';
   return h;
 }
 /* (19/11, fase B) ficha do cliente: telefone do WhatsApp (o que o WhatsApp mostra, muitas vezes sem o 9) e do cadastro, rota e vendedor,
    endereço e valores (o pai vê tudo, ordem do Gestor de 19/11). Dado nenhum fica neste arquivo: tudo vem do pacote depois do login */
 function fmtTel(t){var d=String(t||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');return d.length===11?'('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7):d.length===10?'('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6):d;}
 function reais(v){var n=typeof v==='number'?v:Number(String(v==null?'':v).replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.'));return isNaN(n)?esc(v):'R$ '+n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
-function vFicha(f){
-  var h='<section class="card ficha"><button class="fh" data-act="ficha" aria-expanded="'+S.ficha+'"><span>Ficha do cliente</span>'+IC.down+'</button>';
-  if(!S.ficha) return h+'</section>';
-  if(!(f.telChat||f.telCad||f.cod||f.rota||f.bairro)) return h+'<div class="fl"><span class="vazio">Conversa sem cadastro ligado</span></div></section>';
-  var mesmo=f.telChat&&f.telCad&&String(f.telChat).slice(-8)===String(f.telCad).slice(-8);
-  h+='<div class="fl">';
-  if(f.telChat) h+='<span class="k">WhatsApp</span><span class="v">'+esc(fmtTel(f.telChat))+' <a class="mini" href="tel:+55'+esc(String(f.telChat).replace(/^55(?=\d{10,11}$)/,''))+'">'+IC.phone+'Ligar</a></span>';
-  if(f.telCad) h+='<span class="k">Cadastro</span><span class="v">'+esc(fmtTel(f.telCad))+(f.telChat?' '+pill(mesmo?'mesmo número':'outro número',mesmo?'ok':'warn'):'')+'</span>';
-  if(f.rota) h+='<span class="k">Rota</span><span class="v">'+esc(f.rota)+(f.vend?' · vendedor '+esc(f.vend):'')+'</span>';
-  if(f.bairro||f.cidade) h+='<span class="k">Endereço</span><span class="v">'+esc([f.bairro,f.cidade].filter(Boolean).join(' · '))+'</span>';
-  if(f.deve!=null) h+='<span class="k">Valores</span><span class="v">'+(f.deve?'Deve '+reais(f.deve):'Não deve')+(f.ultPag&&f.ultPag.valor?' · pagou '+reais(f.ultPag.valor)+(f.ultPag.data?' em '+esc(String(f.ultPag.data).slice(0,5)):''):'')+(f.compras!=null?' · '+f.compras+(f.compras===1?' compra':' compras'):'')+'</span>';
-  return h+'</div></section>';
+/* (19/11 tarde) Ficha do cliente, aberta pelo botão do cabeçalho: os DOIS telefones sempre à vista (o do WhatsApp, de onde ele escreveu,
+   e o do cadastro), com destaque quando são diferentes; código, rota e vendedor, endereço, valores, chip e o aviso do sistema */
+function vFichaSheet(c){
+  var f=c.ficha||{}, e=corDe(c), so=function(t){return String(t||'').replace(/^55(?=\d{10,11}$)/,'');}, mesmo=f.telChat&&f.telCad&&String(f.telChat).slice(-8)===String(f.telCad).slice(-8);
+  var liga=function(t){return ' <a class="mini" href="tel:+55'+esc(so(t))+'">'+IC.phone+'Ligar</a>';}, nada=function(t){return '<span class="nada">'+t+'</span>';};
+  var h='<div class="scrim" data-act="fechar-ficha"><div class="sheet ficha-sh" role="dialog" aria-modal="true" aria-label="Ficha do cliente"><span class="grab"></span>'+
+    '<div class="sh-h"><h3>'+esc(c.nome)+'</h3><button class="x" data-act="fechar-ficha" aria-label="Fechar">'+IC.x+'</button></div>';
+  if(f.telChat&&f.telCad&&!mesmo) h+='<div class="difere">O cliente escreveu de um número diferente do cadastro</div>';
+  h+='<div class="fl">'+
+    '<span class="k">WhatsApp</span><span class="v">'+(f.telChat?esc(fmtTel(f.telChat))+liga(f.telChat):nada('o robô não leu o número'))+'</span>'+
+    '<span class="k">Cadastro</span><span class="v">'+(f.telCad?esc(fmtTel(f.telCad))+(f.telChat?' '+pill(mesmo?'mesmo número':'outro número',mesmo?'ok':'warn'):'')+(f.telChat&&!mesmo?liga(f.telCad):''):nada('sem telefone no cadastro'))+'</span>'+
+    '<span class="k">Código</span><span class="v">'+(f.cod?esc(f.cod):nada('sem cadastro ligado'))+'</span>'+
+    '<span class="k">Rota</span><span class="v">'+(f.rota?esc(f.rota)+(f.vend?' · vendedor '+esc(f.vend):''):nada('sem rota'))+'</span>'+
+    '<span class="k">Endereço</span><span class="v">'+((f.bairro||f.cidade)?esc([f.bairro,f.cidade].filter(Boolean).join(' · ')):nada('sem endereço'))+'</span>'+
+    '<span class="k">Valores</span><span class="v">'+(f.deve!=null?(f.deve?'Deve '+reais(f.deve):'Não deve')+(f.ultPag&&f.ultPag.valor?' · pagou '+reais(f.ultPag.valor)+(f.ultPag.data?' em '+esc(String(f.ultPag.data).slice(0,5)):''):'')+(f.compras!=null?' · '+f.compras+(f.compras===1?' compra':' compras'):''):nada('sem cadastro ligado'))+'</span>'+
+    '<span class="k">Chip</span><span class="v">'+esc(c.chip)+'</span>'+
+    '<span class="k">Aviso</span><span class="v">'+esc(e.quem||'—')+'</span></div></div></div>';
+  return h;
 }
 /* uma fala: do cliente (com a mídia que o robô não transcreveu), do robô ou pelo app, com o resultado do envio gravado pelo robô */
 function bolha(c,m,i,podeTentar){
@@ -834,16 +886,26 @@ function vLogin(){
 }
 function render(){
   var app=document.getElementById('app');
+  document.body.classList.remove('fixo'); app.classList.remove('fixo'); /* entrar e carregando rolam como página comum */
   if(!EM){app.innerHTML=vLogin();var f=document.getElementById('fLogin');f.addEventListener('submit',entrar);return;}
   if(!D){app.innerHTML='<div class="login"><div class="empty">'+(ERRO?'<b>'+esc(ERRO)+'</b><span>'+esc(EM)+'</span><button class="btn" data-act="sair">Sair</button>':'<b>Carregando…</b>')+'</div></div>';return;}
   var Q=convs().filter(function(c){var e=corDe(c);return e.cor==='vermelho'||(!e.cor&&e.alerta);}).length, m=minAtras(D.geradoEm), velho=m==null||m>15; /* (19/11) número da aba = marcadas Caso sério + sem marca com alerta */
   var C=chips(), cs=S.num?C.filter(function(c){return c.nome===S.num;})[0]:null;
-  var tom=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
-  var h='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tom+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header><main>';
-  h+=S.tab==='agora'?vAgora():S.tab==='conversas'?(S.conv?vConv():vLista()):S.tab==='ia'?vIA():vEnvios();
-  h+='</main><nav class="tabs" aria-label="Abas"><div class="in">';
-  [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['ia','Perguntar',IC.ask]].forEach(function(t){h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(t[0]==='conversas'&&Q?'<span class="badge">'+Q+'</span>':'')+'</button>';});
-  h+='</div></nav>';
+  var tomTopo=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
+  /* (19/11 tarde) tela fixa: a conversa ocupa a tela toda (cabeçalho e barra de baixo parados); nas outras telas o topo e as abas ficam
+     parados e só o meio rola. A rolagem da lista e das mensagens é guardada, porque a tela é redesenhada inteira a cada mudança */
+  var emConv=S.tab==='conversas'&&S.conv?acharConv(S.conv):null, vista=S.tab+'|'+(S.conv||'')+'|'+S.dia, rolas={};
+  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el)rolas[id]=el.scrollTop;});
+  document.body.classList.add('fixo'); app.classList.add('fixo');
+  var h='';
+  if(emConv) h+='<main class="mconv">'+vConv()+'</main>';
+  else {
+    h+='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tomTopo+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header>';
+    h+='<main id="mrola"'+(S.tab==='conversas'?' class="mlista"':'')+'>'+(S.tab==='agora'?vAgora():S.tab==='conversas'?vLista():S.tab==='ia'?vIA():vEnvios())+'</main><nav class="tabs" aria-label="Abas"><div class="in">';
+    [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['ia','Perguntar',IC.ask]].forEach(function(t){h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(t[0]==='conversas'&&Q?'<span class="badge">'+Q+'</span>':'')+'</button>';});
+    h+='</div></nav>';
+  }
+  if(S.fichaAberta&&emConv) h+=vFichaSheet(emConv);
   if(S.sheet) h+='<div class="scrim" data-act="fechar"><div class="sheet" role="dialog" aria-modal="true" aria-label="Detalhe"><span class="grab"></span>'+(S.sheet.k==='num'?vSheetNum():vSheetKpi(S.sheet.id))+'</div></div>';
   if(S.modal) h+='<div class="scrim" data-act="cancelar"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(S.modal.t)+'"><span class="grab"></span><h3>'+esc(S.modal.t)+'</h3><p>'+esc(S.modal.p)+'</p><div class="btns"><button class="btn" data-act="cancelar">Cancelar</button><button class="btn pri" data-act="ok">'+esc(S.modal.ok)+'</button></div></div></div>';
   if(S.marcar) h+=vMarcar();
@@ -859,10 +921,13 @@ function render(){
   var bu=document.getElementById('busca');
   if(bu){bu.addEventListener('input',function(){var tinha=!!S.busca.trim();S.busca=bu.value;if(!!S.busca.trim()!==tinha){var fi=document.getElementById('filtros');if(fi)fi.innerHTML=segFiltro();}var l=document.getElementById('lista');if(l)l.innerHTML=listaHTML();});}
   if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)try{el.setSelectionRange(el.value.length,el.value.length);}catch(x){}}
-  /* (etapa 3) rolagem: ao abrir uma conversa ou o chat, e sempre que chega mensagem nova, desce até a última */
-  var cv=S.tab==='conversas'&&S.conv&&acharConv(S.conv);
-  var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
-  if(rol&&rol!==render.rol) requestAnimationFrame(function(){window.scrollTo(0,document.documentElement.scrollHeight);});
+  /* mesma tela: a lista e as mensagens voltam ao ponto onde estavam. (etapa 3) ao abrir uma conversa ou o chat, e sempre que chega
+     mensagem nova, desce até a última (agora dentro da área que rola) */
+  if(vista===render.vista) Object.keys(rolas).forEach(function(id){var el=document.getElementById(id);if(el)el.scrollTop=rolas[id];});
+  render.vista=vista;
+  var cv=emConv;
+  var rol=cv?'c:'+cv.id+':'+cv.msgs.length+':'+(S.saidas[cv.id]||[]).length+':'+((S.hist[cv.id]||{}).rows||[]).length:(S.tab==='ia'&&S.iaSeg==='chat'?'i:'+S.chat.length+':'+S.chat.filter(function(m){return m.esperando;}).length:'');
+  if(rol&&rol!==render.rol) requestAnimationFrame(function(){var el=document.getElementById(cv?'crola':'mrola');if(el)el.scrollTop=el.scrollHeight;});
   render.rol=rol;
 }
 
@@ -891,7 +956,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&EM)
 document.addEventListener('click',function(ev){
   var el=ev.target.closest('[data-act]'); if(!el) return;
   var a=el.getAttribute('data-act'), id=el.getAttribute('data-id');
-  if((a==='fechar'||a==='cancelar'||a==='cancelar-marca'||a==='fechar-info')&&el.classList.contains('scrim')&&ev.target!==el) return;
+  if((a==='fechar'||a==='cancelar'||a==='cancelar-marca'||a==='fechar-info'||a==='fechar-ficha')&&el.classList.contains('scrim')&&ev.target!==el) return;
   var cv=S.conv&&acharConv(S.conv);
   switch(a){
     case 'resolver': if(!cv) return; /* (19/11) o Leonardo e o pai */
@@ -902,7 +967,9 @@ document.addEventListener('click',function(ev){
     case 'cancelar-marca': S.marcar=null; break;
     case 'cores': S.info='cores'; break;
     case 'fechar-info': S.info=null; break;
-    case 'ficha': S.ficha=!S.ficha; break;
+    case 'ficha': S.fichaAberta=true; break;
+    case 'fechar-ficha': S.fichaAberta=false; break;
+    case 'cor-filtro': S.cor=S.cor===id?'':id; break; /* toque de novo na mesma marca tira o filtro */
     case 'tentar': if(!cv) return; var mt=(cv.msgs||[])[+id]; if(mt&&mt.t) mandar('responder',String(mt.t).slice(0,600)); return;
     case 'enviar': if(S.draft.trim()&&cv) mandar('responder',S.draft.trim()); return;
     case 'pix': if(cv) mandar('pix','Pix: chave e titular'); return;
@@ -926,20 +993,20 @@ document.addEventListener('click',function(ev){
     case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
     case 'ia-repetir': repetir(+id); return;
     case 'tab': S.tab=id; S.conv=null; break;
-    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; window.scrollTo(0,0); carregarHist(id); break;
+    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; S.fichaAberta=false; carregarHist(id); break;
     case 'ver-querem': case 'ver-antigas': case 'ver-vendedor':
-      S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.filtro=a==='ver-vendedor'?'amarelo':'vermelho'; window.scrollTo(0,0); break; /* (19/11) filtros por cor */
+      S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.cor=''; S.filtro=a==='ver-vendedor'?'todas':'precisa'; break; /* (19/11 tarde) filtros por aviso */
     case 'dia': S.dia=id; S.conv=null; if(id==='ontem') buscarOntem(); break;
     case 'ontem-de-novo': buscarOntem(true); return;
     case 'filtro': S.filtro=id; break;
-    case 'voltar': S.conv=null; break;
+    case 'voltar': S.conv=null; S.fichaAberta=false; break;
     case 'ord': S.ord=S.ord===+id?null:+id; S.tipo=null; break;
     case 'tipo': S.tipo=S.tipo===id?null:id; break;
     case 'num': S.sheet={k:'num'}; break;
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.hist={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
