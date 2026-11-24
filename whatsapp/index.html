@@ -417,11 +417,15 @@ function enxuta(c,fl){ /* tira as falas (peso) e deixa a prévia e os sinais de 
 }
 async function buscarAnteriores(forcar){
   if(!SB||!D||AH.lendo||(AH.em&&!forcar&&Date.now()-AH.em<TTL_HIST)) return;
-  AH.lendo=true; var hj=hojeBR(), r;
-  try{r=await SB.from('app_conversas').select('id,dia,dados').gte('dia',DESDE).lt('dia',hj).or('cor.is.null,cor.neq.verde').order('dia',{ascending:false}).limit(300);}catch(e){r={error:e};}
+  AH.lendo=true; var hj=hojeBR(), r={data:[]};
+  /* o Supabase entrega no máximo 1000 linhas por pedido (o limit(300) antigo cortava as conversas mais velhas): páginas de 250, até 1200 */
+  try{for(var p=0;p<5;p++){
+    var q=await SB.from('app_conversas').select('id,dia,dados').gte('dia',DESDE).lt('dia',hj).or('cor.is.null,cor.neq.verde').order('dia',{ascending:false}).order('id').range(p*250,p*250+249);
+    if(q.error){r=q;break;} r.data=r.data.concat(q.data||[]); if((q.data||[]).length<250) break;}
+  }catch(e){r={error:e};}
   AH.lendo=false; AH.em=Date.now(); /* com erro, também espera o prazo: nada de tentar a cada 30 s */
   if(r.error||!r.data) return;
-  AH.cheio=r.data.length>=300;
+  AH.cheio=r.data.length>=1250;
   AH.convs=r.data.map(function(x){var c=x.dados||{}; c.id=c.id||x.id; c.dia=x.dia; return enxuta(c);});
   render();
 }
@@ -432,8 +436,11 @@ async function buscarDia(dia){
   d=DD[dia]={convs:null,em:0,lendo:true,erro:'',cheio:false}; render();
   var ini=new Date(dia+'T03:00:00Z'), fim=new Date(ini.getTime()+864e5); /* dia de Brasília (UTC-3) */
   try{
-    var m=await SB.from('app_mensagens').select('conversa_id,de').gte('quando',ini.toISOString()).lt('quando',fim.toISOString()).limit(2000);
-    if(m.error) throw new Error(m.error.message);
+    var m={data:[]}; /* o Supabase corta em 1000 linhas por pedido: páginas de 1000, até 5000 (só 2 colunas curtas) */
+    for(var pg=0;pg<5;pg++){
+      var mm=await SB.from('app_mensagens').select('conversa_id,de').gte('quando',ini.toISOString()).lt('quando',fim.toISOString()).order('quando').order('id').range(pg*1000,pg*1000+999);
+      if(mm.error) throw new Error(mm.error.message); m.data=m.data.concat(mm.data||[]); if((mm.data||[]).length<1000) break;
+    }
     var fl={}; (m.data||[]).forEach(function(x){var f=fl[x.conversa_id]||(fl[x.conversa_id]={cli:false,nos:false}); if(x.de==='cli') f.cli=true; else f.nos=true;});
     Object.keys(fl).forEach(function(k){fl[k].nos=fl[k].nos&&!fl[k].cli;}); /* "só nossas": o dia inteiro sem fala do cliente */
     var ids=Object.keys(fl), rows=[];
@@ -442,7 +449,7 @@ async function buscarDia(dia){
       if(r.error) throw new Error(r.error.message); rows=rows.concat(r.data||[]);
     }
     d.convs=rows.map(function(x){return {id:x.id,nome:x.nome,quando:x.quando,chip:x.chip,quem:x.quem,porque:x.porque,porqueDesde:x.porqueDesde,alerta:x.alerta,manual:x.manual,cor:x.c||x.cor,marcaPor:x.marcaPor,marcaEm:x.marcaEm,quer:x.quer,motivo:x.motivo,ficha:x.ficha||{},msgs:[],fl:fl[x.id],hd:true,antiga:true,dia:dia};});
-    d.cheio=(m.data||[]).length>=2000;
+    d.cheio=(m.data||[]).length>=5000;
   }catch(e){d.erro='Não consegui ler esse dia';}
   d.lendo=false; d.em=Date.now(); render();
 }
@@ -458,20 +465,16 @@ function achaExtra(id){
 function verdeVelha(c){var e=corDe(c); return e.cor==='verde'&&!!e.marcaEm&&Date.now()-Date.parse(e.marcaEm)>=864e5;}
 /* texto da ficha para colar no WhatsApp: sem valores de saldo (deve, pagou, compras) e sem a palavra do sistema de fora */
 function textoFicha(c){
-  var f=c.ficha||{}, e=corDe(c), L=[], tc=f.telChat?fmtTel(telBR(f.telChat)):'', td=f.telCad?fmtTel(telBR(f.telCad)):'';
+  var f=c.ficha||{}, L=[], tc=f.telChat?fmtTel(telBR(f.telChat)):'', td=f.telCad?fmtTel(telBR(f.telCad)):'';
   L.push('*'+semOpy(c.nome||'Cliente')+'*');
   if(f.cod) L.push('Código: '+f.cod);
   if(tc) L.push('WhatsApp: '+tc);
   if(td&&td!==tc) L.push('Cadastro: '+td);
   if(f.rota||f.vend) L.push('Rota: '+(f.rota||'—')+(f.vend?' · Vendedor: '+semOpy(f.vend):''));
-  if(f.bairro||f.cidade) L.push('Endereço: '+[f.bairro,f.cidade].filter(Boolean).map(semOpy).join(' · '));
-  if(c.chip) L.push('Chip: '+semOpy(c.chip));
-  L.push('Situação: '+tom(e)[0]+(e.manual?' (por '+(e.marcaPor||'uma pessoa')+(e.marcaEm?' em '+ddmm(e.marcaEm)+' '+hhmm(e.marcaEm):'')+')':''));
-  if(e.quem) L.push('Aviso: '+semOpy(e.quem));
-  if(e.porque) L.push('Motivo: '+semOpy(e.porque).replace(/\s+/g,' ').slice(0,300));
-  var cli=(c.msgs||[]).filter(function(m){return m.de==='cli'&&m.t;}).pop();
-  if(cli) L.push('Última fala do cliente ('+(cli.h||'')+'): '+semOpy(cli.t).replace(/\s+/g,' ').slice(0,300));
-  return L.join('\n');
+  /* endereço: rua e número (f.rua e f.num, quando o pacote traz) e, como antes, bairro e cidade */
+  var rn=f.rua?semOpy(f.rua)+(f.num?', '+semOpy(f.num):''):'', bc=[f.bairro,f.cidade].filter(Boolean).map(semOpy).join(' · ');
+  if(rn||bc) L.push('Endereço: '+[rn,bc].filter(Boolean).join(' · '));
+  return L.join('\n'); /* só identificação: nada de chip, situação, aviso, motivo, fala do cliente nem valores */
 }
 function copiarFicha(c){
   var tel=textoFicha(c), id='cp-ficha';
@@ -639,7 +642,7 @@ function listaHTML(){
     L=baseLista().filter(function(c){return temAviso(c,S.filtro)&&(!S.cor||corDe(c).cor===S.cor)&&(!S.fala||flagsFala(c)[S.fala]);});
     if(S.dia==='ontem'&&DO.dia) h+='<div class="found">Ontem, '+ddmm(DO.dia+'T12:00:00')+'</div>';
     if(dd) h+='<div class="found">'+ddmm(S.dia+'T12:00:00')+' · todas as conversas do dia, com as marcas'+(dd.cheio?' (mostrando as primeiras)':'')+'</div>';
-    if(S.dia==='hoje'&&AH.cheio) h+='<div class="found">Mostrando as 300 conversas anteriores mais recentes</div>';
+    if(S.dia==='hoje'&&AH.cheio) h+='<div class="found">Mostrando as 1200 conversas anteriores mais recentes</div>';
   }
   /* (19/11 tarde) as conversas de hoje primeiro; as pendências de dias anteriores (sem fala do cliente hoje) embaixo, depois de um divisor */
   var hoje=L.filter(function(c){return !c.antiga;}).sort(ordemCor), velhas=L.filter(function(c){return c.antiga;}).sort(ordemCor);
