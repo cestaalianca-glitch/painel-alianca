@@ -276,6 +276,11 @@ body.fixo{height:100%;overflow:hidden}
 .faixa .al-ok{flex:none;height:36px;padding:0 12px;border-radius:999px;border:0;background:var(--ok);color:#fff;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 .cv .cbar .tel{white-space:normal;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical} /* telefone, chip e aviso em até 3 linhas, sem esconder */
 .cv .cbar .tel .sg:nth-child(-n+2){white-space:nowrap} /* telefone e chip nunca quebram no meio; o aviso pode quebrar entre palavras */
+.icb{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}
+.dsel{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute,var(--ink));padding:2px 0}
+.dsel input{height:36px;border:1px solid var(--line);border-radius:10px;padding:0 8px;font-size:13px;background:var(--card);color:var(--ink);min-width:0}
+.btn.cpf{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:0 0 10px}
+@media (max-width:400px){.icb{display:none}}
 @media (max-width:400px){.fbtn svg{display:none}.fbtn{padding:0 12px}} /* celular: "Ficha" sem o ícone (como a barra de baixo) dá lugar ao nome e ao telefone */
 @media (max-width:370px){.cv .cbar .tel{font-size:11px}}
 .cv .compose{flex:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:10px}
@@ -373,7 +378,7 @@ var SB=null, D=null, EM=null, ERRO='', TIMER=null, PAPEL='';
 var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem: linha à parte, lida só quando a pessoa toca em Ontem */
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
-  dia:'hoje',busca:'',resolvLocal:{},
+  dia:'hoje',busca:'',fala:'',resolvLocal:{},
   marcaLocal:{},marcar:null,info:null,fichaAberta:false,cor:'',hist:{}, /* (19/11, fases B e D) marca feita aqui (vale na hora), folha de marcar, folha das cores, ficha aberta e histórico */
   alertaAberto:'',copiado:{}}; /* (19/11 noite) aviso da conversa aberto por inteiro (id da conversa) e quando cada botão Copiar copiou */
 var PEND={}; /* ordens esperando o servidor: id -> {f, desde, ate} (18/11: cada ordem com o próprio prazo) */
@@ -391,6 +396,92 @@ var RT={convs:null,canal:null,vivo:false,dia:''};
 function convsDoDia(){return RT.convs&&RT.vivo?Object.keys(RT.convs).map(function(k){return RT.convs[k];}):(D&&D.convs)||[];}
 function convs(){return doChip(convsDoDia());} /* as do dia e, desde a fase 3, as antigas (quem espera o Leonardo desde outro dia) */
 function hojeC(){return convs().filter(function(c){return !c.antiga;});}
+/* (24/11) conversas desde 16/11 e filtro de dia, com egress baixo: nada disso entra no Realtime nem no polling de 30 s.
+   AH = dias anteriores (16/11 até ontem, sem as marcadas Resolvido), lido 1 vez e guardado 30 min; DD = um dia escolhido, lido sob demanda e guardado 30 min.
+   As duas guardam a conversa SEM as falas (viram só a prévia e as marcas de quem falou); as falas vêm de app_mensagens quando a conversa abre (carregarHist) */
+var DESDE='2026-11-16', TTL_HIST=1800000;
+var AH={convs:null,em:0,lendo:false,cheio:false}, DD={};
+function hojeBR(){return D&&D.dia?D.dia:diaBR(new Date().toISOString());}
+function semOpy(t){return String(t==null?'':t).replace(/\bopy\b/gi,'nosso sistema');}
+/* quem falou na conversa: do cliente (qualquer fala, inclusive "ok") e só nossas (tem fala e nenhuma do cliente) */
+function flagsFala(c){
+  if(c.fl) return c.fl;
+  var L=c.msgs||[], cli=L.some(function(m){return m.de==='cli';});
+  return {cli:cli,nos:L.length>0&&!cli};
+}
+function enxuta(c,fl){ /* tira as falas (peso) e deixa a prévia e os sinais de quem falou */
+  var L=c.msgs||[], u=L[L.length-1];
+  c.fl=fl||flagsFala(c);
+  if(u) c.pvT=(u.de==='robo'?'Robô: ':u.de==='app'?'App: ':'')+(u.tipo==='audio'?'Áudio sem transcrição':u.tipo==='imagem'?'Foto':u.tipo==='arquivo'?'Arquivo':u.tipo==='video'?'Vídeo':String(u.t||'').replace(/\n/g,' ').slice(0,160));
+  c.msgs=[]; c.hd=true; c.antiga=true; return c;
+}
+async function buscarAnteriores(forcar){
+  if(!SB||!D||AH.lendo||(AH.em&&!forcar&&Date.now()-AH.em<TTL_HIST)) return;
+  AH.lendo=true; var hj=hojeBR(), r;
+  try{r=await SB.from('app_conversas').select('id,dia,dados').gte('dia',DESDE).lt('dia',hj).or('cor.is.null,cor.neq.verde').order('dia',{ascending:false}).limit(300);}catch(e){r={error:e};}
+  AH.lendo=false; AH.em=Date.now(); /* com erro, também espera o prazo: nada de tentar a cada 30 s */
+  if(r.error||!r.data) return;
+  AH.cheio=r.data.length>=300;
+  AH.convs=r.data.map(function(x){var c=x.dados||{}; c.id=c.id||x.id; c.dia=x.dia; return enxuta(c);});
+  render();
+}
+/* filtro de dia: as falas daquele dia (app_mensagens, por 'quando', só id da conversa e quem falou) dizem quais conversas entram;
+   depois as linhas de app_conversas daquelas conversas, sem o texto das falas */
+async function buscarDia(dia){
+  var d=DD[dia]; if(!SB||!/^\d{4}-\d\d-\d\d$/.test(dia)||(d&&(d.lendo||(d.em&&Date.now()-d.em<TTL_HIST)))) return;
+  d=DD[dia]={convs:null,em:0,lendo:true,erro:'',cheio:false}; render();
+  var ini=new Date(dia+'T03:00:00Z'), fim=new Date(ini.getTime()+864e5); /* dia de Brasília (UTC-3) */
+  try{
+    var m=await SB.from('app_mensagens').select('conversa_id,de').gte('quando',ini.toISOString()).lt('quando',fim.toISOString()).limit(2000);
+    if(m.error) throw new Error(m.error.message);
+    var fl={}; (m.data||[]).forEach(function(x){var f=fl[x.conversa_id]||(fl[x.conversa_id]={cli:false,nos:false}); if(x.de==='cli') f.cli=true; else f.nos=true;});
+    Object.keys(fl).forEach(function(k){fl[k].nos=fl[k].nos&&!fl[k].cli;}); /* "só nossas": o dia inteiro sem fala do cliente */
+    var ids=Object.keys(fl), rows=[];
+    for(var i=0;i<ids.length;i+=80){
+      var r=await SB.from('app_conversas').select('id,dia,cor,c:dados->>cor,nome:dados->>nome,quando:dados->>quando,chip:dados->>chip,quem:dados->>quem,porque:dados->>porque,porqueDesde:dados->>porqueDesde,alerta:dados->alerta,manual:dados->manual,marcaPor:dados->>marcaPor,marcaEm:dados->>marcaEm,quer:dados->quer,motivo:dados->>motivo,ficha:dados->ficha').in('id',ids.slice(i,i+80));
+      if(r.error) throw new Error(r.error.message); rows=rows.concat(r.data||[]);
+    }
+    d.convs=rows.map(function(x){return {id:x.id,nome:x.nome,quando:x.quando,chip:x.chip,quem:x.quem,porque:x.porque,porqueDesde:x.porqueDesde,alerta:x.alerta,manual:x.manual,cor:x.c||x.cor,marcaPor:x.marcaPor,marcaEm:x.marcaEm,quer:x.quer,motivo:x.motivo,ficha:x.ficha||{},msgs:[],fl:fl[x.id],hd:true,antiga:true,dia:dia};});
+    d.cheio=(m.data||[]).length>=2000;
+  }catch(e){d.erro='Não consegui ler esse dia';}
+  d.lendo=false; d.em=Date.now(); render();
+}
+function escolheDia(v){
+  if(!/^\d{4}-\d\d-\d\d$/.test(v)) return; if(v<DESDE) v=DESDE;
+  S.conv=null; if(v>=hojeBR()){S.dia='hoje';} else {S.dia=v; buscarDia(v);} render();
+}
+function achaExtra(id){
+  var L=(AH.convs||[]).concat((DD[S.dia]&&DD[S.dia].convs)||[]);
+  return L.filter(function(x){return x.id===id;})[0]||null;
+}
+/* regra do Gestor (24/11): marcada Resolvido há 24 h ou mais, a conversa sai da lista normal (a marca continua no banco e aparece no filtro de dia) */
+function verdeVelha(c){var e=corDe(c); return e.cor==='verde'&&!!e.marcaEm&&Date.now()-Date.parse(e.marcaEm)>=864e5;}
+/* texto da ficha para colar no WhatsApp: sem valores de saldo (deve, pagou, compras) e sem a palavra do sistema de fora */
+function textoFicha(c){
+  var f=c.ficha||{}, e=corDe(c), L=[], tc=f.telChat?fmtTel(telBR(f.telChat)):'', td=f.telCad?fmtTel(telBR(f.telCad)):'';
+  L.push('*'+semOpy(c.nome||'Cliente')+'*');
+  if(f.cod) L.push('Código: '+f.cod);
+  if(tc) L.push('WhatsApp: '+tc);
+  if(td&&td!==tc) L.push('Cadastro: '+td);
+  if(f.rota||f.vend) L.push('Rota: '+(f.rota||'—')+(f.vend?' · Vendedor: '+semOpy(f.vend):''));
+  if(f.bairro||f.cidade) L.push('Endereço: '+[f.bairro,f.cidade].filter(Boolean).map(semOpy).join(' · '));
+  if(c.chip) L.push('Chip: '+semOpy(c.chip));
+  L.push('Situação: '+tom(e)[0]+(e.manual?' (por '+(e.marcaPor||'uma pessoa')+(e.marcaEm?' em '+ddmm(e.marcaEm)+' '+hhmm(e.marcaEm):'')+')':''));
+  if(e.quem) L.push('Aviso: '+semOpy(e.quem));
+  if(e.porque) L.push('Motivo: '+semOpy(e.porque).replace(/\s+/g,' ').slice(0,300));
+  var cli=(c.msgs||[]).filter(function(m){return m.de==='cli'&&m.t;}).pop();
+  if(cli) L.push('Última fala do cliente ('+(cli.h||'')+'): '+semOpy(cli.t).replace(/\s+/g,' ').slice(0,300));
+  return L.join('\n');
+}
+function copiarFicha(c){
+  var tel=textoFicha(c), id='cp-ficha';
+  var ok=function(){S.copiado[id]=Date.now();toast('Ficha copiada');};
+  var plano=function(){var ta=document.createElement('textarea'),r=false;ta.value=tel;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);ta.select();try{ta.setSelectionRange(0,tel.length);r=document.execCommand('copy');}catch(e){}document.body.removeChild(ta);
+    if(r)ok();else toast('Não deu para copiar a ficha');};
+  try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(tel).then(ok,plano);return;}}catch(e){}
+  plano();
+}
 /* (fase 3) Resolvido some da tela na hora; se o servidor confirmar e o pacote ainda não mostrar, espera até 20 min (sincronismo e Ontem) */
 function resolvida(c){var t=S.resolvLocal[c.id];return !!t&&Date.now()-t<1200000;}
 function querem(){return hojeC().filter(function(c){return c.quer&&!resolvida(c);});}
@@ -488,9 +579,15 @@ function ordemCor(a,b){var P={vermelho:0,'':1,amarelo:2,verde:3},ea=corDe(a),eb=
   return String(b.quando).localeCompare(String(a.quando));}
 /* (fase 3) Hoje ou Ontem e busca (procura em todas, sem filtro). A busca só redesenha a lista, não a tela inteira:
    o teclado do celular não fecha a cada letra. (19/11) busca também por código, final do telefone, rota e bairro */
-function listaDia(){return S.dia==='ontem'?doChip(DO&&DO.convs):convs();}
+function listaDia(){
+  if(S.dia==='ontem') return doChip(DO&&DO.convs);
+  if(S.dia!=='hoje') return doChip((DD[S.dia]&&DD[S.dia].convs)||[]); /* dia escolhido: todas as do dia, inclusive Resolvido */
+  var H=convs(), ids={}; H.forEach(function(c){ids[c.id]=1;});
+  return H.concat(doChip(AH.convs||[]).filter(function(c){return !ids[c.id];})); /* hoje + dias anteriores desde 16/11 (sem as Resolvido) */
+}
+function baseLista(){var T=listaDia(); return S.dia==='hoje'&&S.cor!=='verde'?T.filter(function(c){return !verdeVelha(c);}):T;}
 function previa(c){
-  var L=c.msgs||[], m=L[L.length-1]; if(!m) return '<span>'+esc(c.motivo||'')+'</span>';
+  var L=c.msgs||[], m=L[L.length-1]; if(!m) return '<span>'+esc(c.pvT||c.motivo||'')+'</span>';
   var quem=m.de==='robo'?'Robô: ':m.de==='app'?'App: ':'';
   if(m.tipo==='audio') return IC.mic+'<span>'+quem+'Áudio sem transcrição</span>';
   if(m.tipo==='imagem') return IC.img+'<span>'+quem+'Foto</span>';
@@ -517,15 +614,19 @@ function temAviso(c,k){
 }
 function segFiltro(){
   if(S.busca.trim()) return '';
-  var T=listaDia(), nA={}, nC={vermelho:0,amarelo:0,verde:0};
-  AVISOS.forEach(function(x){nA[x[0]]=T.filter(function(c){return temAviso(c,x[0]);}).length;});
+  var T=listaDia(), B=baseLista(), nA={}, nC={vermelho:0,amarelo:0,verde:0}, nF={cli:0,nos:0};
+  AVISOS.forEach(function(x){nA[x[0]]=B.filter(function(c){return temAviso(c,x[0]);}).length;});
   T.filter(function(c){return temAviso(c,S.filtro);}).forEach(function(c){var k=corDe(c).cor;if(k)nC[k]++;});
-  return '<div class="chips" role="group" aria-label="Filtrar pelo aviso">'+AVISOS.map(function(x){return '<button aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'">'+x[1]+' <span class="n">'+nA[x[0]]+'</span></button>';}).join('')+'</div>'+
+  B.forEach(function(c){var f=flagsFala(c); if(f.cli)nF.cli++; if(f.nos)nF.nos++;});
+  return '<div class="chips" role="group" aria-label="Filtrar por quem falou">'+[['cli','Cliente falou'],['nos','Só mensagens nossas']].map(function(x){return '<button aria-pressed="'+(S.fala===x[0])+'" data-act="fala" data-id="'+x[0]+'">'+x[1]+' <span class="n">'+nF[x[0]]+'</span></button>';}).join('')+'</div>'+
+    '<div class="chips" role="group" aria-label="Filtrar pelo aviso">'+AVISOS.map(function(x){return '<button aria-pressed="'+(S.filtro===x[0])+'" data-act="filtro" data-id="'+x[0]+'">'+x[1]+' <span class="n">'+nA[x[0]]+'</span></button>';}).join('')+'</div>'+
     '<div class="chips" role="group" aria-label="Filtrar pela marca">'+[['vermelho','Caso sério','bad'],['amarelo','Resolvendo','warn'],['verde','Resolvido','ok']].map(function(x){return '<button aria-pressed="'+(S.cor===x[0])+'" data-act="cor-filtro" data-id="'+x[0]+'"><span class="dot '+x[2]+'"></span>'+x[1]+' <span class="n">'+nC[x[0]]+'</span></button>';}).join('')+
     '<button class="help" data-act="cores" aria-label="Como funcionam as cores">?</button></div>';
 }
 function listaHTML(){
   if(S.dia==='ontem'&&!DO) return '<div class="card"><div class="empty">'+(DO_ERRO?'<b>'+esc(DO_ERRO)+'</b><button class="btn" data-act="ontem-de-novo">Tentar de novo</button>':'<b>Carregando ontem…</b>')+'</div></div>';
+  var dd=/^\d{4}-\d\d-\d\d$/.test(S.dia)?DD[S.dia]:null;
+  if(/^\d{4}-\d\d-\d\d$/.test(S.dia)&&(!dd||!dd.convs)) return '<div class="card"><div class="empty">'+(dd&&dd.erro?'<b>'+esc(dd.erro)+'</b><button class="btn" data-act="dia-de-novo">Tentar de novo</button>':'<b>Carregando o dia…</b>')+'</div></div>';
   var T=listaDia(), q=normaliza(S.busca).trim(), h='', L;
   if(q){
     var pal=q.split(/\s+/).filter(Boolean), dg=q.replace(/\D/g,'');
@@ -534,15 +635,18 @@ function listaHTML(){
     h+='<div class="found">'+(L.length?L.length+(L.length>1?' encontradas':' encontrada'):'Ninguém encontrado')+(S.dia==='ontem'?' ontem':' hoje')+'</div>';
     if(!L.length) return h;
   } else {
-    L=T.filter(function(c){return temAviso(c,S.filtro)&&(!S.cor||corDe(c).cor===S.cor);});
+    /* hoje: Resolvido há 24 h ou mais sai daqui (regra do Gestor, 24/11); no filtro Resolvido e nos filtros de dia aparece com a marca */
+    L=baseLista().filter(function(c){return temAviso(c,S.filtro)&&(!S.cor||corDe(c).cor===S.cor)&&(!S.fala||flagsFala(c)[S.fala]);});
     if(S.dia==='ontem'&&DO.dia) h+='<div class="found">Ontem, '+ddmm(DO.dia+'T12:00:00')+'</div>';
+    if(dd) h+='<div class="found">'+ddmm(S.dia+'T12:00:00')+' · todas as conversas do dia, com as marcas'+(dd.cheio?' (mostrando as primeiras)':'')+'</div>';
+    if(S.dia==='hoje'&&AH.cheio) h+='<div class="found">Mostrando as 300 conversas anteriores mais recentes</div>';
   }
   /* (19/11 tarde) as conversas de hoje primeiro; as pendências de dias anteriores (sem fala do cliente hoje) embaixo, depois de um divisor */
   var hoje=L.filter(function(c){return !c.antiga;}).sort(ordemCor), velhas=L.filter(function(c){return c.antiga;}).sort(ordemCor);
   h+='<div class="card">';
   if(!L.length) h+='<div class="empty"><div class="ck">'+IC.check+'</div><b>Nada aqui</b><span>0 conversas neste filtro</span></div>';
   hoje.forEach(function(c){h+=linhaConv(c);});
-  if(velhas.length) h+='<div class="divider">Pendências de dias anteriores · '+velhas.length+'</div>';
+  if(velhas.length&&!dd) h+='<div class="divider">Dias anteriores · '+velhas.length+'</div>';
   velhas.forEach(function(c){h+=linhaConv(c);});
   return h+'</div>';
 }
@@ -550,12 +654,13 @@ function listaHTML(){
 function vLista(){
   var h='<div class="lfixo"><div class="find"><label>'+IC.search+'<input id="busca" type="search" enterkeyhint="search" autocomplete="off" placeholder="Nome ou código" aria-label="Buscar por nome, código, rota, bairro ou final do telefone" value="'+esc(S.busca)+'"></label>'+
     '<div class="seg dia" role="group" aria-label="Dia">'+[['hoje','Hoje'],['ontem','Ontem']].map(function(x){return '<button aria-pressed="'+(S.dia===x[0])+'" data-act="dia" data-id="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
+    '<label class="dsel">Ver outro dia <input type="date" id="diaSel" min="'+DESDE+'" max="'+esc(hojeBR())+'" value="'+(/^\d{4}-\d\d-\d\d$/.test(S.dia)?S.dia:'')+'" aria-label="Ver as conversas de um dia, a partir de 16/11"></label>'+
     '<div id="filtros">'+segFiltro()+'</div></div>';
   return h+'<div class="lrola" id="lrola"><div id="lista">'+listaHTML()+'</div></div>';
 }
 function acharConv(id){
   var a=((S.dia==='ontem'&&DO?DO.convs:convsDoDia())||[]), b=((S.dia==='ontem'?convsDoDia():DO&&DO.convs)||[]);
-  return a.filter(function(x){return x.id===id;})[0]||b.filter(function(x){return x.id===id;})[0]||null;
+  return a.filter(function(x){return x.id===id;})[0]||b.filter(function(x){return x.id===id;})[0]||achaExtra(id);
 }
 function vConv(){
   var c=acharConv(S.conv);
@@ -568,6 +673,7 @@ function vConv(){
     /* telefone · chip · aviso; o ponto fica grudado no fim do dado (nunca começa linha). "Ontem" já vem no divisor das falas */
     '<div class="tel">'+[tel,c.chip].concat(e.quem&&!(e.alerta&&e.cor!=='verde')?[e.quem]:[]).map(function(s,i,a){return '<span class="sg">'+esc(s)+(i<a.length-1?' ·':'')+'</span>';}).join(' ')+'</div></div>'+
     '<button class="stbtn" id="bt-marca" data-act="marcar" aria-label="Marca: '+t[0]+'. Tocar para marcar">'+pill(t[0]+' ▾',t[1])+'</button>'+ /* quem marcou e quando: na Ficha (no cabeçalho apertava o nome) */
+    '<button class="icb" id="bt-cpficha" data-act="copiar-ficha" aria-label="Copiar a ficha completa">'+IC.copy+'</button>'+ /* celular estreito: some daqui (o nome precisa do lugar); o botão da Ficha continua */
     '<button class="fbtn" id="bt-ficha" data-act="ficha" aria-haspopup="dialog" aria-label="Ficha do cliente">'+IC.list+'Ficha</button></div>';
   /* (19/11 noite) o aviso do sistema é uma faixa de 2 linhas parada embaixo do cabeçalho (tocar abre o texto inteiro, com a data);
      a área que rola tem só as mensagens, até a última */
@@ -581,7 +687,8 @@ function vConv(){
   var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
   H.forEach(function(m){var dd=diaBR(m.quando); if(dd!==dAnt){dAnt=dd;h+='<div class="dsep">'+(dd===ontemD?'Ontem':ddmm(m.quando))+'</div>';} h+=bolha(c,{de:m.de,t:m.texto,h:hhmm(m.quando),tipo:m.tipo,st:m.st,mot:m.mot},-1,false);});
   if((c.msgs||[]).length) h+='<div class="dsep">'+(deOntem?'Ontem':'Hoje')+'</div>';
-  else h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
+  else if(!c.hd) h+='<div class="empty"><b>'+(deOntem?'Sem conversa':'Sem conversa hoje')+'</b></div>';
+  else if(!H.length) h+='<div class="empty"><b>'+(S.hist[c.id]?'Sem falas guardadas':'Carregando as falas…')+'</b></div>';
   var ult=-1; (c.msgs||[]).forEach(function(m,i){if(m.de==='app') ult=m.st==='falhou'?i:-1;}); /* só a última resposta do app que não saiu oferece Tentar de novo */
   (c.msgs||[]).forEach(function(m,i){h+=bolha(c,m,i,i===ult);});
   (S.saidas[c.id]||[]).forEach(function(s){var st=s.st==='feito'?'Na fila do chip':s.st==='erro'?'Não saiu: '+s.erro:s.st==='expirada'?'Não saiu: chegou tarde ao servidor':s.st==='sem_confirmacao'?'Sem confirmação: confira antes de mandar de novo':'Enviando…';
@@ -613,7 +720,8 @@ function vFichaSheet(c){
       '<button class="tb'+(foi?' feito':'')+'" id="'+id+'" data-act="copiar" data-tel="'+esc(n)+'">'+(foi?IC.ok14+'Copiado!':IC.copy+'Copiar<span class="sr"> o número do '+(qual==='chat'?'WhatsApp':'cadastro')+'</span>')+'</button>'+
       (br?'<a class="tb wa" href="https://wa.me/55'+esc(n)+'" target="_blank" rel="noopener noreferrer">'+IC.wa+'WhatsApp<span class="sr"> (abre em outra aba)</span></a>':'')+'</span>';};
   var h='<div class="scrim" data-act="fechar-ficha"><div class="sheet ficha-sh" role="dialog" aria-modal="true" aria-label="Ficha do cliente"><span class="grab"></span>'+
-    '<div class="sh-h"><h3>'+esc(c.nome)+'</h3><button class="x" data-act="fechar-ficha" aria-label="Fechar">'+IC.x+'</button></div>';
+    '<div class="sh-h"><h3>'+esc(c.nome)+'</h3><button class="x" data-act="fechar-ficha" aria-label="Fechar">'+IC.x+'</button></div>'+
+    '<button class="btn cpf" id="cp-ficha-sh" data-act="copiar-ficha">'+IC.copy+'Copiar ficha completa</button>';
   if(f.telChat&&f.telCad&&!mesmo) h+='<div class="difere">O cliente escreveu de um número diferente do cadastro</div>';
   h+='<div class="fl">'+
     '<span class="k">WhatsApp</span><span class="v">'+(f.telChat?fone(f.telChat,'chat'):nada('o robô não leu o número'))+'</span>'+
@@ -984,6 +1092,8 @@ function render(){
   var ak=document.getElementById('ask');
   if(ak){ak.addEventListener('input',function(){S.ask=ak.value;});ak.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();perguntar(ak.value.trim());}});}
   /* (fase 3) a busca redesenha só a lista (e os filtros quando ela começa ou termina): o campo não é recriado a cada letra */
+  var ds=document.getElementById('diaSel');
+  if(ds) ds.addEventListener('change',function(){escolheDia(ds.value);});
   var bu=document.getElementById('busca');
   if(bu){bu.addEventListener('input',function(){var tinha=!!S.busca.trim();S.busca=bu.value;if(!!S.busca.trim()!==tinha){var fi=document.getElementById('filtros');if(fi)fi.innerHTML=segFiltro();}var l=document.getElementById('lista');if(l){l.innerHTML=listaHTML();aparaOnde(l);}});}
   if(foco&&document.getElementById(foco)){var el=document.getElementById(foco);el.focus();if(el.setSelectionRange)try{el.setSelectionRange(el.value.length,el.value.length);}catch(x){}}
@@ -1017,6 +1127,7 @@ async function buscar(){
   limpaLocais();
   limpaResolv();
   iniciarTempoReal(D.dia); /* (fase D) liga uma vez por dia; sem a tabela, não faz nada */
+  buscarAnteriores(); /* (24/11) dias anteriores desde 16/11: 1 leitura a cada 30 min no máximo, fora do Realtime */
   render();
 }
 function comecar(email){EM=email;render();buscar();carregarNotas().then(carregarChat,carregarChat);
@@ -1050,6 +1161,9 @@ document.addEventListener('click',function(ev){
     case 'ficha': S.fichaAberta=true; break;
     case 'fechar-ficha': S.fichaAberta=false; break;
     case 'ver-alerta': if(cv) S.alertaAberto=S.alertaAberto===cv.id?'':cv.id; break;
+    case 'copiar-ficha': var cvf=acharConv(S.conv); if(cvf) copiarFicha(cvf); return; /* sem redesenhar além do aviso */
+    case 'fala': S.fala=S.fala===id?'':id; break;
+    case 'dia-de-novo': delete DD[S.dia]; buscarDia(S.dia); break;
     case 'copiar': copiar(el.getAttribute('data-tel')||'',el.id); return; /* sem redesenhar: o botão troca o texto sozinho */
     case 'cor-filtro': S.cor=S.cor===id?'':id; break; /* toque de novo na mesma marca tira o filtro */
     case 'tentar': if(!cv) return; var mt=(cv.msgs||[])[+id]; if(mt&&mt.t) mandar('responder',String(mt.t).slice(0,600)); return;
@@ -1088,7 +1202,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.fala='';AH={convs:null,em:0,lendo:false,cheio:false};DD={};S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
