@@ -635,7 +635,7 @@ let largura = innerWidth; addEventListener('resize', () => { document.documentEl
 // ===== ALIANÇA HQ AO VIVO (injetado pelo gerar-hq-ao-vivo.js) =====
 // Lê painel_dados (hq-pc, hq-servidor) no Supabase a cada 60 s e pinta robôs, chaves e triagem.
 // Se não conseguir ler, o escritório continua com o último dado embutido e mostra "sem conexão".
-var LIVE = { url: 'https://pjzmzwaarrqxghfbwtsm.supabase.co', key: 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX', ms: 60000, velhoMin: 15, desligado: false };
+var LIVE = { url: 'https://pjzmzwaarrqxghfbwtsm.supabase.co', key: 'sb_publishable__pDJPEn-eRDopTvRCni34g_GqloMiBX', ms: 120000, velhoMin: 15, desligado: false };
 var LIVE_ROBO = { 'Central': 'central', 'Rota 1': 'rota-1', 'Rota 6': 'rota-6', 'Rotas 18 21 25': 'rotas-18', 'Novo 1': 'novo-1', 'Ajudante': 'ajudante', 'Varredura': 'varredura' };
 var LIVE_FIN = null;   // (14/11) linha 'hq-financeiro': só o Gestor logado lê (carregada pelo controle.js)
 var SNAP_B9 = null;   // (Bloco 9) foto do ROI/equipe/chips para o Artifact (o gerador troca este null)
@@ -861,7 +861,7 @@ async function liveCiclo() {
 }
 // (Bloco 17) botão "Confirmar entrega" da fila de rota: grava a ordem entrega_confirmar (o worker do servidor confirma, recalcula as parcelas e libera o bônus do padrinho)
 if (!window.__alvEntrega) { window.__alvEntrega = true; document.addEventListener('click', function (e) { var b = e.target && e.target.closest && e.target.closest('[data-entrega]'); if (!b || typeof ctlOrdem !== 'function') return; var id = b.getAttribute('data-entrega'); ctlOrdem('entrega_confirmar', { pedidoId: id }, 'Confirmar a ENTREGA do pedido ' + id + ' hoje? As 2 parcelas passam a contar 30 e 60 dias a partir de hoje.'); }); }
-liveCiclo(); setInterval(liveCiclo, LIVE.ms);
+liveCiclo(); setInterval(function () { if (!document.hidden) liveCiclo(); }, LIVE.ms); document.addEventListener('visibilitychange', function () { if (!document.hidden) liveCiclo(); }); // (24/11) pausa com a aba escondida (egress)
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
 // ===== fim do ao vivo =====
@@ -1016,7 +1016,7 @@ function ctlPedidosNoMapa() {
 // o ficha() reescreve o topo e apagava os números ao vivo: refaz logo depois
 (function () { const f = ficha; ficha = function () { f(); try { liveCont(); } catch (e) {} }; })();
 ctlInicia(); ctlPainelOrdens();
-setInterval(async () => { if (CTL.admin) { await ctlCarrega(); ctlPedidosNoMapa(); const a = document.getElementById('chat'); if (a && !a.hidden && !(document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) ctlPainelOrdens(); } }, 20000);
+setInterval(async () => { if (CTL.admin && !document.hidden) { await ctlCarrega(); ctlPedidosNoMapa(); const a = document.getElementById('chat'); if (a && !a.hidden && !(document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName))) ctlPainelOrdens(); } }, 60000); // (24/11) 60 s e pausa escondida (egress)
 // ===== fim do controle =====
 </script>
 
