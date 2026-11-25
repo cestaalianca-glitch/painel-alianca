@@ -12,6 +12,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script src="credito.js"></script><!-- (25/11) aba Crédito: Fase 4 do crédito -->
+
 <style>
 :root{
   --bg:#f4f6f9; --card:#ffffff; --line:#e3e8ef; --line-2:#eef1f5;
@@ -109,7 +111,7 @@ button.kpi:active{background:var(--line-2)}
 .chip-row .q small,.nrow .q small{color:var(--ink-3);font-weight:500}
 .stc{width:88px;flex-shrink:0;display:flex;justify-content:flex-end}
 .tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabs .in{max-width:430px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.tabs .in{max-width:430px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))} /* (25/11) 5 abas: + Crédito */
 .tabs button{height:64px;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink-3);position:relative}
 .tabs button[aria-current="page"]{color:var(--pri)}
 .tabs .badge{position:absolute;top:8px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--bad);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)}
@@ -374,7 +376,7 @@ function ddmm(iso){var d=new Date(iso);return isNaN(d)?'':String(d.getDate()).pa
 function ehHoje(iso){var d=new Date(iso),h=new Date();return !isNaN(d)&&d.toDateString()===h.toDateString();}
 function normaliza(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
 
-var SB=null, D=null, EM=null, ERRO='', TIMER=null, PAPEL='';
+var SB=null, D=null, EM=null, ERRO='', TIMER=null, PAPEL='', CR=null; /* CR: aba Crédito (credito.js, 25/11) */
 var DO=null, DO_EM=0, DO_ERRO='', DO_LENDO=false; /* (fase 3) conversas de ontem: linha à parte, lida só quando a pessoa toca em Ontem */
 var S={tab:'agora',conv:null,filtro:'todas',ord:null,tipo:null,num:null,sheet:null,entrando:false,loginErro:'',
   draft:'',ask:'',saidas:{},chat:[],notas:[],iaSeg:'chat',toast:'',modal:null,assumeLocal:{},
@@ -1075,11 +1077,13 @@ function render(){
   if(emConv) h+='<main class="mconv">'+vConv()+'</main>';
   else {
     h+='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tomTopo+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header>';
-    h+='<main id="mrola"'+(S.tab==='conversas'?' class="mlista"':'')+'>'+(S.tab==='agora'?vAgora():S.tab==='conversas'?vLista():S.tab==='ia'?vIA():vEnvios())+'</main><nav class="tabs" aria-label="Abas"><div class="in">';
-    [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['ia','Perguntar',IC.ask]].forEach(function(t){h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(t[0]==='conversas'&&Q?'<span class="badge">'+Q+'</span>':'')+'</button>';});
+    h+='<main id="mrola"'+(S.tab==='conversas'?' class="mlista"':'')+'>'+(S.tab==='agora'?vAgora():S.tab==='conversas'?vLista():S.tab==='ia'?vIA():S.tab==='credito'&&CR?CR.view():vEnvios())+'</main><nav class="tabs" aria-label="Abas"><div class="in">';
+    var QC=CR?CR.badge():0; /* (25/11) aba Crédito: fichas paradas há mais de 4 h úteis */
+    [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['credito','Crédito',IC.list],['ia','Perguntar',IC.ask]].forEach(function(t){var nb=t[0]==='conversas'?Q:t[0]==='credito'?QC:0;h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(nb?'<span class="badge">'+nb+'</span>':'')+'</button>';});
     h+='</div></nav>';
   }
   if(S.fichaAberta&&emConv) h+=vFichaSheet(emConv);
+  if(CR&&S.tab==='credito') h+=CR.folha(); /* (25/11) ficha de crédito aberta (o modal de confirmação fica por cima) */
   if(S.sheet) h+='<div class="scrim" data-act="fechar"><div class="sheet" role="dialog" aria-modal="true" aria-label="Detalhe"><span class="grab"></span>'+(S.sheet.k==='num'?vSheetNum():vSheetKpi(S.sheet.id))+'</div></div>';
   if(S.modal) h+='<div class="scrim" data-act="cancelar"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(S.modal.t)+'"><span class="grab"></span><h3>'+esc(S.modal.t)+'</h3><p>'+esc(S.modal.p)+'</p><div class="btns"><button class="btn" data-act="cancelar">Cancelar</button><button class="btn pri" data-act="ok">'+esc(S.modal.ok)+'</button></div></div></div>';
   if(S.marcar) h+=vMarcar();
@@ -1150,6 +1154,7 @@ document.addEventListener('keydown',function(ev){ /* (19/11 noite) Esc fecha a f
 document.addEventListener('click',function(ev){
   var el=ev.target.closest('[data-act]'); if(!el) return;
   var a=el.getAttribute('data-act'), id=el.getAttribute('data-id');
+  if(a.indexOf('cr-')===0){if(CR)CR.acao(a,id,el,ev);return;} /* (25/11) toques da aba Crédito */
   if((a==='fechar'||a==='cancelar'||a==='cancelar-marca'||a==='fechar-info'||a==='fechar-ficha')&&el.classList.contains('scrim')&&ev.target!==el) return;
   var cv=S.conv&&acharConv(S.conv);
   switch(a){
@@ -1205,7 +1210,7 @@ document.addEventListener('click',function(ev){
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.fala='';AH={convs:null,em:0,lendo:false,cheio:false};DD={};S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': if(CR) CR.sair(); SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.fala='';AH={convs:null,em:0,lendo:false,cheio:false};DD={};S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
@@ -1213,6 +1218,9 @@ document.addEventListener('click',function(ev){
 /* ---------- início ---------- */
 try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);}catch(e){SB=null;}
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
+/* (25/11) aba Crédito (credito.js): recebe só o que precisa daqui; sem o arquivo, o app segue sem a aba */
+try{CR=window.AppCredito?window.AppCredito({S:S,esc:esc,pill:pill,ini:ini,IC:IC,render:render,toast:toast,ordem:ordem,acompanha:acompanha,motivoCurto:motivoCurto,anotaFalha:anotaFalha,
+  SB:function(){return SB;},em:function(){return EM;}}):null;}catch(e){CR=null;}
 window.__appWhats={tempoReal:function(dia){return iniciarTempoReal(dia);},carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;DO=null;DO_EM=0;limpaResolv();render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações, a conversa da aba Perguntar e o Ontem) */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
