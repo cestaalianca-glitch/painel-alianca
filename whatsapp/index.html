@@ -12,14 +12,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
-<script src="credito.js"></script><!-- (25/11) aba Crédito: Fase 4 do crédito -->
+<script src="credito.js?v=2"></script><!-- (25/11) aba Crédito: busca, filas, ficha em tela cheia e gaveta de decisão -->
 
 <style>
 :root{
   --bg:#f4f6f9; --card:#ffffff; --line:#e3e8ef; --line-2:#eef1f5;
   --ink:#0f172a; --ink-2:#475569; --ink-3:#64748b;
   --pri:#0b63ce; --pri-soft:#e7f0fc;
-  --ok:#15803d; --ok-soft:#dcfce7; --warn:#a16207; --warn-soft:#fef3c7;
+  --ok:#15803d; --ok-soft:#dcfce7; --warn:#9a5d06; --warn-soft:#fef3c7; /* (25/11) amarelo mais escuro: o anterior dava 4,42:1 sobre o fundo claro (mínimo 4,5:1) */
   --bad:#b91c1c; --bad-soft:#fee2e2; --mute-soft:#eef2f6;
   --r:12px; color-scheme:light;
 }
@@ -308,6 +308,7 @@ body.fixo{height:100%;overflow:hidden}
 .find input,.inrow textarea,.askbar textarea{font-size:16px} /* abaixo de 16 px o iPhone dá zoom e desloca a tela fixa */
 .row:focus-visible,.ord:focus-visible,.type:focus-visible{outline-offset:-2px} /* o card com overflow:hidden cortava o anel do foco */
 .sheet{max-height:88vh;max-height:88dvh;overscroll-behavior:contain}
+.sheet>*{flex-shrink:0} /* (25/11) a folha rola por dentro: nada encolhe (um botão de 52 px ficava com 36 px quando o conteúdo passava da altura) */
 .help{width:34px;height:34px}
 .retry{padding:10px 0 10px 8px}
 .ficha-sh .difere{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600}
@@ -687,6 +688,9 @@ function vConv(){
       (dq?(outro?' · pendência de '+ddmm(dq)+' às '+hhmm(dq):' · desde '+hhmm(dq)):'')+':</span> '+esc(e.porque||'o robô pediu uma pessoa')+'</div></div>'+
       '<button class="al-tog" id="al-tog" data-act="ver-alerta" aria-expanded="'+ab+'" aria-controls="faixa" aria-label="'+(ab?'Recolher o aviso':'Ver o aviso inteiro')+'">'+IC.down+'</button>'+
       '<button class="al-ok" id="al-ok" data-act="resolver">'+IC.ok14+'Resolvido</button></div>';}
+  /* (25/11) este telefone tem cadastro de crédito ainda sem decisão: faixa com o atalho para a ficha (a volta traz de novo para esta conversa) */
+  var fcr=CR&&CR.daConversa?CR.daConversa(f):null;
+  if(fcr&&fcr.aberta) h+='<div class="faixa cr-fxc"><div class="cr-fxt"><b>Cadastro de crédito</b><span> · '+esc(fcr.etapa)+'</span></div><button class="cr-ver" data-act="cr-da-conversa" data-id="'+esc(fcr.id)+'">Ver ficha</button></div>';
   h+='<div class="crola" id="crola"><div class="card"><div class="thread">';
   /* (fase D) dias anteriores, do histórico (app_mensagens), cada dia com o seu divisor; depois o divisor de hoje */
   var H=deOntem?[]:((S.hist[c.id]||{}).rows||[]), dAnt='', ontemD=diaBR(Date.now()-864e5);
@@ -727,6 +731,8 @@ function vFichaSheet(c){
   var h='<div class="scrim" data-act="fechar-ficha"><div class="sheet ficha-sh" role="dialog" aria-modal="true" aria-label="Ficha do cliente"><span class="grab"></span>'+
     '<div class="sh-h"><h3>'+esc(c.nome)+'</h3><button class="x" data-act="fechar-ficha" aria-label="Fechar">'+IC.x+'</button></div>'+
     '<button class="btn cpf" id="cp-ficha-sh" data-act="copiar-ficha">'+IC.copy+'Copiar ficha completa</button>';
+  var fcr=CR&&CR.daConversa?CR.daConversa(f):null; /* (25/11) atalho para o cadastro de crédito deste telefone, decidido ou não */
+  if(fcr) h+='<button class="btn cpf" data-act="cr-da-conversa" data-id="'+esc(fcr.id)+'">'+IC.list+'Ver cadastro de crédito</button>';
   if(f.telChat&&f.telCad&&!mesmo) h+='<div class="difere">O cliente escreveu de um número diferente do cadastro</div>';
   h+='<div class="fl">'+
     '<span class="k">WhatsApp</span><span class="v">'+(f.telChat?fone(f.telChat,'chat'):nada('o robô não leu o número'))+'</span>'+
@@ -1062,7 +1068,7 @@ function render(){
   var app=document.getElementById('app'), rolas={}, perto={}, nofim={}; /* perto (80 px): fala nova puxa; no fim (4 px): redesenho mantém no fim */
   /* (19/11 noite) a rolagem é lida ANTES de mexer na classe "fixo": sem ela a área cresce até o conteúdo e a leitura dava sempre 0,
      então cada redesenho (tempo real, 30 s) jogava a lista e a conversa de volta ao topo */
-  ['lrola','crola','mrola'].forEach(function(id){var el=document.getElementById(id);if(el){var falta=el.scrollHeight-el.clientHeight-el.scrollTop;rolas[id]=el.scrollTop;perto[id]=falta<80;nofim[id]=falta<4;}});
+  ['lrola','crola','mrola','crLista','crFicha'].forEach(function(id){var el=document.getElementById(id);if(el){var falta=el.scrollHeight-el.clientHeight-el.scrollTop;rolas[id]=el.scrollTop;perto[id]=falta<80;nofim[id]=falta<4;}});
   if(!EM||!D){document.body.classList.remove('fixo');app.classList.remove('fixo');} /* entrar e carregando rolam como página comum */
   if(!EM){app.innerHTML=vLogin();var f=document.getElementById('fLogin');f.addEventListener('submit',entrar);return;}
   if(!D){app.innerHTML='<div class="login"><div class="empty">'+(ERRO?'<b>'+esc(ERRO)+'</b><span>'+esc(EM)+'</span><button class="btn" data-act="sair">Sair</button>':'<b>Carregando…</b>')+'</div></div>';return;}
@@ -1071,19 +1077,21 @@ function render(){
   var tomTopo=cs?(ST[cs.st]||ST.ok)[1]:(C.some(function(c){return ST[c.st]&&ST[c.st][1]==='bad';})?'bad':C.some(function(c){return c.st==='limite';})?'warn':'ok');
   /* (19/11 tarde) tela fixa: a conversa ocupa a tela toda (cabeçalho e barra de baixo parados); nas outras telas o topo e as abas ficam
      parados e só o meio rola. A rolagem da lista e das mensagens é guardada, porque a tela é redesenhada inteira a cada mudança */
-  var emConv=S.tab==='conversas'&&S.conv?acharConv(S.conv):null, vista=S.tab+'|'+(S.conv||'')+'|'+S.dia;
+  var emConv=S.tab==='conversas'&&S.conv?acharConv(S.conv):null, crTela=S.tab==='credito'&&CR&&CR.cheia?CR.cheia():'', /* (25/11) ficha de crédito em tela cheia, como a conversa */
+      vista=S.tab+'|'+(S.conv||'')+'|'+S.dia+'|'+(S.tab==='credito'&&CR&&CR.vista?CR.vista():'');
   document.body.classList.add('fixo'); app.classList.add('fixo');
   var h='';
   if(emConv) h+='<main class="mconv">'+vConv()+'</main>';
+  else if(crTela) h+='<main class="mconv">'+crTela+'</main>';
   else {
     h+='<header class="top"><button class="numsel" data-act="num" aria-haspopup="dialog" aria-label="Trocar número"><span class="dot '+tomTopo+'"></span><span class="lb">'+esc(S.num||'Todos os números')+'</span>'+IC.down+'</button>'+(RT.vivo&&!velho?'<span class="sync"><span class="dot ok"></span>Ao vivo</span>':'<span class="sync'+(velho?' velho':'')+'">'+(velho?'Desatualizado · ':'')+hhmm(D.geradoEm)+'</span>')+'</header>';
-    h+='<main id="mrola"'+(S.tab==='conversas'?' class="mlista"':'')+'>'+(S.tab==='agora'?vAgora():S.tab==='conversas'?vLista():S.tab==='ia'?vIA():S.tab==='credito'&&CR?CR.view():vEnvios())+'</main><nav class="tabs" aria-label="Abas"><div class="in">';
+    h+='<main id="mrola"'+(S.tab==='conversas'||(S.tab==='credito'&&CR)?' class="mlista"':'')+'>'+(S.tab==='agora'?vAgora():S.tab==='conversas'?vLista():S.tab==='ia'?vIA():S.tab==='credito'&&CR?CR.view():vEnvios())+'</main><nav class="tabs" aria-label="Abas"><div class="in">';
     var QC=CR?CR.badge():0; /* (25/11) aba Crédito: fichas paradas há mais de 4 h úteis */
     [['agora','Agora',IC.alert],['conversas','Conversas',IC.chat],['envios','Envios',IC.send],['credito','Crédito',IC.list],['ia','Perguntar',IC.ask]].forEach(function(t){var nb=t[0]==='conversas'?Q:t[0]==='credito'?QC:0;h+='<button data-act="tab" data-id="'+t[0]+'" aria-current="'+(S.tab===t[0]?'page':'false')+'">'+t[2]+t[1]+(nb?'<span class="badge">'+nb+'</span>':'')+'</button>';});
     h+='</div></nav>';
   }
   if(S.fichaAberta&&emConv) h+=vFichaSheet(emConv);
-  if(CR&&S.tab==='credito') h+=CR.folha(); /* (25/11) ficha de crédito aberta (o modal de confirmação fica por cima) */
+  if(CR&&S.tab==='credito') h+=CR.folha(); /* (25/11) gaveta da ficha de crédito: decisão, recibo e mais ações (o modal de confirmação fica por cima) */
   if(S.sheet) h+='<div class="scrim" data-act="fechar"><div class="sheet" role="dialog" aria-modal="true" aria-label="Detalhe"><span class="grab"></span>'+(S.sheet.k==='num'?vSheetNum():vSheetKpi(S.sheet.id))+'</div></div>';
   if(S.modal) h+='<div class="scrim" data-act="cancelar"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(S.modal.t)+'"><span class="grab"></span><h3>'+esc(S.modal.t)+'</h3><p>'+esc(S.modal.p)+'</p><div class="btns"><button class="btn" data-act="cancelar">Cancelar</button><button class="btn pri" data-act="ok">'+esc(S.modal.ok)+'</button></div></div></div>';
   if(S.marcar) h+=vMarcar();
@@ -1196,21 +1204,23 @@ document.addEventListener('click',function(ev){
     case 'nota-sim': salvarNota(+id); return;
     case 'nota-nao': var mn=S.chat[+id]; if(mn){mn.notaFeita='nao'; if(mn.id){DESC.push(mn.id);DESC=DESC.slice(-50);try{localStorage.setItem('app-notas-descartadas',JSON.stringify(DESC));}catch(e){}}} break;
     case 'ia-repetir': repetir(+id); return;
-    case 'tab': S.tab=id; S.conv=null; break;
-    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; S.fichaAberta=false; S.alertaAberto=''; carregarHist(id); break;
+    case 'tab': S.tab=id; S.conv=null; S.voltaCr=false; break;
+    case 'abrir': if(S.tab!=='conversas') S.dia='hoje'; S.tab='conversas'; S.conv=id; S.fichaAberta=false; S.alertaAberto=''; S.voltaCr=false; carregarHist(id); break;
     case 'ver-querem': case 'ver-antigas': case 'ver-vendedor':
       S.tab='conversas'; S.conv=null; S.dia='hoje'; S.busca=''; S.cor=''; S.filtro=a==='ver-vendedor'?'todas':'precisa'; break; /* (19/11 tarde) filtros por aviso */
     case 'dia': S.dia=id; S.conv=null; if(id==='ontem') buscarOntem(); break;
     case 'ontem-de-novo': buscarOntem(true); return;
     case 'filtro': S.filtro=id; break;
-    case 'voltar': S.conv=null; S.fichaAberta=false; break;
+    case 'voltar': S.conv=null; S.fichaAberta=false;
+      if(S.voltaCr&&CR){S.voltaCr=false;S.tab='credito';render();if(CR.voltou)CR.voltou();return;} /* (25/11) a conversa foi aberta pela ficha de crédito: volta para ela, no mesmo ponto */
+      break;
     case 'ord': S.ord=S.ord===+id?null:+id; S.tipo=null; break;
     case 'tipo': S.tipo=S.tipo===id?null:id; break;
     case 'num': S.sheet={k:'num'}; break;
     case 'pick-num': S.num=id||null; S.sheet=null; S.conv=null; S.ord=null; S.tipo=null; S.filtro='todas'; break;
     case 'kpi': S.sheet={k:'kpi',id:id}; break;
     case 'fechar': S.sheet=null; break;
-    case 'sair': if(CR) CR.sair(); SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.fala='';AH={convs:null,em:0,lendo:false,cheio:false};DD={};S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
+    case 'sair': if(CR) CR.sair(); S.voltaCr=false; SB.auth.signOut().finally(function(){EM=null;D=null;DO=null;DO_ERRO='';S.sheet=null;S.chat=[];S.busca='';S.dia='hoje';S.fala='';AH={convs:null,em:0,lendo:false,cheio:false};DD={};S.resolvLocal={};S.marcaLocal={};S.marcar=null;S.info=null;S.cor='';S.filtro='todas';S.fichaAberta=false;S.hist={};S.alertaAberto='';S.copiado={};if(RT.canal)try{SB.removeChannel(RT.canal);}catch(e){}RT={convs:null,canal:null,vivo:false,dia:''};PEND={};clearInterval(TIMER);render();}); return;
   }
   render();
 });
@@ -1220,7 +1230,13 @@ try{SB=window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY
 if(!SB){document.getElementById('app').innerHTML='<div class="login"><div class="empty"><b>Sem conexão</b><span>Recarregue a página</span></div></div>';return;}
 /* (25/11) aba Crédito (credito.js): recebe só o que precisa daqui; sem o arquivo, o app segue sem a aba */
 try{CR=window.AppCredito?window.AppCredito({S:S,esc:esc,pill:pill,ini:ini,IC:IC,render:render,toast:toast,ordem:ordem,acompanha:acompanha,motivoCurto:motivoCurto,anotaFalha:anotaFalha,
-  SB:function(){return SB;},em:function(){return EM;}}):null;}catch(e){CR=null;}
+  normaliza:normaliza,fmtTel:fmtTel,telBR:telBR,semOpy:semOpy,SB:function(){return SB;},em:function(){return EM;},
+  /* conversa já carregada (hoje, ontem e dias anteriores) com este final de telefone: prefere a Central, depois a mais recente */
+  convDoTel:function(t8){var visto={},L=convsDoDia().concat((DO&&DO.convs)||[],AH.convs||[]).filter(function(c){var f=c.ficha||{};if(visto[c.id])return false;visto[c.id]=1;return String(f.telChat||'').slice(-8)===t8||String(f.telCad||'').slice(-8)===t8;});
+    L.sort(function(a,b){return (/central/i.test(a.chip||'')?0:1)-(/central/i.test(b.chip||'')?0:1)||String(b.quando||'').localeCompare(String(a.quando||''));});
+    return L[0]?{id:L[0].id,chip:L[0].chip||''}:null;},
+  /* abre a conversa sem mexer no dia escolhido; deCredito: o Voltar da conversa devolve para a ficha */
+  abrirConv:function(id,deCredito){S.voltaCr=!!deCredito;S.tab='conversas';S.conv=id;S.fichaAberta=false;S.alertaAberto='';carregarHist(id);render();}}):null;}catch(e){CR=null;}
 window.__appWhats={tempoReal:function(dia){return iniciarTempoReal(dia);},carregar:function(p,banco,papel){if(banco)SB=banco;if(papel)PAPEL=papel;EM=EM||'teste';D=p;DO=null;DO_EM=0;limpaResolv();render();if(banco)carregarNotas().then(carregarChat,carregarChat);}}; /* só para a prova local com dado e banco inventados (com banco, recarrega as anotações, a conversa da aba Perguntar e o Ontem) */
 SB.auth.getSession().then(function(r){var s=r.data&&r.data.session;if(s)comecar(s.user.email);else render();});
 })();
