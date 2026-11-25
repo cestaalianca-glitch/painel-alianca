@@ -12,6 +12,7 @@ Responder sempre em português. Este repositório é **público**: nunca colocar
 | **Central Aliança** (porta de entrada) | `central/index.html` | — |
 | **Aliança HQ** | `hq/index.html` (**gerado**, não editar à mão), `hq/office.css` | linhas públicas `hq-pc` e `hq-servidor`; linha privada `hq-financeiro` só com login do Gestor |
 | **App WhatsApp** (celular do Gestor e do pai: Agora, Conversas, Envios, Perguntar; responder, Pix, catálogo, assumir e interruptores (só admin) viram ordens app-cmd-...; fase 3: pendências de dias anteriores, "Vendedor sem responder", busca por nome, Ontem e Resolvido, que só o admin usa) | `whatsapp/index.html` (página única, login próprio) | linhas privadas `app-whatsapp` e `app-whatsapp-ontem` (lida só no toque em Ontem), montadas no servidor dos robôs (`ecossistema/app-whatsapp/`) |
+| **App WhatsApp · aba Crédito** (fila de cadastros novos e "Já é cliente" à parte, busca, ficha em tela cheia, decisão em 2 passos com recibo, ida e volta com as Conversas; decidir e pedir comprovante viram as ordens `credito_decidir` e `credito_pedir`) | `whatsapp/credito.js` (carregado pelo `index.html` por `window.AppCredito(api)`; estilo próprio, só com as variáveis de cor da página) | tabela `credito_fichas` (só admin e familia), espelhada pelo motor de crédito do PC (`ecossistema/credito/` no repositório do ecossistema) |
 | Login | `login-gate.js`, `config.js` (chaves públicas) | Supabase Auth |
 | Visual comum | `estilo-alianca.css` (design system: cor sempre por token) | — |
 | Esteiras e governança | `.github/workflows/pages.yml`, `.github/workflows/saude.yml`, `.github/ci/` | regras em `.github/ci/governanca.json` e `permitidos.json` |
@@ -44,6 +45,13 @@ Fora daqui: o site de vendas do cliente fica no repositório `site-cesta-alianca
 4. Abrir um pull request da branch para o `main`. A esteira (trava, sintaxe e versão limpa) tem de passar.
 5. O Gestor confere a prévia no computador e no celular e aprova o merge. **Só depois do merge no `main`** o Pages publica.
 6. Exceção: correção urgente de dado sensível que vazou entra direto no `main`, num commit pequeno.
+
+## Tela do App WhatsApp: auditoria antes do pull request
+Toda tela nova ou mudada em `whatsapp/` passa por duas skills do repositório do ecossistema (pasta `Painel Alianca`), só com dado inventado, antes do pull request:
+- `alianca-app-tela-celular`: mede em 360, 390 e 430 px e no computador (toque de 44 px, letra, contraste, sem rolagem lateral, ação principal na zona do polegar, todos os estados) e tira as capturas. `node "../Painel Alianca/.claude/skills/alianca-app-tela-celular/ferramentas/auditar-tela.js" --raiz .`
+- `alianca-app-fluxo`: leituras no Supabase, ordem que sai uma vez só, CPF e telefone fora do aparelho e casos de borda. `node "../Painel Alianca/.claude/skills/alianca-app-fluxo/ferramentas/auditar-fluxo.js" --raiz .`
+
+As duas têm de sair com "APROVADO". Captura de tela e dado de teste não entram neste repositório.
 
 ## De onde vem a página do HQ
 - `hq/index.html` é gerada no repositório do ecossistema (pasta `Painel Alianca`). Para atualizar o módulo ao vivo e copiar a página para cá, rodar lá: `node ecossistema/hq/atualizar-modulo.js --pages`. A limpeza da linha pública (`ecossistema/hq/linha-publica.js`) tira valores em reais do texto fixo.
